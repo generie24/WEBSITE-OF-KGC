@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -1713,7 +1713,18 @@
   </div>
 
   <!-- Load animations script -->
-  <script src="./animations.js"></script>
+  <script src="./animations.js" onerror="(function(){var l=document.getElementById('loader');if(l){l.style.opacity='0';setTimeout(function(){l.classList.add('hidden');},500);}})()"></script>
+  <!-- Failsafe: force-hide loader after 3s in case animations.js fails silently -->
+  <script>
+    setTimeout(function() {
+      var loader = document.getElementById('loader');
+      if (loader && !loader.classList.contains('hidden')) {
+        loader.style.opacity = '0';
+        loader.style.transition = 'opacity 0.5s';
+        setTimeout(function() { loader.classList.add('hidden'); }, 500);
+      }
+    }, 3000);
+  </script>
 
   <!-- Three.js initialization inline -->
   <script>
