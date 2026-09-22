@@ -160,13 +160,5 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
-const path = require('path');
-const express = require('express');
-const app = express();
-
-const path = require('path');
-const express = require('express');
-const app = express();
-
-app.use(express.static(__dirname));
+// Explicit images directory route (ensures /images/* is served correctly)
 app.use('/images', express.static(path.join(__dirname, 'images')));
