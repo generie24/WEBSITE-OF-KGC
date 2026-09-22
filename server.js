@@ -159,3 +159,14 @@ process.on('SIGINT', () => {
   console.log('\nSIGINT signal received: closing HTTP server');
   process.exit(0);
 });
+
+const path = require('path');
+const express = require('express');
+const app = express();
+
+const path = require('path');
+const express = require('express');
+const app = express();
+
+app.use(express.static(__dirname));
+app.use('/images', express.static(path.join(__dirname, 'images')));

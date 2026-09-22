@@ -1,26 +1,29 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Klassic Group of Companies | Premium Portfolio</title>
-  
+
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
+
   <!-- GSAP with ScrollTrigger & ScrollTo -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
-  
+
   <!-- Three.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  
+
   <script>
     tailwind.config = {
       theme: {
@@ -38,22 +41,23 @@
       }
     }
   </script>
-  
+
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-    
+
     body {
       font-family: 'Inter', sans-serif;
       color: #FFFFFF;
       overflow-x: hidden;
-      padding-top: 80px; /* Space for fixed header */
+      padding-top: 80px;
+      /* Space for fixed header */
       background: #0A0A0F;
     }
-    
+
     /* Header Styles */
     .site-header {
       position: fixed;
@@ -67,7 +71,7 @@
       border-bottom: 1px solid rgba(212, 175, 55, 0.3);
       box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
     }
-    
+
     .header-container {
       max-width: 1400px;
       margin: 0 auto;
@@ -77,29 +81,29 @@
       align-items: center;
       height: 80px;
     }
-    
+
     .logo-container {
       display: flex;
       align-items: center;
     }
-    
+
     .logo-container img {
       height: 50px;
       width: auto;
       transition: transform 0.3s ease;
     }
-    
+
     .logo-container img:hover {
       transform: scale(1.05);
     }
-    
+
     /* Navigation Styles */
     .main-nav {
       display: flex;
       align-items: center;
       gap: 2rem;
     }
-    
+
     .nav-item {
       position: relative;
       font-family: 'Plus Jakarta Sans', sans-serif;
@@ -113,39 +117,39 @@
       transition: all 0.3s ease;
       cursor: pointer;
     }
-    
+
     .nav-item:hover {
       color: #C5A028;
       background: rgba(212, 175, 55, 0.1);
       border-radius: 8px;
     }
-    
+
     /* Services menu item - always gold */
     .nav-item.has-dropdown .text-gold {
       color: #D4AF37 !important;
     }
-    
+
     .nav-item.has-dropdown:hover .text-gold {
       color: #C5A028 !important;
     }
-    
+
     /* Dropdown Styles */
     .nav-item.has-dropdown {
       display: flex;
       align-items: center;
       gap: 0.3rem;
     }
-    
+
     .nav-item.has-dropdown::after {
       content: '▾';
       font-size: 12px;
       transition: transform 0.3s ease;
     }
-    
+
     .nav-item.has-dropdown:hover::after {
       transform: rotate(180deg);
     }
-    
+
     .dropdown-menu {
       position: absolute;
       top: 100%;
@@ -164,13 +168,13 @@
       transition: all 0.3s ease;
       overflow: hidden;
     }
-    
+
     .nav-item.has-dropdown:hover .dropdown-menu {
       opacity: 1;
       visibility: visible;
       transform: translateY(0);
     }
-    
+
     .dropdown-item {
       display: block;
       padding: 1rem 1.5rem;
@@ -183,18 +187,18 @@
       transition: all 0.3s ease;
       border-left: 3px solid transparent;
     }
-    
+
     .dropdown-item:hover {
       background: linear-gradient(90deg, rgba(212, 175, 55, 0.15), rgba(244, 229, 161, 0.1));
       border-left-color: #D4AF37;
       padding-left: 2rem;
       color: #C5A028;
     }
-    
+
     .dropdown-item:not(:last-child) {
       border-bottom: 1px solid rgba(212, 175, 55, 0.1);
     }
-    
+
     /* Mobile Menu Toggle (Hidden on Desktop) */
     .mobile-toggle {
       display: none;
@@ -202,7 +206,7 @@
       gap: 5px;
       cursor: pointer;
     }
-    
+
     .mobile-toggle span {
       width: 25px;
       height: 3px;
@@ -210,7 +214,7 @@
       border-radius: 2px;
       transition: all 0.3s ease;
     }
-    
+
     /* Responsive */
     @media (max-width: 768px) {
       .main-nav {
@@ -225,15 +229,15 @@
         border-top: 1px solid rgba(212, 175, 55, 0.2);
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
       }
-      
+
       .main-nav.active {
         display: flex;
       }
-      
+
       .mobile-toggle {
         display: flex;
       }
-      
+
       .dropdown-menu {
         position: static;
         opacity: 1;
@@ -246,7 +250,7 @@
         background: rgba(212, 175, 55, 0.05);
       }
     }
-    
+
     /* Dynamic gradient background */
     #gradient-bg {
       position: fixed;
@@ -255,18 +259,16 @@
       width: 100%;
       height: 100vh;
       z-index: -1;
-      background: linear-gradient(
-        135deg,
-        #0A0A0F 0%,
-        #1A1A24 20%,
-        #2A2A35 40%,
-        #1A1A24 60%,
-        #0F0F15 80%,
-        #0A0A0F 100%
-      );
+      background: linear-gradient(135deg,
+          #0A0A0F 0%,
+          #1A1A24 20%,
+          #2A2A35 40%,
+          #1A1A24 60%,
+          #0F0F15 80%,
+          #0A0A0F 100%);
       transition: background 0.5s ease;
     }
-    
+
     /* Three.js canvas */
     #three-canvas {
       position: fixed;
@@ -277,12 +279,12 @@
       z-index: 0;
       pointer-events: none;
     }
-    
+
     #scroll-container {
       position: relative;
       z-index: 1;
     }
-    
+
     /* Glassmorphism */
     .glass {
       background: rgba(40, 40, 50, 0.5);
@@ -290,7 +292,7 @@
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(212, 175, 55, 0.3);
     }
-    
+
     .glass-strong {
       background: rgba(30, 30, 40, 0.85);
       backdrop-filter: blur(24px);
@@ -298,12 +300,16 @@
       border: 1px solid rgba(212, 175, 55, 0.4);
       box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.7);
     }
-    
+
     /* Hero animations */
-    .hero-badge, .hero-title, .hero-subtitle, .hero-cta, .scroll-indicator {
+    .hero-badge,
+    .hero-title,
+    .hero-subtitle,
+    .hero-cta,
+    .scroll-indicator {
       opacity: 0;
     }
-    
+
     /* Company cards */
     .company-card {
       opacity: 0;
@@ -311,7 +317,7 @@
       transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
     }
-    
+
     /* Background image container */
     .card-bg {
       position: absolute;
@@ -323,15 +329,15 @@
       z-index: 0;
       transition: opacity 0.3s ease;
     }
-    
+
     .company-card:hover .card-bg {
       opacity: 0.50;
     }
-    
+
     .company-card:hover {
       transform: translateY(-8px) scale(1.0) !important;
     }
-    
+
     /* Logo image styling */
     .company-logo {
       width: 56px;
@@ -340,15 +346,15 @@
       border-radius: 1rem;
       background: white;
       padding: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
-    
+
     /* Magnetic button effect */
     .magnetic-btn {
       position: relative;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    
+
     .magnetic-btn::before {
       content: '';
       position: absolute;
@@ -360,17 +366,26 @@
       z-index: -1;
       filter: blur(10px);
     }
-    
+
     .magnetic-btn:hover::before {
       opacity: 1;
     }
-    
+
     /* Scroll indicator animation */
     @keyframes bounce {
-      0%, 100% { transform: translateY(0); opacity: 0.7; }
-      50% { transform: translateY(10px); opacity: 1; }
+
+      0%,
+      100% {
+        transform: translateY(0);
+        opacity: 0.7;
+      }
+
+      50% {
+        transform: translateY(10px);
+        opacity: 1;
+      }
     }
-    
+
     /* Motion graphics */
     .visual-icon {
       width: 120px;
@@ -378,7 +393,7 @@
       opacity: 0;
       transform: scale(0.8);
     }
-    
+
     /* Gradient text */
     .gradient-text {
       background: linear-gradient(135deg, #F4E5A1 0%, #D4AF37 50%, #C5A028 100%);
@@ -386,29 +401,36 @@
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    
+
     /* Bright text for dark background */
-    h1, h2, h3, h4, h5, h6 {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
       color: #FFFFFF;
     }
-    
-    p, span, div {
+
+    p,
+    span,
+    div {
       color: #FFFFFF;
     }
-    
+
     .text-charcoal,
     .text-charcoal\/70,
     .text-charcoal\/60,
     .text-charcoal\/50 {
       color: #FFFFFF !important;
     }
-    
+
     /* Badges and labels */
     .glass span,
     .glass-strong span {
       color: #FFFFFF;
     }
-    
+
     /* Loading screen */
     .loader {
       position: fixed;
@@ -423,58 +445,64 @@
       z-index: 9999;
       transition: opacity 0.5s ease;
     }
-    
+
     .loader.hidden {
       opacity: 0;
       pointer-events: none;
     }
-    
+
     /* Shimmer effect */
     @keyframes shimmer {
-      0% { background-position: -1000px 0; }
-      100% { background-position: 1000px 0; }
+      0% {
+        background-position: -1000px 0;
+      }
+
+      100% {
+        background-position: 1000px 0;
+      }
     }
-    
+
     .shimmer {
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
       background-size: 1000px 100%;
       animation: shimmer 3s infinite;
     }
-    
+
     /* Scrollbar */
     ::-webkit-scrollbar {
       width: 8px;
     }
-    
+
     ::-webkit-scrollbar-track {
       background: rgba(255, 255, 255, 0.1);
     }
-    
+
     ::-webkit-scrollbar-thumb {
       background: rgba(200, 168, 233, 0.6);
       border-radius: 4px;
     }
-    
+
     ::-webkit-scrollbar-thumb:hover {
       background: rgba(200, 168, 233, 0.8);
     }
-    
+
     .section-header {
       opacity: 0;
     }
-    
+
     /* Portal System Styles */
     .auth-tab-btn.active {
       background: rgba(212, 175, 55, 0.2);
       color: #D4AF37;
     }
-    
+
     #bookingModal input[type="checkbox"],
     #authModal input[type="radio"] {
       accent-color: #D4AF37;
     }
   </style>
 </head>
+
 <body>
 
   <!-- Site Header -->
@@ -486,7 +514,7 @@
           <img src="./images/klassic-logo.svg" alt="Klassic Group of Companies" />
         </a>
       </div>
-      
+
       <!-- Navigation Menu -->
       <nav class="main-nav" id="mainNav">
         <a href="#hero" class="nav-item">Home</a>
@@ -509,13 +537,17 @@
         <a href="#footer" class="nav-item">Contact</a>
         <!-- User indicator shown when logged in -->
         <div id="userIndicator" class="hidden items-center gap-3">
-          <a href="#" onclick="window.goToDashboard(); return false;" class="text-sm text-gold font-semibold hover:underline" id="userIndicatorName">My Dashboard</a>
+          <a href="#" onclick="window.goToDashboard(); return false;"
+            class="text-sm text-gold font-semibold hover:underline" id="userIndicatorName">My Dashboard</a>
           <span class="text-gray-600">|</span>
-          <a href="#" onclick="window.logout(); return false;" class="text-sm text-gray-400 hover:text-white">Log Out</a>
+          <a href="#" onclick="window.logout(); return false;" class="text-sm text-gray-400 hover:text-white">Log
+            Out</a>
         </div>
-        <button onclick="window.handleBookNow()" id="bookNowBtn" class="nav-item bg-gold text-charcoal px-5 py-2 rounded-lg font-bold hover:opacity-90 transition-all shadow-md">Book Now</button>
+        <button onclick="window.handleBookNow()" id="bookNowBtn"
+          class="nav-item bg-gold text-charcoal px-5 py-2 rounded-lg font-bold hover:opacity-90 transition-all shadow-md">Book
+          Now</button>
       </nav>
-      
+
       <!-- Mobile Toggle -->
       <div class="mobile-toggle" id="mobileToggle">
         <span></span>
@@ -535,7 +567,7 @@
 
   <!-- Three.js Canvas -->
   <canvas id="three-canvas"></canvas>
-  
+
   <!-- Dynamic Gradient Background -->
   <div id="gradient-bg"></div>
 
@@ -545,35 +577,39 @@
     <!-- HERO SECTION -->
     <section id="hero" class="relative min-h-screen flex items-center justify-center px-6 py-20">
       <div class="max-w-6xl mx-auto text-center relative z-10">
-        
+
         <!-- Floating badge -->
         <div class="hero-badge mb-8">
-          <span class="glass inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold tracking-wider uppercase text-white">
+          <span
+            class="glass inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold tracking-wider uppercase text-white">
             <span class="w-2 h-2 rounded-full bg-gold animate-pulse"></span>
             Est. Corporate Ecosystem · Philippines
           </span>
         </div>
-        
+
         <!-- Hero Title -->
-        <h1 class="hero-title font-jakarta font-black leading-none mb-8" style="font-size: clamp(3rem, 8vw, 7rem); letter-spacing: -0.03em;">
-          Klassic Group<br/>
+        <h1 class="hero-title font-jakarta font-black leading-none mb-8"
+          style="font-size: clamp(3rem, 8vw, 7rem); letter-spacing: -0.03em;">
+          Klassic Group<br />
           <span class="gradient-text">of Companies</span>
         </h1>
-        
+
         <!-- Hero Subtitle -->
-        <p class="hero-subtitle font-inter text-lg md:text-xl text-white/90 leading-relaxed max-w-3xl mx-auto mb-12" style="font-weight: 300;">
-          Over the years, Klassic Group of Companies has dedicated its efforts and purpose to contributing to our nation's progress and to creating a better future for everyone.
+        <p class="hero-subtitle font-inter text-lg md:text-xl text-white/90 leading-relaxed max-w-3xl mx-auto mb-12"
+          style="font-weight: 300;">
+          Over the years, Klassic Group of Companies has dedicated its efforts and purpose to contributing to our
+          nation's progress and to creating a better future for everyone.
         </p>
-        
-        
-     
-        
+
+
+
+
         <!-- Scroll Indicator -->
         <div class="scroll-indicator absolute bottom-12 left-1/2 -translate-x-1/2">
           <div class="flex flex-col items-center gap-2">
             <span class="text-xs font-semibold tracking-widest uppercase text-white/70">Scroll</span>
             <svg class="w-6 h-6 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
           </div>
         </div>
@@ -584,14 +620,18 @@
     <section id="about" class="relative py-20 px-6">
       <div class="max-w-5xl mx-auto text-center">
         <div class="glass-strong rounded-3xl p-12">
-          <span class="glass inline-block px-4 py-2 rounded-full text-xs font-bold tracking-wider uppercase text-white mb-6">
+          <span
+            class="glass inline-block px-4 py-2 rounded-full text-xs font-bold tracking-wider uppercase text-white mb-6">
             About Us
           </span>
           <h2 class="font-jakarta font-black text-5xl md:text-6xl mb-6 gradient-text">
             Building Tomorrow Together
           </h2>
           <p class="text-white/90 text-lg leading-relaxed max-w-3xl mx-auto">
-            Over the years, Klassic Group of Companies has dedicated its efforts and purpose to contributing to our nation's progress and to creating a better future for everyone. Our diverse portfolio of companies spans technology, legal services, construction, marketing, and more, each committed to excellence and innovation in their respective fields.
+            Over the years, Klassic Group of Companies has dedicated its efforts and purpose to contributing to our
+            nation's progress and to creating a better future for everyone. Our diverse portfolio of companies spans
+            technology, legal services, construction, marketing, and more, each committed to excellence and innovation
+            in their respective fields.
           </p>
         </div>
       </div>
@@ -600,10 +640,11 @@
     <!-- SUBSIDIARIES SECTION -->
     <section id="companies" class="relative py-20 px-6">
       <div class="max-w-7xl mx-auto">
-        
+
         <!-- Section Header -->
         <div class="text-center mb-24 section-header">
-          <span class="glass inline-block px-4 py-2 rounded-full text-xs font-bold tracking-wider uppercase text-white mb-6">
+          <span
+            class="glass inline-block px-4 py-2 rounded-full text-xs font-bold tracking-wider uppercase text-white mb-6">
             Our Portfolio
           </span>
           <h2 class="font-jakarta font-black text-5xl md:text-6xl mb-6 gradient-text">
@@ -616,22 +657,24 @@
 
         <!-- Company Cards -->
         <div class="space-y-32">
-          
+
           <!-- Card 1: Brains Infinite Innovations Inc. -->
           <article id="company-1" class="company-card glass-strong rounded-3xl p-8 md:p-12 relative overflow-hidden">
             <!-- Background Image - CHANGE THIS URL -->
-            <div class="card-bg" style="background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&q=80');"></div>
-            
+            <div class="card-bg"
+              style="background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&q=80');">
+            </div>
+
             <div class="motion-graphic">
               <svg class="visual-icon absolute top-8 right-8" viewBox="0 0 120 120" fill="none">
-                <circle cx="60" cy="60" r="35" stroke="url(#grad1)" stroke-width="2" opacity="0.6"/>
-                <circle cx="60" cy="60" r="25" stroke="url(#grad1)" stroke-width="2" opacity="0.4"/>
-                <circle cx="60" cy="60" r="15" stroke="url(#grad1)" stroke-width="2" opacity="0.3"/>
-                <circle cx="60" cy="60" r="3" fill="url(#grad1)"/>
-                <circle cx="30" cy="40" r="2" fill="url(#grad1)"/>
-                <circle cx="90" cy="70" r="2" fill="url(#grad1)"/>
-                <line x1="60" y1="60" x2="30" y2="40" stroke="url(#grad1)" stroke-width="1" opacity="0.4"/>
-                <line x1="60" y1="60" x2="90" y2="70" stroke="url(#grad1)" stroke-width="1" opacity="0.4"/>
+                <circle cx="60" cy="60" r="35" stroke="url(#grad1)" stroke-width="2" opacity="0.6" />
+                <circle cx="60" cy="60" r="25" stroke="url(#grad1)" stroke-width="2" opacity="0.4" />
+                <circle cx="60" cy="60" r="15" stroke="url(#grad1)" stroke-width="2" opacity="0.3" />
+                <circle cx="60" cy="60" r="3" fill="url(#grad1)" />
+                <circle cx="30" cy="40" r="2" fill="url(#grad1)" />
+                <circle cx="90" cy="70" r="2" fill="url(#grad1)" />
+                <line x1="60" y1="60" x2="30" y2="40" stroke="url(#grad1)" stroke-width="1" opacity="0.4" />
+                <line x1="60" y1="60" x2="90" y2="70" stroke="url(#grad1)" stroke-width="1" opacity="0.4" />
                 <defs>
                   <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style="stop-color:#9B7FD4" />
@@ -643,29 +686,30 @@
             <div class="relative z-10">
               <div class="flex items-center gap-4 mb-6">
                 <!-- Logo Image - CHANGE THIS URL -->
-                <img src="./images/logos/brains.svg" 
-                     alt="Brains Infinite Logo" 
-                     class="company-logo"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <img src="./images/logos/brains.svg" alt="Brains Infinite Logo" class="company-logo"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <!-- Fallback number badge (hidden if logo loads) -->
-                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-black text-xl shadow-lg" style="display:none;">
+                <div
+                  class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-black text-xl shadow-lg"
+                  style="display:none;">
                   1
                 </div>
                 <div>
                   <h3 class="font-jakarta font-bold text-3xl text-charcoal">Brains Infinite Innovations Inc.</h3>
-                  <span class="text-xs font-semibold text-purple-600 uppercase tracking-wider">Innovation & Technology</span>
+                  <span class="text-xs font-semibold text-purple-600 uppercase tracking-wider">Innovation &
+                    Technology</span>
                 </div>
               </div>
               <p class="text-charcoal/70 leading-relaxed text-lg mb-8 max-w-3xl">
-                A group of competent professionals who are dedicated to creating reliable solutions to assist you, your company, and the whole of the nation's economy.
+                A group of competent professionals who are dedicated to creating reliable solutions to assist you, your
+                company, and the whole of the nation's economy.
               </p>
-              <a href="https://brains.asia" 
-                 target="_blank" 
-                 rel="noopener noreferrer"
-                 class="magnetic-btn inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold px-6 py-3 rounded-full shadow-lg group">
+              <a href="https://brains.asia" target="_blank" rel="noopener noreferrer"
+                class="magnetic-btn inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold px-6 py-3 rounded-full shadow-lg group">
                 <span>Visit Website</span>
-                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
             </div>
@@ -674,15 +718,17 @@
           <!-- Card 2: Klassic Solutions Inc. -->
           <article id="company-2" class="company-card glass-strong rounded-3xl p-8 md:p-12 relative overflow-hidden">
             <!-- Background Image - CHANGE THIS URL -->
-            <div class="card-bg" style="background-image: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&q=80');"></div>
-            
+            <div class="card-bg"
+              style="background-image: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&q=80');">
+            </div>
+
             <div class="motion-graphic">
               <svg class="visual-icon absolute top-8 right-8" viewBox="0 0 120 120" fill="none">
-                <circle cx="60" cy="35" r="12" stroke="url(#grad2)" stroke-width="2"/>
-                <circle cx="35" cy="75" r="10" stroke="url(#grad2)" stroke-width="2"/>
-                <circle cx="85" cy="75" r="10" stroke="url(#grad2)" stroke-width="2"/>
-                <line x1="60" y1="47" x2="40" y2="68" stroke="url(#grad2)" stroke-width="2"/>
-                <line x1="60" y1="47" x2="80" y2="68" stroke="url(#grad2)" stroke-width="2"/>
+                <circle cx="60" cy="35" r="12" stroke="url(#grad2)" stroke-width="2" />
+                <circle cx="35" cy="75" r="10" stroke="url(#grad2)" stroke-width="2" />
+                <circle cx="85" cy="75" r="10" stroke="url(#grad2)" stroke-width="2" />
+                <line x1="60" y1="47" x2="40" y2="68" stroke="url(#grad2)" stroke-width="2" />
+                <line x1="60" y1="47" x2="80" y2="68" stroke="url(#grad2)" stroke-width="2" />
                 <defs>
                   <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style="stop-color:#3B82F6" />
@@ -694,12 +740,12 @@
             <div class="relative z-10">
               <div class="flex items-center gap-4 mb-6">
                 <!-- Logo Image - CHANGE THIS URL -->
-                <img src="./images/logos/klassic-solutions.svg" 
-                     alt="Klassic Solutions Logo" 
-                     class="company-logo"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <img src="./images/logos/klassic-solutions.svg" alt="Klassic Solutions Logo" class="company-logo"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <!-- Fallback number badge -->
-                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-black text-xl shadow-lg" style="display:none;">
+                <div
+                  class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-black text-xl shadow-lg"
+                  style="display:none;">
                   2
                 </div>
                 <div>
@@ -708,32 +754,36 @@
                 </div>
               </div>
               <p class="text-charcoal/70 leading-relaxed text-lg mb-8 max-w-3xl">
-                A manpower services organization dedicated to providing creative solutions to companies across a wide spectrum of Philippine business.
+                A manpower services organization dedicated to providing creative solutions to companies across a wide
+                spectrum of Philippine business.
               </p>
-              <a href="http://connectorcore.com/Klassic-Solutions-PH-master/#contact" 
-                 target="_blank" 
-                 rel="noopener noreferrer"
-                 class="magnetic-btn inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold px-6 py-3 rounded-full shadow-lg group">
+              <a href="http://connectorcore.com/Klassic-Solutions-PH-master/#contact" target="_blank"
+                rel="noopener noreferrer"
+                class="magnetic-btn inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold px-6 py-3 rounded-full shadow-lg group">
                 <span>Visit Website</span>
-                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
             </div>
           </article>
 
           <!-- Card 3: Klassic Marketing Inc. -->
-          <article id="company-3" class="company-card bg-global glass-strong rounded-3xl p-8 md:p-12 relative overflow-hidden">
+          <article id="company-3"
+            class="company-card bg-global glass-strong rounded-3xl p-8 md:p-12 relative overflow-hidden">
             <!-- Background Image - CHANGE THIS URL -->
-            <div class="card-bg" style="background-image: url('https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1200&q=80');"></div>
-            
+            <div class="card-bg"
+              style="background-image: url('https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1200&q=80');">
+            </div>
+
             <div class="motion-graphic">
               <svg class="visual-icon absolute top-8 right-8" viewBox="0 0 120 120" fill="none">
-                <circle cx="60" cy="60" r="40" stroke="url(#grad3)" stroke-width="2" stroke-dasharray="4 4"/>
-                <circle cx="60" cy="60" r="30" fill="url(#grad3)" opacity="0.2"/>
-                <path d="M20 60 Q35 45, 60 60 T100 60" stroke="url(#grad3)" stroke-width="2" fill="none"/>
-                <path d="M60 20 Q75 35, 60 60 T60 100" stroke="url(#grad3)" stroke-width="2" fill="none"/>
-                <circle cx="60" cy="60" r="5" fill="url(#grad3)"/>
+                <circle cx="60" cy="60" r="40" stroke="url(#grad3)" stroke-width="2" stroke-dasharray="4 4" />
+                <circle cx="60" cy="60" r="30" fill="url(#grad3)" opacity="0.2" />
+                <path d="M20 60 Q35 45, 60 60 T100 60" stroke="url(#grad3)" stroke-width="2" fill="none" />
+                <path d="M60 20 Q75 35, 60 60 T60 100" stroke="url(#grad3)" stroke-width="2" fill="none" />
+                <circle cx="60" cy="60" r="5" fill="url(#grad3)" />
                 <defs>
                   <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style="stop-color:#10B981" />
@@ -745,45 +795,50 @@
             <div class="relative z-10">
               <div class="flex items-center gap-4 mb-6">
                 <!-- Logo Image - CHANGE THIS URL -->
-                <img src="./images/logos/klassic-marketing.svg" 
-                     alt="Klassic Marketing Logo" 
-                     class="company-logo"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <img src="./images/logos/klassic-marketing.svg" alt="Klassic Marketing Logo" class="company-logo"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <!-- Fallback number badge -->
-                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-black text-xl shadow-lg" style="display:none;">
+                <div
+                  class="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-black text-xl shadow-lg"
+                  style="display:none;">
                   3
                 </div>
                 <div>
                   <h3 class="font-jakarta font-bold text-3xl text-charcoal">Klassic Marketing Inc.</h3>
-                  <span class="text-xs font-semibold text-green-600 uppercase tracking-wider">Global Trade & Marketing</span>
+                  <span class="text-xs font-semibold text-green-600 uppercase tracking-wider">Global Trade &
+                    Marketing</span>
                 </div>
               </div>
               <p class="text-charcoal/70 leading-relaxed text-lg mb-8 max-w-3xl">
-                Formed to serve as an avenue for enterprises having global market access in importation and trading while processing transactions through Portress.
+                Formed to serve as an avenue for enterprises having global market access in importation and trading
+                while processing transactions through Portress.
               </p>
-              <a href="http://connectorcore.com/Klassic-Marketing-Inc-Website-master/" 
-                 target="_blank" 
-                 rel="noopener noreferrer"
-                 class="magnetic-btn inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold px-6 py-3 rounded-full shadow-lg group">
+              <a href="http://connectorcore.com/Klassic-Marketing-Inc-Website-master/" target="_blank"
+                rel="noopener noreferrer"
+                class="magnetic-btn inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold px-6 py-3 rounded-full shadow-lg group">
                 <span>Visit Website</span>
-                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
             </div>
           </article>
 
           <!-- Card 4: Westwood Development Corp. -->
-          <article id="company-4" class="company-card bg-construction glass-strong rounded-3xl p-8 md:p-12 relative overflow-hidden">
+          <article id="company-4"
+            class="company-card bg-construction glass-strong rounded-3xl p-8 md:p-12 relative overflow-hidden">
             <!-- Background Image - CHANGE THIS URL -->
-            <div class="card-bg" style="background-image: url('https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1200&q=80');"></div>
-            
+            <div class="card-bg"
+              style="background-image: url('https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1200&q=80');">
+            </div>
+
             <div class="motion-graphic">
               <svg class="visual-icon absolute top-8 right-8" viewBox="0 0 120 120" fill="none">
-                <rect x="30" y="70" width="20" height="40" stroke="url(#grad4)" stroke-width="2"/>
-                <rect x="55" y="50" width="20" height="60" stroke="url(#grad4)" stroke-width="2"/>
-                <rect x="80" y="60" width="20" height="50" stroke="url(#grad4)" stroke-width="2"/>
-                <path d="M20 110 L110 110" stroke="url(#grad4)" stroke-width="2"/>
+                <rect x="30" y="70" width="20" height="40" stroke="url(#grad4)" stroke-width="2" />
+                <rect x="55" y="50" width="20" height="60" stroke="url(#grad4)" stroke-width="2" />
+                <rect x="80" y="60" width="20" height="50" stroke="url(#grad4)" stroke-width="2" />
+                <path d="M20 110 L110 110" stroke="url(#grad4)" stroke-width="2" />
                 <defs>
                   <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style="stop-color:#F97316" />
@@ -795,45 +850,50 @@
             <div class="relative z-10">
               <div class="flex items-center gap-4 mb-6">
                 <!-- Logo Image - CHANGE THIS URL -->
-                <img src="./images/logos/westwood-dev.svg" 
-                     alt="Westwood Development Logo" 
-                     class="company-logo"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <img src="./images/logos/westwood-dev.svg" alt="Westwood Development Logo" class="company-logo"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <!-- Fallback number badge -->
-                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white font-black text-xl shadow-lg" style="display:none;">
+                <div
+                  class="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white font-black text-xl shadow-lg"
+                  style="display:none;">
                   4
                 </div>
                 <div>
                   <h3 class="font-jakarta font-bold text-3xl text-charcoal">Westwood Development Corp.</h3>
-                  <span class="text-xs font-semibold text-orange-600 uppercase tracking-wider">Construction & Development</span>
+                  <span class="text-xs font-semibold text-orange-600 uppercase tracking-wider">Construction &
+                    Development</span>
                 </div>
               </div>
               <p class="text-charcoal/70 leading-relaxed text-lg mb-8 max-w-3xl">
-                Driven by a group of individuals who are passionate about changing traditional methodologies in the construction and development industry.
+                Driven by a group of individuals who are passionate about changing traditional methodologies in the
+                construction and development industry.
               </p>
-              <a href="http://connectorcore.com/Westwood-Development-Corp-Website-master/" 
-                 target="_blank" 
-                 rel="noopener noreferrer"
-                 class="magnetic-btn inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold px-6 py-3 rounded-full shadow-lg group">
+              <a href="http://connectorcore.com/Westwood-Development-Corp-Website-master/" target="_blank"
+                rel="noopener noreferrer"
+                class="magnetic-btn inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold px-6 py-3 rounded-full shadow-lg group">
                 <span>Visit Website</span>
-                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
             </div>
           </article>
 
           <!-- Card 5: Westwood Law -->
-          <article id="company-5" class="company-card bg-law glass-strong rounded-3xl p-8 md:p-12 relative overflow-hidden">
+          <article id="company-5"
+            class="company-card bg-law glass-strong rounded-3xl p-8 md:p-12 relative overflow-hidden">
             <!-- Background Image - CHANGE THIS URL -->
-            <div class="card-bg" style="background-image: url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1200&q=80');"></div>
-            
+            <div class="card-bg"
+              style="background-image: url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1200&q=80');">
+            </div>
+
             <div class="motion-graphic">
               <svg class="visual-icon absolute top-8 right-8" viewBox="0 0 120 120" fill="none">
-                <path d="M40 30 L60 80 L80 30" stroke="url(#grad5)" stroke-width="2" fill="none"/>
-                <circle cx="60" cy="55" r="8" stroke="url(#grad5)" stroke-width="2"/>
-                <rect x="50" y="80" width="20" height="30" stroke="url(#grad5)" stroke-width="2"/>
-                <path d="M30 110 L90 110" stroke="url(#grad5)" stroke-width="3"/>
+                <path d="M40 30 L60 80 L80 30" stroke="url(#grad5)" stroke-width="2" fill="none" />
+                <circle cx="60" cy="55" r="8" stroke="url(#grad5)" stroke-width="2" />
+                <rect x="50" y="80" width="20" height="30" stroke="url(#grad5)" stroke-width="2" />
+                <path d="M30 110 L90 110" stroke="url(#grad5)" stroke-width="3" />
                 <defs>
                   <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style="stop-color:#6366F1" />
@@ -845,12 +905,12 @@
             <div class="relative z-10">
               <div class="flex items-center gap-4 mb-6">
                 <!-- Logo Image - CHANGE THIS URL -->
-                <img src="./images/logos/westwood-law.svg" 
-                     alt="Westwood Law Logo" 
-                     class="company-logo"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <img src="./images/logos/westwood-law.svg" alt="Westwood Law Logo" class="company-logo"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <!-- Fallback number badge -->
-                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-black text-xl shadow-lg" style="display:none;">
+                <div
+                  class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-black text-xl shadow-lg"
+                  style="display:none;">
                   5
                 </div>
                 <div>
@@ -859,33 +919,38 @@
                 </div>
               </div>
               <p class="text-charcoal/70 leading-relaxed text-lg mb-8 max-w-3xl">
-                A law firm dealing with the specialized practice of law to ensure that all cases are handled by domain experts in the field of law.
+                A law firm dealing with the specialized practice of law to ensure that all cases are handled by domain
+                experts in the field of law.
               </p>
-              <a href="http://connectorcore.com/Westwood-Law-Firm-Website-master/" 
-                 target="_blank" 
-                 rel="noopener noreferrer"
-                 class="magnetic-btn inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold px-6 py-3 rounded-full shadow-lg group">
+              <a href="http://connectorcore.com/Westwood-Law-Firm-Website-master/" target="_blank"
+                rel="noopener noreferrer"
+                class="magnetic-btn inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold px-6 py-3 rounded-full shadow-lg group">
                 <span>Visit Website</span>
-                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
             </div>
           </article>
 
           <!-- Card 6: Connector -->
-          <article id="company-6" class="company-card bg-software glass-strong rounded-3xl p-8 md:p-12 relative overflow-hidden">
+          <article id="company-6"
+            class="company-card bg-software glass-strong rounded-3xl p-8 md:p-12 relative overflow-hidden">
             <!-- Background Image - CHANGE THIS URL -->
-            <div class="card-bg" style="background-image: url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80');"></div>
-            
+            <div class="card-bg"
+              style="background-image: url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80');">
+            </div>
+
             <div class="motion-graphic">
               <svg class="visual-icon absolute top-8 right-8" viewBox="0 0 120 120" fill="none">
-                <rect x="20" y="30" width="25" height="25" rx="4" stroke="url(#grad6)" stroke-width="2"/>
-                <rect x="75" y="30" width="25" height="25" rx="4" stroke="url(#grad6)" stroke-width="2"/>
-                <rect x="20" y="75" width="25" height="25" rx="4" stroke="url(#grad6)" stroke-width="2"/>
-                <rect x="75" y="75" width="25" height="25" rx="4" stroke="url(#grad6)" stroke-width="2"/>
-                <rect x="47" y="52" width="25" height="25" rx="4" fill="url(#grad6)" opacity="0.3"/>
-                <path d="M45 42.5 L52 52.5 M75 42.5 L68 52.5 M45 87.5 L52 77.5 M75 87.5 L68 77.5" stroke="url(#grad6)" stroke-width="2"/>
+                <rect x="20" y="30" width="25" height="25" rx="4" stroke="url(#grad6)" stroke-width="2" />
+                <rect x="75" y="30" width="25" height="25" rx="4" stroke="url(#grad6)" stroke-width="2" />
+                <rect x="20" y="75" width="25" height="25" rx="4" stroke="url(#grad6)" stroke-width="2" />
+                <rect x="75" y="75" width="25" height="25" rx="4" stroke="url(#grad6)" stroke-width="2" />
+                <rect x="47" y="52" width="25" height="25" rx="4" fill="url(#grad6)" opacity="0.3" />
+                <path d="M45 42.5 L52 52.5 M75 42.5 L68 52.5 M45 87.5 L52 77.5 M75 87.5 L68 77.5" stroke="url(#grad6)"
+                  stroke-width="2" />
                 <defs>
                   <linearGradient id="grad6" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style="stop-color:#14B8A6" />
@@ -897,45 +962,52 @@
             <div class="relative z-10">
               <div class="flex items-center gap-4 mb-6">
                 <!-- Logo Image - CHANGE THIS URL -->
-                <img src="./images/logos/connector.svg" 
-                     alt="Connector Logo" 
-                     class="company-logo"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <img src="./images/logos/connector.svg" alt="Connector Logo" class="company-logo"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <!-- Fallback number badge -->
-                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500 to-green-500 flex items-center justify-center text-white font-black text-xl shadow-lg" style="display:none;">
+                <div
+                  class="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500 to-green-500 flex items-center justify-center text-white font-black text-xl shadow-lg"
+                  style="display:none;">
                   6
                 </div>
                 <div>
                   <h3 class="font-jakarta font-bold text-3xl text-charcoal">Connector</h3>
-                  <span class="text-xs font-semibold text-teal-600 uppercase tracking-wider">Business Integration Software</span>
+                  <span class="text-xs font-semibold text-teal-600 uppercase tracking-wider">Business Integration
+                    Software</span>
                 </div>
               </div>
               <p class="text-charcoal/70 leading-relaxed text-lg mb-8 max-w-3xl">
-                A modular software system designed to integrate the main functional areas of an organization's business processes into a unified system.
+                A modular software system designed to integrate the main functional areas of an organization's business
+                processes into a unified system.
               </p>
-              <a href="http://connectorcore.com/Connector-Website-master/" 
-                 target="_blank" 
-                 rel="noopener noreferrer"
-                 class="magnetic-btn inline-flex items-center gap-2 bg-gradient-to-r from-teal-500 to-green-500 text-white font-semibold px-6 py-3 rounded-full shadow-lg group">
+              <a href="http://connectorcore.com/Connector-Website-master/" target="_blank" rel="noopener noreferrer"
+                class="magnetic-btn inline-flex items-center gap-2 bg-gradient-to-r from-teal-500 to-green-500 text-white font-semibold px-6 py-3 rounded-full shadow-lg group">
                 <span>Visit Website</span>
-                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
             </div>
           </article>
 
           <!-- Card 7: The Green Oasis -->
-          <article id="company-7" class="company-card bg-landscape glass-strong rounded-3xl p-8 md:p-12 relative overflow-hidden">
+          <article id="company-7"
+            class="company-card bg-landscape glass-strong rounded-3xl p-8 md:p-12 relative overflow-hidden">
             <!-- Background Image - CHANGE THIS URL -->
-            <div class="card-bg" style="background-image: url('https://images.unsplash.com/photo-1558904541-efa843a96f01?w=1200&q=80');"></div>
-            
+            <div class="card-bg"
+              style="background-image: url('https://images.unsplash.com/photo-1558904541-efa843a96f01?w=1200&q=80');">
+            </div>
+
             <div class="motion-graphic">
               <svg class="visual-icon absolute top-8 right-8" viewBox="0 0 120 120" fill="none">
-                <path d="M60 90 Q50 70, 55 50 Q60 30, 65 50 Q70 70, 60 90 Z" stroke="url(#grad7)" stroke-width="2" fill="url(#grad7)" opacity="0.2"/>
-                <path d="M40 90 Q35 75, 38 60 Q40 45, 42 60 Q45 75, 40 90 Z" stroke="url(#grad7)" stroke-width="2" fill="url(#grad7)" opacity="0.2"/>
-                <path d="M80 90 Q75 75, 78 60 Q80 45, 82 60 Q85 75, 80 90 Z" stroke="url(#grad7)" stroke-width="2" fill="url(#grad7)" opacity="0.2"/>
-                <path d="M20 95 Q60 85, 100 95" stroke="url(#grad7)" stroke-width="2" fill="none"/>
+                <path d="M60 90 Q50 70, 55 50 Q60 30, 65 50 Q70 70, 60 90 Z" stroke="url(#grad7)" stroke-width="2"
+                  fill="url(#grad7)" opacity="0.2" />
+                <path d="M40 90 Q35 75, 38 60 Q40 45, 42 60 Q45 75, 40 90 Z" stroke="url(#grad7)" stroke-width="2"
+                  fill="url(#grad7)" opacity="0.2" />
+                <path d="M80 90 Q75 75, 78 60 Q80 45, 82 60 Q85 75, 80 90 Z" stroke="url(#grad7)" stroke-width="2"
+                  fill="url(#grad7)" opacity="0.2" />
+                <path d="M20 95 Q60 85, 100 95" stroke="url(#grad7)" stroke-width="2" fill="none" />
                 <defs>
                   <linearGradient id="grad7" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style="stop-color:#84CC16" />
@@ -947,12 +1019,12 @@
             <div class="relative z-10">
               <div class="flex items-center gap-4 mb-6">
                 <!-- Logo Image - CHANGE THIS URL -->
-                <img src="./images/logos/green-oasis.svg" 
-                     alt="The Green Oasis Logo" 
-                     class="company-logo"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <img src="./images/logos/green-oasis.svg" alt="The Green Oasis Logo" class="company-logo"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <!-- Fallback number badge -->
-                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-lime-500 to-green-600 flex items-center justify-center text-white font-black text-xl shadow-lg" style="display:none;">
+                <div
+                  class="w-14 h-14 rounded-2xl bg-gradient-to-br from-lime-500 to-green-600 flex items-center justify-center text-white font-black text-xl shadow-lg"
+                  style="display:none;">
                   7
                 </div>
                 <div>
@@ -961,41 +1033,45 @@
                 </div>
               </div>
               <p class="text-charcoal/70 leading-relaxed text-lg mb-8 max-w-3xl">
-                Professional landscape and design specialists dedicated to providing high-quality landscape services; designing attractive spaces and maintaining their functionality and beauty.
+                Professional landscape and design specialists dedicated to providing high-quality landscape services;
+                designing attractive spaces and maintaining their functionality and beauty.
               </p>
-              <a href="http://connectorcore.com/The-Green-Oasis-Website-master" 
-                 target="_blank" 
-                 rel="noopener noreferrer"
-                 class="magnetic-btn inline-flex items-center gap-2 bg-gradient-to-r from-lime-500 to-green-600 text-white font-semibold px-6 py-3 rounded-full shadow-lg group">
+              <a href="http://connectorcore.com/The-Green-Oasis-Website-master" target="_blank"
+                rel="noopener noreferrer"
+                class="magnetic-btn inline-flex items-center gap-2 bg-gradient-to-r from-lime-500 to-green-600 text-white font-semibold px-6 py-3 rounded-full shadow-lg group">
                 <span>Visit Website</span>
-                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
             </div>
           </article>
 
           <!-- Card 8: Luxurious Cleaning Co. -->
-          <article id="company-8" class="company-card bg-cleaning glass-strong rounded-3xl p-8 md:p-12 relative overflow-hidden shimmer">
+          <article id="company-8"
+            class="company-card bg-cleaning glass-strong rounded-3xl p-8 md:p-12 relative overflow-hidden shimmer">
             <!-- Background Image - CHANGE THIS URL -->
-            <div class="card-bg" style="background-image: url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=80');"></div>
-            
+            <div class="card-bg"
+              style="background-image: url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=80');">
+            </div>
+
             <div class="motion-graphic">
               <svg class="visual-icon absolute top-8 right-8" viewBox="0 0 120 120" fill="none">
                 <circle cx="30" cy="30" r="3" fill="url(#grad8)">
-                  <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/>
+                  <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite" />
                 </circle>
                 <circle cx="60" cy="40" r="2" fill="url(#grad8)">
-                  <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite"/>
+                  <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite" />
                 </circle>
                 <circle cx="85" cy="35" r="2.5" fill="url(#grad8)">
-                  <animate attributeName="opacity" values="0.4;1;0.4" dur="1.8s" repeatCount="indefinite"/>
+                  <animate attributeName="opacity" values="0.4;1;0.4" dur="1.8s" repeatCount="indefinite" />
                 </circle>
                 <circle cx="45" cy="65" r="3" fill="url(#grad8)">
-                  <animate attributeName="opacity" values="0.6;1;0.6" dur="2.2s" repeatCount="indefinite"/>
+                  <animate attributeName="opacity" values="0.6;1;0.6" dur="2.2s" repeatCount="indefinite" />
                 </circle>
                 <circle cx="75" cy="75" r="2" fill="url(#grad8)">
-                  <animate attributeName="opacity" values="0.3;1;0.3" dur="1.6s" repeatCount="indefinite"/>
+                  <animate attributeName="opacity" values="0.3;1;0.3" dur="1.6s" repeatCount="indefinite" />
                 </circle>
                 <defs>
                   <linearGradient id="grad8" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -1008,46 +1084,51 @@
             <div class="relative z-10">
               <div class="flex items-center gap-4 mb-6">
                 <!-- Logo Image - CHANGE THIS URL -->
-                <img src="./images/logos/luxurious-cleaning.svg" 
-                     alt="Luxurious Cleaning Logo" 
-                     class="company-logo"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <img src="./images/logos/luxurious-cleaning.svg" alt="Luxurious Cleaning Logo" class="company-logo"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <!-- Fallback number badge -->
-                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center text-white font-black text-xl shadow-lg" style="display:none;">
+                <div
+                  class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center text-white font-black text-xl shadow-lg"
+                  style="display:none;">
                   8
                 </div>
                 <div>
                   <h3 class="font-jakarta font-bold text-3xl text-charcoal">Luxurious Cleaning Co.</h3>
-                  <span class="text-xs font-semibold text-sky-600 uppercase tracking-wider">Professional Cleaning Services</span>
+                  <span class="text-xs font-semibold text-sky-600 uppercase tracking-wider">Professional Cleaning
+                    Services</span>
                 </div>
               </div>
               <p class="text-charcoal/70 leading-relaxed text-lg mb-8 max-w-3xl">
-                Introduced in the cleaning industry in September 2019. Trusted by a strong pool of clients for high-standard professional commercial and residential cleaning.
+                Introduced in the cleaning industry in September 2019. Trusted by a strong pool of clients for
+                high-standard professional commercial and residential cleaning.
               </p>
-              <a href="http://connectorcore.com/Luxurious-Cleaning-Website-master/" 
-                 target="_blank" 
-                 rel="noopener noreferrer"
-                 class="magnetic-btn inline-flex items-center gap-2 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-semibold px-6 py-3 rounded-full shadow-lg group">
+              <a href="http://connectorcore.com/Luxurious-Cleaning-Website-master/" target="_blank"
+                rel="noopener noreferrer"
+                class="magnetic-btn inline-flex items-center gap-2 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-semibold px-6 py-3 rounded-full shadow-lg group">
                 <span>Visit Website</span>
-                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
             </div>
           </article>
 
           <!-- Card 9: HYT Foundation Inc. -->
-          <article id="company-9" class="company-card bg-education glass-strong rounded-3xl p-8 md:p-12 relative overflow-hidden">
+          <article id="company-9"
+            class="company-card bg-education glass-strong rounded-3xl p-8 md:p-12 relative overflow-hidden">
             <!-- Background Image - CHANGE THIS URL -->
-            <div class="card-bg" style="background-image: url('https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1200&q=80');"></div>
-            
+            <div class="card-bg"
+              style="background-image: url('https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1200&q=80');">
+            </div>
+
             <div class="motion-graphic">
               <svg class="visual-icon absolute top-8 right-8" viewBox="0 0 120 120" fill="none">
-                <rect x="35" y="80" width="15" height="30" stroke="url(#grad9)" stroke-width="2"/>
-                <rect x="52" y="65" width="15" height="45" stroke="url(#grad9)" stroke-width="2"/>
-                <rect x="69" y="50" width="15" height="60" stroke="url(#grad9)" stroke-width="2"/>
-                <path d="M30 35 L60 10 L90 35" stroke="url(#grad9)" stroke-width="2" fill="none"/>
-                <circle cx="60" cy="25" r="5" fill="url(#grad9)"/>
+                <rect x="35" y="80" width="15" height="30" stroke="url(#grad9)" stroke-width="2" />
+                <rect x="52" y="65" width="15" height="45" stroke="url(#grad9)" stroke-width="2" />
+                <rect x="69" y="50" width="15" height="60" stroke="url(#grad9)" stroke-width="2" />
+                <path d="M30 35 L60 10 L90 35" stroke="url(#grad9)" stroke-width="2" fill="none" />
+                <circle cx="60" cy="25" r="5" fill="url(#grad9)" />
                 <defs>
                   <linearGradient id="grad9" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style="stop-color:#F43F5E" />
@@ -1059,44 +1140,51 @@
             <div class="relative z-10">
               <div class="flex items-center gap-4 mb-6">
                 <!-- Logo Image - CHANGE THIS URL -->
-                <img src="./images/logos/hyt-foundation.svg" 
-                     alt="HYT Foundation Logo" 
-                     class="company-logo"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <img src="./images/logos/hyt-foundation.svg" alt="HYT Foundation Logo" class="company-logo"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <!-- Fallback number badge -->
-                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-white font-black text-xl shadow-lg" style="display:none;">
+                <div
+                  class="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-white font-black text-xl shadow-lg"
+                  style="display:none;">
                   9
                 </div>
                 <div>
                   <h3 class="font-jakarta font-bold text-3xl text-charcoal">HYT Foundation Inc.</h3>
-                  <span class="text-xs font-semibold text-rose-600 uppercase tracking-wider">Youth Development Foundation</span>
+                  <span class="text-xs font-semibold text-rose-600 uppercase tracking-wider">Youth Development
+                    Foundation</span>
                 </div>
               </div>
               <p class="text-charcoal/70 leading-relaxed text-lg mb-8 max-w-3xl">
-                A foundation for future generation leaders in which we support to enlighten and hone the youth in acquiring an adept set of business skills.
+                A foundation for future generation leaders in which we support to enlighten and hone the youth in
+                acquiring an adept set of business skills.
               </p>
-              <a href="http://connectorcore.com/HYT-Foundation-Inc-Website-master/" 
-                 target="_blank" 
-                 rel="noopener noreferrer"
-                 class="magnetic-btn inline-flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white font-semibold px-6 py-3 rounded-full shadow-lg group">
+              <a href="http://connectorcore.com/HYT-Foundation-Inc-Website-master/" target="_blank"
+                rel="noopener noreferrer"
+                class="magnetic-btn inline-flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white font-semibold px-6 py-3 rounded-full shadow-lg group">
                 <span>Visit Website</span>
-                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
             </div>
           </article>
 
           <!-- Card 10: The Finest Fit -->
-          <article id="company-10" class="company-card bg-uniform glass-strong rounded-3xl p-8 md:p-12 relative overflow-hidden">
+          <article id="company-10"
+            class="company-card bg-uniform glass-strong rounded-3xl p-8 md:p-12 relative overflow-hidden">
             <!-- Background Image - CHANGE THIS URL -->
-            <div class="card-bg" style="background-image: url('https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=1200&q=80');"></div>
-            
+            <div class="card-bg"
+              style="background-image: url('https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=1200&q=80');">
+            </div>
+
             <div class="motion-graphic">
               <svg class="visual-icon absolute top-8 right-8" viewBox="0 0 120 120" fill="none">
-                <path d="M40 30 L80 30 L90 50 L80 110 L40 110 L30 50 Z" stroke="url(#grad10)" stroke-width="2" fill="none"/>
-                <path d="M40 50 L80 50 M42 70 L78 70 M44 90 L76 90" stroke="url(#grad10)" stroke-width="1" opacity="0.5"/>
-                <circle cx="60" cy="40" r="3" fill="url(#grad10)"/>
+                <path d="M40 30 L80 30 L90 50 L80 110 L40 110 L30 50 Z" stroke="url(#grad10)" stroke-width="2"
+                  fill="none" />
+                <path d="M40 50 L80 50 M42 70 L78 70 M44 90 L76 90" stroke="url(#grad10)" stroke-width="1"
+                  opacity="0.5" />
+                <circle cx="60" cy="40" r="3" fill="url(#grad10)" />
                 <defs>
                   <linearGradient id="grad10" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style="stop-color:#F59E0B" />
@@ -1108,29 +1196,31 @@
             <div class="relative z-10">
               <div class="flex items-center gap-4 mb-6">
                 <!-- Logo Image - CHANGE THIS URL -->
-                <img src="./images/logos/finest-fit.svg" 
-                     alt="The Finest Fit Logo" 
-                     class="company-logo"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <img src="./images/logos/finest-fit.svg" alt="The Finest Fit Logo" class="company-logo"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <!-- Fallback number badge -->
-                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-black text-xl shadow-lg" style="display:none;">
+                <div
+                  class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-black text-xl shadow-lg"
+                  style="display:none;">
                   10
                 </div>
                 <div>
                   <h3 class="font-jakarta font-bold text-3xl text-charcoal">The Finest Fit</h3>
-                  <span class="text-xs font-semibold text-amber-600 uppercase tracking-wider">Uniform Manufacturing</span>
+                  <span class="text-xs font-semibold text-amber-600 uppercase tracking-wider">Uniform
+                    Manufacturing</span>
                 </div>
               </div>
               <p class="text-charcoal/70 leading-relaxed text-lg mb-8 max-w-3xl">
-                Strives to deliver high-quality uniforms that leave a great impression on our customers and establish ourselves as the best uniform company in the Philippines.
+                Strives to deliver high-quality uniforms that leave a great impression on our customers and establish
+                ourselves as the best uniform company in the Philippines.
               </p>
-              <a href="http://connectorcore.com/The-Finest-Fit-Website-master/" 
-                 target="_blank" 
-                 rel="noopener noreferrer"
-                 class="magnetic-btn inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold px-6 py-3 rounded-full shadow-lg group">
+              <a href="http://connectorcore.com/The-Finest-Fit-Website-master/" target="_blank"
+                rel="noopener noreferrer"
+                class="magnetic-btn inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold px-6 py-3 rounded-full shadow-lg group">
                 <span>Visit Website</span>
-                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
             </div>
@@ -1142,15 +1232,17 @@
 
     <!-- BOOKING MODAL -->
     <div id="bookingModal" class="hidden fixed inset-0 bg-black/90 z-[9999] items-center justify-center p-4">
-      <div class="bg-[#1E1E1E] rounded-2xl w-full max-w-2xl border border-gold/20 shadow-2xl max-h-[90vh] overflow-y-auto">
-        <div class="sticky top-0 bg-[#1E1E1E] flex justify-between items-center px-6 py-4 border-b border-gray-700 z-10">
+      <div
+        class="bg-[#1E1E1E] rounded-2xl w-full max-w-2xl border border-gold/20 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div
+          class="sticky top-0 bg-[#1E1E1E] flex justify-between items-center px-6 py-4 border-b border-gray-700 z-10">
           <div>
             <h2 class="text-xl font-bold text-gold">Book KGC Services</h2>
             <p class="text-gray-400 text-sm" id="bookingSubtitle">Select the subsidiaries you need</p>
           </div>
           <button onclick="window.closeModal('bookingModal')" class="text-gray-500 hover:text-white">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
@@ -1161,39 +1253,49 @@
           <div id="bookingStep1">
             <p class="text-gray-400 text-sm mb-4">Select one or more KGC subsidiaries:</p>
             <div class="space-y-2 mb-6">
-              <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
-                <input type="checkbox" name="subsidiary" value="Brains Infinite Innovations" class="w-4 h-4 flex-shrink-0">
+              <label
+                class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
+                <input type="checkbox" name="subsidiary" value="Brains Infinite Innovations"
+                  class="w-4 h-4 flex-shrink-0">
                 <span class="text-white text-sm">Brains Infinite Innovations Inc.</span>
               </label>
-              <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
+              <label
+                class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
                 <input type="checkbox" name="subsidiary" value="Klassic Solutions" class="w-4 h-4 flex-shrink-0">
                 <span class="text-white text-sm">Klassic Solutions Inc.</span>
               </label>
-              <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
+              <label
+                class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
                 <input type="checkbox" name="subsidiary" value="Klassic Marketing" class="w-4 h-4 flex-shrink-0">
                 <span class="text-white text-sm">Klassic Marketing Inc.</span>
               </label>
-              <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
+              <label
+                class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
                 <input type="checkbox" name="subsidiary" value="Westwood Development" class="w-4 h-4 flex-shrink-0">
                 <span class="text-white text-sm">Westwood Development Corp.</span>
               </label>
-              <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
+              <label
+                class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
                 <input type="checkbox" name="subsidiary" value="Westwood Law" class="w-4 h-4 flex-shrink-0">
                 <span class="text-white text-sm">Westwood Law</span>
               </label>
-              <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
+              <label
+                class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
                 <input type="checkbox" name="subsidiary" value="Connector" class="w-4 h-4 flex-shrink-0">
                 <span class="text-white text-sm">Connector (Business Integration Software)</span>
               </label>
-              <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
+              <label
+                class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
                 <input type="checkbox" name="subsidiary" value="Landscape Design" class="w-4 h-4 flex-shrink-0">
                 <span class="text-white text-sm">Landscape Design (The Green Oasis)</span>
               </label>
-              <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
+              <label
+                class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
                 <input type="checkbox" name="subsidiary" value="Luxurious Cleaning Co." class="w-4 h-4 flex-shrink-0">
                 <span class="text-white text-sm">Luxurious Cleaning Co.</span>
               </label>
-              <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
+              <label
+                class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
                 <input type="checkbox" name="subsidiary" value="HYT Foundation" class="w-4 h-4 flex-shrink-0">
                 <span class="text-white text-sm">HYT Foundation Inc.</span>
               </label>
@@ -1235,11 +1337,13 @@
                 <textarea name="notes" rows="3" placeholder="Describe your project or requirements..."
                   class="w-full px-4 py-3 bg-[#121212] border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-gold resize-none"></textarea>
               </div>
-              <label class="flex items-start gap-3 p-4 bg-[#121212] border border-gold/20 rounded-lg cursor-pointer hover:border-gold/40 transition-all">
+              <label
+                class="flex items-start gap-3 p-4 bg-[#121212] border border-gold/20 rounded-lg cursor-pointer hover:border-gold/40 transition-all">
                 <input type="checkbox" name="hytDonation" class="mt-0.5 w-4 h-4 flex-shrink-0">
                 <div>
                   <span class="text-white text-sm font-semibold">Donate 1% to HYT Foundation Inc.</span>
-                  <p class="text-gray-400 text-xs mt-0.5">Support future generation leaders — at no extra cost to you.</p>
+                  <p class="text-gray-400 text-xs mt-0.5">Support future generation leaders — at no extra cost to you.
+                  </p>
                 </div>
               </label>
             </div>
@@ -1271,7 +1375,7 @@
           </div>
           <button onclick="window.closeModal('authModal')" class="text-gray-500 hover:text-white ml-4 flex-shrink-0">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
@@ -1375,17 +1479,20 @@
         <div class="bg-dark-gray rounded-xl p-6 mb-8 border border-gold/20">
           <div class="flex justify-between items-center">
             <div>
-              <h2 class="text-3xl font-bold text-white">Welcome, <span class="text-gold" id="clientName">Client</span>!</h2>
+              <h2 class="text-3xl font-bold text-white">Welcome, <span class="text-gold" id="clientName">Client</span>!
+              </h2>
               <p class="text-gray-400">Your KGC Client Portal</p>
             </div>
-            <button onclick="window.logout()" class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg">
+            <button onclick="window.logout()"
+              class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg">
               Log Out
             </button>
           </div>
         </div>
-        
+
         <div class="grid md:grid-cols-3 gap-6 mb-8">
-          <button onclick="window.openBookingModal()" class="bg-dark-gray p-6 rounded-xl border border-gold/20 text-left hover:bg-gray-800">
+          <button onclick="window.openBookingModal()"
+            class="bg-dark-gray p-6 rounded-xl border border-gold/20 text-left hover:bg-gray-800">
             <h3 class="font-bold text-xl text-gold mb-2">New Booking</h3>
             <p class="text-gray-400 text-sm">Book services from any subsidiary</p>
           </button>
@@ -1398,13 +1505,14 @@
             <p class="text-gray-400 text-sm">Support youth programs</p>
           </div>
         </div>
-        
+
         <div class="bg-dark-gray rounded-xl p-6 border border-gold/20">
           <h3 class="text-2xl font-bold text-gold mb-6">Complete KGC Subsidiary Directory</h3>
           <div class="grid md:grid-cols-3 gap-6">
             <div class="bg-charcoal p-6 rounded-lg border border-gold/10">
               <h4 class="font-bold text-lg text-white mb-2">Brains Infinite Innovations Inc.</h4>
-              <p class="text-gray-400 text-sm">A group of competent professionals dedicated to creating reliable solutions.</p>
+              <p class="text-gray-400 text-sm">A group of competent professionals dedicated to creating reliable
+                solutions.</p>
             </div>
             <div class="bg-charcoal p-6 rounded-lg border border-gold/10">
               <h4 class="font-bold text-lg text-white mb-2">Klassic Solutions Inc.</h4>
@@ -1449,15 +1557,17 @@
         <div class="bg-dark-gray rounded-xl p-6 mb-8 border border-gold/20">
           <div class="flex justify-between items-center">
             <div>
-              <h2 class="text-3xl font-bold text-white">KGC Master Control - <span class="text-gold">Admin View</span></h2>
+              <h2 class="text-3xl font-bold text-white">KGC Master Control - <span class="text-gold">Admin View</span>
+              </h2>
               <p class="text-gray-400">Complete oversight of all operations</p>
             </div>
-            <button onclick="window.logout()" class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg">
+            <button onclick="window.logout()"
+              class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg">
               Log Out
             </button>
           </div>
         </div>
-        
+
         <div class="grid md:grid-cols-4 gap-6 mb-8">
           <div class="bg-dark-gray p-6 rounded-xl border border-gold/20">
             <p class="text-gray-400 text-sm mb-2">Total Clients</p>
@@ -1476,7 +1586,7 @@
             <p class="text-3xl font-bold text-white">₱1.2M</p>
           </div>
         </div>
-        
+
         <div class="bg-dark-gray rounded-xl p-6 border border-gold/20">
           <h3 class="text-2xl font-bold text-gold mb-6">Booking Request Manager</h3>
           <div class="overflow-x-auto">
@@ -1512,15 +1622,17 @@
               Get in touch with Klassic Group of Companies
             </p>
           </div>
-          
+
           <!-- Contact Information -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-            
+
             <!-- Phone -->
             <div class="flex items-start gap-4 p-6 glass rounded-2xl hover:scale-105 transition-transform">
-              <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-gold to-amber-600 flex items-center justify-center">
+              <div
+                class="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-gold to-amber-600 flex items-center justify-center">
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
               </div>
               <div>
@@ -1530,12 +1642,14 @@
                 </a>
               </div>
             </div>
-            
+
             <!-- Email -->
             <div class="flex items-start gap-4 p-6 glass rounded-2xl hover:scale-105 transition-transform">
-              <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-gold to-amber-600 flex items-center justify-center">
+              <div
+                class="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-gold to-amber-600 flex items-center justify-center">
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
               <div>
@@ -1545,41 +1659,47 @@
                 </a>
               </div>
             </div>
-            
+
             <!-- Website -->
             <div class="flex items-start gap-4 p-6 glass rounded-2xl hover:scale-105 transition-transform">
-              <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-gold to-amber-600 flex items-center justify-center">
+              <div
+                class="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-gold to-amber-600 flex items-center justify-center">
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                 </svg>
               </div>
               <div>
                 <h4 class="font-semibold text-white mb-1">Website</h4>
-                <a href="http://connector.com" target="_blank" rel="noopener noreferrer" class="text-gold hover:text-amber-600 transition-colors">
+                <a href="http://connector.com" target="_blank" rel="noopener noreferrer"
+                  class="text-gold hover:text-amber-600 transition-colors">
                   connector.com
                 </a>
               </div>
             </div>
-            
+
             <!-- Address -->
             <div class="flex items-start gap-4 p-6 glass rounded-2xl hover:scale-105 transition-transform">
-              <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-gold to-amber-600 flex items-center justify-center">
+              <div
+                class="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-gold to-amber-600 flex items-center justify-center">
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
               <div>
                 <h4 class="font-semibold text-white mb-1">Address</h4>
                 <p class="text-gold leading-relaxed">
-                  Suite 1004 Atlanta Centre<br/>
+                  Suite 1004 Atlanta Centre<br />
                   Annapolis, San Juan, Philippines
                 </p>
               </div>
             </div>
-            
+
           </div>
-          
+
           <!-- Footer Bottom -->
           <div class="border-t border-charcoal/10 pt-8 text-center">
             <p class="text-white/60 text-sm">
@@ -1594,31 +1714,31 @@
 
   <!-- Load animations script -->
   <script src="./animations.js"></script>
-  
+
   <!-- Three.js initialization inline -->
   <script>
     // Three.js setup
     let scene, camera, renderer, sphere, particleSystem;
     let mouseX = 0, mouseY = 0;
-    
+
     function initThree() {
       const canvas = document.getElementById('three-canvas');
       scene = new THREE.Scene();
-      
+
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
       camera.position.z = 5;
-      
-      renderer = new THREE.WebGLRenderer({ 
-        canvas: canvas, 
+
+      renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
         alpha: true,
-        antialias: true 
+        antialias: true
       });
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setPixelRatio(window.devicePixelRatio);
-      
+
       // Create wireframe sphere
       const geometry = new THREE.IcosahedronGeometry(2, 1);
-      const material = new THREE.MeshBasicMaterial({ 
+      const material = new THREE.MeshBasicMaterial({
         color: 0xD4AF37,
         wireframe: true,
         transparent: true,
@@ -1626,61 +1746,61 @@
       });
       sphere = new THREE.Mesh(geometry, material);
       scene.add(sphere);
-      
+
       // Create particles
       const particlesGeometry = new THREE.BufferGeometry();
       const particleCount = 1000;
       const positions = new Float32Array(particleCount * 3);
-      
-      for(let i = 0; i < particleCount * 3; i++) {
+
+      for (let i = 0; i < particleCount * 3; i++) {
         positions[i] = (Math.random() - 0.5) * 10;
       }
-      
+
       particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      
+
       const particlesMaterial = new THREE.PointsMaterial({
         color: 0xF4E5A1,
         size: 0.02,
         transparent: true,
         opacity: 0.6
       });
-      
+
       particleSystem = new THREE.Points(particlesGeometry, particlesMaterial);
       scene.add(particleSystem);
-      
+
       animate();
     }
-    
+
     function animate() {
       requestAnimationFrame(animate);
-      
+
       if (sphere) {
         sphere.rotation.x += 0.001;
         sphere.rotation.y += 0.002;
         sphere.rotation.x += (mouseY * 0.0005);
         sphere.rotation.y += (mouseX * 0.0005);
       }
-      
+
       if (particleSystem) {
         particleSystem.rotation.y += 0.0005;
       }
-      
+
       renderer.render(scene, camera);
     }
-    
+
     document.addEventListener('mousemove', (e) => {
       mouseX = e.clientX - window.innerWidth / 2;
       mouseY = e.clientY - window.innerHeight / 2;
     });
-    
+
     // Initialize Three.js
     initThree();
-    
+
     // Gradient background scroll effect - Dark theme
     function updateGradientOnScroll() {
       const scrollProgress = window.scrollY / (document.body.scrollHeight - window.innerHeight);
       const gradientBg = document.getElementById('gradient-bg');
-      
+
       const colors = [
         { pos: 0, color: '#0A0A0F' },
         { pos: 0.2, color: '#1A1A24' },
@@ -1689,7 +1809,7 @@
         { pos: 0.8, color: '#0F0F15' },
         { pos: 1, color: '#0A0A0F' }
       ];
-      
+
       let currentColorIndex = 0;
       for (let i = 0; i < colors.length - 1; i++) {
         if (scrollProgress >= colors[i].pos && scrollProgress <= colors[i + 1].pos) {
@@ -1697,15 +1817,15 @@
           break;
         }
       }
-      
+
       const color1 = colors[currentColorIndex].color;
       const color2 = colors[currentColorIndex + 1] ? colors[currentColorIndex + 1].color : colors[currentColorIndex].color;
-      
+
       gradientBg.style.background = `linear-gradient(135deg, ${color1}, ${color2})`;
     }
-    
+
     window.addEventListener('scroll', updateGradientOnScroll);
-    
+
     // Resize handler
     window.addEventListener('resize', () => {
       if (camera && renderer) {
@@ -1714,49 +1834,49 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
       }
     });
-    
+
     // Mobile Menu Toggle
     const mobileToggle = document.getElementById('mobileToggle');
     const mainNav = document.getElementById('mainNav');
-    
+
     if (mobileToggle) {
       mobileToggle.addEventListener('click', () => {
         mainNav.classList.toggle('active');
       });
     }
-    
+
     // Smooth Scrolling for Navigation Links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function (e) {
         e.preventDefault();
         const targetId = this.getAttribute('href');
         const target = document.querySelector(targetId);
-        
+
         if (target) {
           // Check if it's a company card
           const isCompanyCard = targetId.includes('company-');
-          
+
           if (isCompanyCard) {
             // Get exact measurements
             const headerHeight = 80; // Fixed header height
             const windowHeight = window.innerHeight;
-            
+
             // Calculate available viewport height (excluding header)
             const availableHeight = windowHeight - headerHeight;
-            
+
             // Get target element position and height
             const targetRect = target.getBoundingClientRect();
             const currentScrollY = window.pageYOffset || document.documentElement.scrollTop;
             const targetTopFromDocument = targetRect.top + currentScrollY;
             const targetHeight = target.offsetHeight;
-            
+
             // Calculate the position where card will be centered
             // We want equal space above and below the card in the visible area
             const offsetFromTop = (availableHeight - targetHeight) / 2;
-            
+
             // Final scroll position: card top position minus header minus the offset to center
             const finalScrollPosition = targetTopFromDocument - headerHeight - offsetFromTop;
-            
+
             // Scroll to the calculated position
             window.scrollTo({
               top: Math.max(0, finalScrollPosition), // Don't scroll above 0
@@ -1767,13 +1887,13 @@
             const targetRect = target.getBoundingClientRect();
             const targetTop = targetRect.top + window.pageYOffset;
             const headerHeight = 80;
-            
+
             window.scrollTo({
               top: targetTop - headerHeight - 20,
               behavior: 'smooth'
             });
           }
-          
+
           // Close mobile menu if open
           if (mainNav.classList.contains('active')) {
             mainNav.classList.remove('active');
@@ -1781,7 +1901,7 @@
         }
       });
     });
-    
+
     // Header Shadow on Scroll
     const header = document.querySelector('.site-header');
     window.addEventListener('scroll', () => {
@@ -1791,7 +1911,7 @@
         header.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.05)';
       }
     });
-    
+
 
     // ===== KGC PORTAL SYSTEM =====
 
@@ -1809,7 +1929,7 @@
         if (saved) portalState = JSON.parse(saved);
         var savedBookings = localStorage.getItem('kgc_bookings');
         if (savedBookings) portalState.bookings = JSON.parse(savedBookings);
-      } catch(e) {}
+      } catch (e) { }
     }
 
     function saveState() {
@@ -1822,7 +1942,7 @@
     // --- Header indicator ---
     function updateHeaderState() {
       var indicator = document.getElementById('userIndicator');
-      var nameEl    = document.getElementById('userIndicatorName');
+      var nameEl = document.getElementById('userIndicatorName');
       if (!indicator) return;
       if (portalState.isLoggedIn) {
         indicator.classList.remove('hidden');
@@ -1836,17 +1956,17 @@
     updateHeaderState();
 
     // --- Modal open/close ---
-    window.openModal = function(id) {
+    window.openModal = function (id) {
       var el = document.getElementById(id);
       if (el) { el.classList.remove('hidden'); el.classList.add('flex'); document.body.style.overflow = 'hidden'; }
     };
-    window.closeModal = function(id) {
+    window.closeModal = function (id) {
       var el = document.getElementById(id);
       if (el) { el.classList.add('hidden'); el.classList.remove('flex'); document.body.style.overflow = 'auto'; }
     };
 
     // --- Book Now: always require login first ---
-    window.handleBookNow = function() {
+    window.handleBookNow = function () {
       if (portalState.isLoggedIn) {
         if (portalState.role === 'client') {
           window.openBookingDirect();
@@ -1861,35 +1981,35 @@
     };
 
     // --- Open booking modal with pre-filled session data ---
-    window.openBookingDirect = function() {
-      var nameEl  = document.getElementById('bookingFullName');
+    window.openBookingDirect = function () {
+      var nameEl = document.getElementById('bookingFullName');
       var emailEl = document.getElementById('bookingEmail');
-      if (nameEl)  nameEl.value  = portalState.userName  || '';
+      if (nameEl) nameEl.value = portalState.userName || '';
       if (emailEl) emailEl.value = portalState.userEmail || '';
       var s1 = document.getElementById('bookingStep1');
       var s2 = document.getElementById('bookingStep2');
       if (s1) s1.classList.remove('hidden');
       if (s2) s2.classList.add('hidden');
-      document.querySelectorAll('input[name="subsidiary"]').forEach(function(cb) { cb.checked = false; });
+      document.querySelectorAll('input[name="subsidiary"]').forEach(function (cb) { cb.checked = false; });
       window.openModal('bookingModal');
     };
     window.openBookingModal = window.openBookingDirect;
 
     // --- Booking steps ---
-    window.nextBookingStep = function() {
+    window.nextBookingStep = function () {
       var checked = document.querySelectorAll('input[name="subsidiary"]:checked');
       if (checked.length === 0) { alert('Please select at least one subsidiary.'); return; }
       document.getElementById('bookingStep1').classList.add('hidden');
       document.getElementById('bookingStep2').classList.remove('hidden');
     };
-    window.prevBookingStep = function() {
+    window.prevBookingStep = function () {
       document.getElementById('bookingStep2').classList.add('hidden');
       document.getElementById('bookingStep1').classList.remove('hidden');
     };
-    window.submitBooking = function(e) {
+    window.submitBooking = function (e) {
       e.preventDefault();
       var form = e.target;
-      var subs = Array.from(document.querySelectorAll('input[name="subsidiary"]:checked')).map(function(c){ return c.value; });
+      var subs = Array.from(document.querySelectorAll('input[name="subsidiary"]:checked')).map(function (c) { return c.value; });
       var booking = {
         id: 'BK' + Date.now(),
         name: form.fullName.value,
@@ -1910,7 +2030,7 @@
     };
 
     // --- Auth role toggle ---
-    window.switchAuthRole = function(role) {
+    window.switchAuthRole = function (role) {
       var cb = document.getElementById('roleToggleClient');
       var ab = document.getElementById('roleToggleAdmin');
       var inp = document.getElementById('loginRoleInput');
@@ -1928,7 +2048,7 @@
     };
 
     // --- Auth tab switch ---
-    window.switchAuthTab = function(tab) {
+    window.switchAuthTab = function (tab) {
       var lt = document.getElementById('loginTab');
       var rt = document.getElementById('registerTab');
       var tl = document.getElementById('tabLogin');
@@ -1936,31 +2056,31 @@
       if (!lt || !rt) return;
       if (tab === 'login') {
         lt.classList.remove('hidden'); rt.classList.add('hidden');
-        if (tl) { tl.style.color='#D4AF37'; tl.style.borderBottomColor='#D4AF37'; }
-        if (tr) { tr.style.color='#9ca3af'; tr.style.borderBottomColor='transparent'; }
+        if (tl) { tl.style.color = '#D4AF37'; tl.style.borderBottomColor = '#D4AF37'; }
+        if (tr) { tr.style.color = '#9ca3af'; tr.style.borderBottomColor = 'transparent'; }
       } else {
         rt.classList.remove('hidden'); lt.classList.add('hidden');
-        if (tr) { tr.style.color='#D4AF37'; tr.style.borderBottomColor='#D4AF37'; }
-        if (tl) { tl.style.color='#9ca3af'; tl.style.borderBottomColor='transparent'; }
+        if (tr) { tr.style.color = '#D4AF37'; tr.style.borderBottomColor = '#D4AF37'; }
+        if (tl) { tl.style.color = '#9ca3af'; tl.style.borderBottomColor = 'transparent'; }
       }
     };
 
     // --- Login: client -> booking, admin -> dashboard ---
-    window.handleLogin = function(e) {
+    window.handleLogin = function (e) {
       e.preventDefault();
       var form = e.target;
       var email = form.loginEmail.value.trim();
-      var pass  = form.loginPassword.value;
-      var role  = (document.getElementById('loginRoleInput') || {}).value || 'client';
+      var pass = form.loginPassword.value;
+      var role = (document.getElementById('loginRoleInput') || {}).value || 'client';
       var ok = (pass === 'password') && (
         (role === 'client' && email === 'client@kgc.ph') ||
-        (role === 'admin'  && email === 'admin@kgc.ph')
+        (role === 'admin' && email === 'admin@kgc.ph')
       );
       if (!ok) { alert('Invalid credentials. Please check your email, password, and role.'); return; }
       portalState.isLoggedIn = true;
-      portalState.role       = role;
-      portalState.userName   = role === 'client' ? 'Client User' : 'Admin User';
-      portalState.userEmail  = email;
+      portalState.role = role;
+      portalState.userName = role === 'client' ? 'Client User' : 'Admin User';
+      portalState.userEmail = email;
       saveState();
       updateHeaderState();
       window.closeModal('authModal');
@@ -1973,7 +2093,7 @@
     };
 
     // --- Register ---
-    window.handleRegister = function(e) {
+    window.handleRegister = function (e) {
       e.preventDefault();
       alert('Account request submitted!\nWe will review and contact you within 24 hours.');
       window.closeModal('authModal');
@@ -1981,51 +2101,51 @@
     };
 
     // --- Dashboard routing ---
-    window.goToDashboard = function() {
+    window.goToDashboard = function () {
       if (portalState.role === 'admin') window.showAdminDashboard();
       else window.showClientDashboard();
     };
-    window.showClientDashboard = function() {
+    window.showClientDashboard = function () {
       document.getElementById('scroll-container').style.display = 'none';
       document.getElementById('clientDashboard').classList.remove('hidden');
       var n = document.getElementById('clientName');
       if (n) n.textContent = portalState.userName;
-      window.scrollTo(0,0);
+      window.scrollTo(0, 0);
     };
-    window.showAdminDashboard = function() {
+    window.showAdminDashboard = function () {
       document.getElementById('scroll-container').style.display = 'none';
       document.getElementById('adminDashboard').classList.remove('hidden');
       window.renderBookingTable();
-      window.scrollTo(0,0);
+      window.scrollTo(0, 0);
     };
 
     // --- Booking table ---
-    window.renderBookingTable = function() {
+    window.renderBookingTable = function () {
       var tbody = document.getElementById('bookingTableBody');
       if (!tbody) return;
       var pc = document.getElementById('pendingCount');
-      if (pc) pc.textContent = portalState.bookings.filter(function(b){ return b.status==='Pending'; }).length;
+      if (pc) pc.textContent = portalState.bookings.filter(function (b) { return b.status === 'Pending'; }).length;
       if (!portalState.bookings.length) {
         tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-400">No bookings yet</td></tr>';
         return;
       }
-      tbody.innerHTML = portalState.bookings.map(function(b){
+      tbody.innerHTML = portalState.bookings.map(function (b) {
         return '<tr class="border-b border-gray-800 hover:bg-gray-900">' +
           '<td class="py-3 px-4 text-white">' + b.name + '</td>' +
           '<td class="py-3 px-4 text-gray-300 text-sm">' + b.subsidiaries.join(', ') + '</td>' +
           '<td class="py-3 px-4 text-gray-300 text-sm">' + b.date + '</td>' +
           '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-bold bg-yellow-600/20 text-yellow-400 border border-yellow-600/30">' + b.status + '</span></td>' +
           '<td class="py-3 px-4"><button onclick="window.viewBooking(\'' + b.id + '\')" class="text-gold text-sm hover:underline">View</button></td>' +
-        '</tr>';
+          '</tr>';
       }).join('');
     };
-    window.viewBooking = function(id) {
-      var b = portalState.bookings.find(function(x){ return x.id===id; });
-      if (b) alert('ID: '+b.id+'\nClient: '+b.name+'\nEmail: '+b.email+'\nDate: '+b.date+'\nServices: '+b.subsidiaries.join(', ')+'\nNotes: '+(b.notes||'-')+'\nHYT: '+(b.hytDonation?'Yes':'No'));
+    window.viewBooking = function (id) {
+      var b = portalState.bookings.find(function (x) { return x.id === id; });
+      if (b) alert('ID: ' + b.id + '\nClient: ' + b.name + '\nEmail: ' + b.email + '\nDate: ' + b.date + '\nServices: ' + b.subsidiaries.join(', ') + '\nNotes: ' + (b.notes || '-') + '\nHYT: ' + (b.hytDonation ? 'Yes' : 'No'));
     };
 
     // --- Logout ---
-    window.logout = function() {
+    window.logout = function () {
       if (!confirm('Log out of your KGC account?')) return;
       portalState.isLoggedIn = false;
       portalState.role = null;
@@ -2036,12 +2156,13 @@
       document.getElementById('clientDashboard').classList.add('hidden');
       document.getElementById('adminDashboard').classList.add('hidden');
       document.getElementById('scroll-container').style.display = 'block';
-      window.scrollTo(0,0);
+      window.scrollTo(0, 0);
     };
 
     console.log('KGC Portal ready. handleBookNow:', typeof window.handleBookNow);
 
   </script>
 </body>
+
 </html>
 >
