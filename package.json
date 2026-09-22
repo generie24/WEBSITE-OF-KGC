@@ -1,0 +1,30 @@
+{
+  "name": "klassic-group-hub",
+  "version": "1.0.0",
+  "description": "Klassic Group of Companies Corporate Hub",
+  "main": "server.ts",
+  "scripts": {
+    "dev": "node server.js",
+    "dev:ts": "tsx watch server.ts",
+    "build": "tsc",
+    "start": "node server.js"
+  },
+  "keywords": [
+    "corporate",
+    "hub",
+    "typescript"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.22.3"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.6",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  },
+  "type": "commonjs"
+}

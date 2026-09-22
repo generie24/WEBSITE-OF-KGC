@@ -1,0 +1,49 @@
+<svg width="400" height="120" viewBox="0 0 400 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Globe Circle -->
+  <circle cx="60" cy="60" r="45" stroke="url(#goldGradient)" stroke-width="3" fill="none"/>
+  
+  <!-- World Map Silhouette (Simplified) -->
+  <g fill="url(#goldGradient)">
+    <!-- Africa/Europe -->
+    <path d="M55 35 Q60 30, 65 35 L70 40 Q72 45, 68 50 L65 55 Q62 58, 58 55 L52 48 Q50 42, 55 35Z"/>
+    <!-- Americas -->
+    <path d="M35 45 Q38 40, 42 42 L45 48 Q47 52, 45 56 L42 62 Q38 65, 35 62 L32 55 Q30 50, 35 45Z"/>
+    <!-- Asia -->
+    <path d="M72 50 Q78 48, 82 52 L85 58 Q86 64, 82 68 L78 72 Q74 73, 72 70 L70 62 Q69 55, 72 50Z"/>
+    <!-- Australia -->
+    <path d="M75 75 Q78 74, 80 76 L82 80 Q82 83, 79 84 L76 84 Q74 82, 75 75Z"/>
+  </g>
+  
+  <!-- Laurel Wreath Left -->
+  <g fill="#2D5F3F">
+    <path d="M25 50 Q22 48, 20 50 Q18 52, 20 54 Q22 56, 25 54 Q27 52, 25 50Z"/>
+    <path d="M22 58 Q19 56, 17 58 Q15 60, 17 62 Q19 64, 22 62 Q24 60, 22 58Z"/>
+    <path d="M20 66 Q17 64, 15 66 Q13 68, 15 70 Q17 72, 20 70 Q22 68, 20 66Z"/>
+    <path d="M23 44 Q20 42, 18 44 Q16 46, 18 48 Q20 50, 23 48 Q25 46, 23 44Z"/>
+    <path d="M26 38 Q23 36, 21 38 Q19 40, 21 42 Q23 44, 26 42 Q28 40, 26 38Z"/>
+  </g>
+  
+  <!-- Laurel Wreath Right -->
+  <g fill="#2D5F3F">
+    <path d="M95 50 Q98 48, 100 50 Q102 52, 100 54 Q98 56, 95 54 Q93 52, 95 50Z"/>
+    <path d="M98 58 Q101 56, 103 58 Q105 60, 103 62 Q101 64, 98 62 Q96 60, 98 58Z"/>
+    <path d="M100 66 Q103 64, 105 66 Q107 68, 105 70 Q103 72, 100 70 Q98 68, 100 66Z"/>
+    <path d="M97 44 Q100 42, 102 44 Q104 46, 102 48 Q100 50, 97 48 Q95 46, 97 44Z"/>
+    <path d="M94 38 Q97 36, 99 38 Q101 40, 99 42 Q97 44, 94 42 Q92 40, 94 38Z"/>
+  </g>
+  
+  <!-- KLASSIC Text -->
+  <text x="140" y="65" font-family="Arial, sans-serif" font-size="42" font-weight="700" fill="url(#goldGradient)" letter-spacing="2">KLASSIC</text>
+  
+  <!-- GROUP OF COMPANIES Text -->
+  <text x="140" y="85" font-family="Arial, sans-serif" font-size="12" font-weight="600" fill="#1A1A24" letter-spacing="4">GROUP OF COMPANIES</text>
+  
+  <!-- Gold Gradient Definition -->
+  <defs>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D4AF37"/>
+      <stop offset="50%" style="stop-color:#F4E5A1"/>
+      <stop offset="100%" style="stop-color:#C5A028"/>
+    </linearGradient>
+  </defs>
+</svg>

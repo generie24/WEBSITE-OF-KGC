@@ -1,0 +1,149 @@
+═══════════════════════════════════════════════════════════════════════
+  🎨 QUICK IMAGE CHANGE REFERENCE - Klassic Group
+═══════════════════════════════════════════════════════════════════════
+
+Open index.html and use Ctrl+F (Find) to search for each card.
+Each card has 2 image locations to change.
+
+───────────────────────────────────────────────────────────────────────
+📌 CARD 1: Brains Infinite Innovations Inc.
+───────────────────────────────────────────────────────────────────────
+
+SEARCH FOR: "Card 1: Brains Infinite"
+
+IMAGE 1 - LOGO:
+  Find this line:
+    <img src="https://via.placeholder.com/80/9B7FD4/FFFFFF?text=B"
+  
+  Replace URL with:
+    YOUR_LOGO_URL_HERE
+    Example: "images/brains-logo.png"
+
+IMAGE 2 - BACKGROUND:
+  Find this line:
+    <div class="card-bg" style="background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&q=80');">
+  
+  Replace URL with:
+    YOUR_BACKGROUND_URL_HERE
+    Example: "images/brains-background.jpg"
+
+───────────────────────────────────────────────────────────────────────
+📌 CARD 2: Klassic Solutions Inc.
+───────────────────────────────────────────────────────────────────────
+
+SEARCH FOR: "Card 2: Klassic Solutions"
+
+LOGO URL:     https://via.placeholder.com/80/3B82F6/FFFFFF?text=KS
+BACKGROUND:   https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&q=80
+
+───────────────────────────────────────────────────────────────────────
+📌 CARD 3: Klassic Marketing Inc.
+───────────────────────────────────────────────────────────────────────
+
+SEARCH FOR: "Card 3: Klassic Marketing"
+
+LOGO URL:     https://via.placeholder.com/80/10B981/FFFFFF?text=KM
+BACKGROUND:   https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=1200&q=80
+
+───────────────────────────────────────────────────────────────────────
+📌 CARD 4: Westwood Development Corp.
+───────────────────────────────────────────────────────────────────────
+
+SEARCH FOR: "Card 4: Westwood Development"
+
+LOGO URL:     https://via.placeholder.com/80/F97316/FFFFFF?text=WD
+BACKGROUND:   https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&q=80
+
+───────────────────────────────────────────────────────────────────────
+📌 CARD 5: Westwood Law
+───────────────────────────────────────────────────────────────────────
+
+SEARCH FOR: "Card 5: Westwood Law"
+
+LOGO URL:     https://via.placeholder.com/80/6366F1/FFFFFF?text=WL
+BACKGROUND:   https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1200&q=80
+
+───────────────────────────────────────────────────────────────────────
+📌 CARD 6: Connector
+───────────────────────────────────────────────────────────────────────
+
+SEARCH FOR: "Card 6: Connector"
+
+LOGO URL:     https://via.placeholder.com/80/14B8A6/FFFFFF?text=C
+BACKGROUND:   https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=80
+
+───────────────────────────────────────────────────────────────────────
+📌 CARD 7: The Green Oasis
+───────────────────────────────────────────────────────────────────────
+
+SEARCH FOR: "Card 7: The Green Oasis"
+
+LOGO URL:     https://via.placeholder.com/80/84CC16/FFFFFF?text=GO
+BACKGROUND:   https://images.unsplash.com/photo-1558904541-efa843a96f01?w=1200&q=80
+
+───────────────────────────────────────────────────────────────────────
+📌 CARD 8: Luxurious Cleaning Co.
+───────────────────────────────────────────────────────────────────────
+
+SEARCH FOR: "Card 8: Luxurious Cleaning"
+
+LOGO URL:     https://via.placeholder.com/80/0EA5E9/FFFFFF?text=LC
+BACKGROUND:   https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=80
+
+───────────────────────────────────────────────────────────────────────
+📌 CARD 9: HYT Foundation Inc.
+───────────────────────────────────────────────────────────────────────
+
+SEARCH FOR: "Card 9: HYT Foundation"
+
+LOGO URL:     https://via.placeholder.com/80/F43F5E/FFFFFF?text=HYT
+BACKGROUND:   https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1200&q=80
+
+───────────────────────────────────────────────────────────────────────
+📌 CARD 10: The Finest Fit
+───────────────────────────────────────────────────────────────────────
+
+SEARCH FOR: "Card 10: The Finest Fit"
+
+LOGO URL:     https://via.placeholder.com/80/F59E0B/FFFFFF?text=FF
+BACKGROUND:   https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=1200&q=80
+
+═══════════════════════════════════════════════════════════════════════
+  📝 INSTRUCTIONS
+═══════════════════════════════════════════════════════════════════════
+
+1. Open index.html in your text editor
+
+2. Press Ctrl+F to open Find
+
+3. Search for: "Card 1: Brains Infinite" (or any card number)
+
+4. You'll find TWO image URLs to change:
+   - Logo image:       <img src="URL_HERE"
+   - Background image: background-image: url('URL_HERE')
+
+5. Replace the URLs with your own image paths:
+   
+   LOCAL FILES:
+     images/company-logo.png
+     images/company-background.jpg
+   
+   ONLINE URLS:
+     https://your-website.com/logo.png
+     https://your-website.com/background.jpg
+
+6. Save the file and refresh your browser
+
+═══════════════════════════════════════════════════════════════════════
+  💡 TIPS
+═══════════════════════════════════════════════════════════════════════
+
+• Logo size: 200x200px minimum (displayed at 56x56px)
+• Background size: 1920x1080px recommended
+• Logo format: PNG with transparency preferred
+• Background format: JPG for photos
+• Keep file sizes under 500KB for fast loading
+
+═══════════════════════════════════════════════════════════════════════
+
+Need more help? See IMAGE-GUIDE.md for detailed instructions.

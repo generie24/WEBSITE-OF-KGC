@@ -1,0 +1,19 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ff-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F59E0B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F97316;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Shirt/uniform outline -->
+  <path d="M70 60 L100 70 L130 60 L145 80 L145 150 L120 150 L120 170 L80 170 L80 150 L55 150 L55 80 Z" 
+        fill="none" stroke="url(#ff-grad)" stroke-width="4"/>
+  <!-- Collar -->
+  <path d="M85 70 L100 80 L115 70" fill="none" stroke="url(#ff-grad)" stroke-width="3"/>
+  <!-- Buttons -->
+  <circle cx="100" cy="95" r="3" fill="url(#ff-grad)"/>
+  <circle cx="100" cy="110" r="3" fill="url(#ff-grad)"/>
+  <circle cx="100" cy="125" r="3" fill="url(#ff-grad)"/>
+  <!-- FF text -->
+  <text x="100" y="45" font-family="Arial, sans-serif" font-size="35" font-weight="bold" fill="url(#ff-grad)" text-anchor="middle">FF</text>
+</svg>

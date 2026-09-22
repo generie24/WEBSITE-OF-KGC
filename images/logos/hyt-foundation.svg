@@ -1,0 +1,17 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="hyt-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F43F5E;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EC4899;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Rising pillars/stairs -->
+  <rect x="50" y="120" width="25" height="50" fill="url(#hyt-grad)" opacity="0.6"/>
+  <rect x="80" y="100" width="25" height="70" fill="url(#hyt-grad)" opacity="0.7"/>
+  <rect x="110" y="80" width="25" height="90" fill="url(#hyt-grad)" opacity="0.8"/>
+  <!-- Star/achievement symbol -->
+  <path d="M100 40 L105 55 L120 58 L110 68 L113 83 L100 75 L87 83 L90 68 L80 58 L95 55 Z" 
+        fill="url(#hyt-grad)"/>
+  <!-- HYT text -->
+  <text x="100" y="180" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="url(#hyt-grad)" text-anchor="middle">HYT</text>
+</svg>

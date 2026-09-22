@@ -1,0 +1,49 @@
+╔══════════════════════════════════════════════════════════════╗
+║                   QUICK IMAGE SETUP                          ║
+╚══════════════════════════════════════════════════════════════╝
+
+📁 FOLDER STRUCTURE (READY TO USE):
+
+   images/
+   ├── logos/          ← Put 10 company logos here
+   └── backgrounds/    ← Put 10 background images here
+
+
+🎯 WHAT TO DO:
+
+   1. Add your logo images to:      images/logos/
+   2. Add your background images to: images/backgrounds/
+   3. Open index.html
+   4. Search for each "Card X:" (X = 1 to 10)
+   5. Replace the 2 image URLs per card
+   6. Save and refresh browser
+
+
+📋 EXAMPLE (Card 1):
+
+   FIND THIS:
+   <img src="https://via.placeholder.com/80/9B7FD4/FFFFFF?text=B"
+   
+   CHANGE TO:
+   <img src="images/logos/brains.png"
+
+   ---
+
+   FIND THIS:
+   background-image: url('https://images.unsplash.com/...')
+   
+   CHANGE TO:
+   background-image: url('images/backgrounds/brains-bg.jpg')
+
+
+📏 IMAGE SIZES:
+
+   Logos:       200x200px (PNG with transparency)
+   Backgrounds: 1920x1080px (JPG)
+
+
+📚 NEED MORE HELP?
+
+   Open: SETUP-YOUR-IMAGES.md (Complete guide)
+
+╚══════════════════════════════════════════════════════════════╝
