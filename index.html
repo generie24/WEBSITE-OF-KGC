@@ -522,14 +522,24 @@
       align-items: center;
       justify-content: center;
       padding: 1rem;
-      /* Prevent content behind from scrolling when modal is open */
+      overflow-y: auto;
     }
     .modal-overlay.open {
       display: flex;
     }
+    .modal-overlay > div {
+      position: relative;
+      z-index: 2;
+      max-height: 85vh;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
 
     /* Modal close button — circular, top-right, always tappable */
     .modal-close-btn {
+      position: relative;
+      z-index: 10;
       flex-shrink: 0;
       width: 36px;
       height: 36px;
@@ -1700,11 +1710,11 @@
         <div class="grid md:grid-cols-4 gap-6 mb-8">
           <div class="bg-dark-gray p-6 rounded-xl border border-gold/20">
             <p class="text-gray-400 text-sm mb-2">Total Clients</p>
-            <p class="text-3xl font-bold text-white">248</p>
+            <p class="text-3xl font-bold text-white" id="totalClientsCount">0</p>
           </div>
           <div class="bg-dark-gray p-6 rounded-xl border border-gold/20">
             <p class="text-gray-400 text-sm mb-2">Active Projects</p>
-            <p class="text-3xl font-bold text-white">73</p>
+            <p class="text-3xl font-bold text-white" id="activeProjectsCount">0</p>
           </div>
           <div class="bg-dark-gray p-6 rounded-xl border border-gold/20">
             <p class="text-gray-400 text-sm mb-2">Pending Bookings</p>
@@ -2088,6 +2098,16 @@
         userEmail:  portalState.userEmail
       }));
     }
+    function getRegisteredUsers() {
+      try {
+        return JSON.parse(localStorage.getItem('kgc_registered_users') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+    function saveRegisteredUsers(users) {
+      localStorage.setItem('kgc_registered_users', JSON.stringify(users || []));
+    }
 
     loadState();
 
@@ -2120,7 +2140,6 @@
       if (!el) return;
       el.classList.add('open');
       document.body.style.overflow = 'hidden';
-      // Backdrop click-to-close (bind once only)
       if (!el._backdropBound) {
         el._backdropBound = true;
         el.addEventListener('click', function (e) {
@@ -2132,8 +2151,19 @@
       var el = document.getElementById(id);
       if (!el) return;
       el.classList.remove('open');
-      document.body.style.overflow = '';
+      var hasAnyOpenModal = ['bookingModal', 'authModal'].some(function (modalId) {
+        var modalEl = document.getElementById(modalId);
+        return modalEl && modalEl.classList.contains('open');
+      });
+      document.body.style.overflow = hasAnyOpenModal ? 'hidden' : '';
     };
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      ['bookingModal', 'authModal'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el && el.classList.contains('open')) { window.closeModal(id); }
+      });
+    });
 
     // ── Book Now button ─────────────────────────────────────────────────
     window.handleBookNow = function () {
@@ -2211,8 +2241,24 @@
         }
 
         var booking = result.data;
-        // Also cache locally
         portalState.bookings.push(booking);
+        syncAdminStats(portalState.bookings);
+
+        var bookingTableBody = document.getElementById('bookingTableBody');
+        if (bookingTableBody && bookingTableBody.querySelector('td[colspan="6"]')) {
+          bookingTableBody.innerHTML = '';
+        }
+
+        if (bookingTableBody) {
+          bookingTableBody.innerHTML = '<tr class="border-b border-gray-800 hover:bg-gray-900 transition-colors">' +
+            '<td class="py-3 px-4 text-white font-medium">' + escHtml(booking.name) + '</td>' +
+            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml((booking.subsidiaries || []).join(', ')) + '</td>' +
+            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(booking.date || '\u2014') + '</td>' +
+            '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-bold badge-pending">' + escHtml(booking.status || 'Pending') + '</span></td>' +
+            '<td class="py-3 px-4 text-gray-400 text-xs font-mono">' + escHtml(booking.id) + '</td>' +
+            '<td class="py-3 px-4"><div class="flex items-center gap-2"><button onclick="window.viewBooking(\'' + booking.id + '\')" class="text-gold text-xs hover:underline">View</button><button onclick="window.updateBookingStatus(\'' + booking.id + '\', \'Approved\')" class="px-2 py-0.5 bg-green-700/30 hover:bg-green-700/50 text-green-400 rounded text-xs border border-green-700/40">Approve</button><button onclick="window.updateBookingStatus(\'' + booking.id + '\', \'Rejected\')" class="px-2 py-0.5 bg-red-700/30 hover:bg-red-700/50 text-red-400 rounded text-xs border border-red-700/40">Reject</button></div></td>' +
+            '</tr>' + bookingTableBody.innerHTML;
+        }
 
         window.closeModal('bookingModal');
         form.reset();
@@ -2268,23 +2314,56 @@
     };
 
     // ── Login handler ─────────────────────────────────────────────────
-    window.handleLogin = function (e) {
+    window.handleLogin = async function (e) {
       e.preventDefault();
       var form  = e.target;
       var email = form.loginEmail.value.trim();
       var pass  = form.loginPassword.value;
       var role  = (document.getElementById('loginRoleInput') || {}).value || 'client';
-      var ok = (pass === 'password') && (
+
+      try {
+        var response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, password: pass, role: role })
+        });
+        var result = await response.json();
+
+        if (response.ok && result && result.success) {
+          portalState.isLoggedIn = true;
+          portalState.role       = result.data.role || role;
+          portalState.userName   = result.data.name || (role === 'client' ? 'Client User' : 'Admin User');
+          portalState.userEmail  = result.data.email || email;
+          saveState();
+          updateHeaderState();
+          window.closeModal('authModal');
+          form.reset();
+          if (role === 'client') {
+            window.openBookingDirect();
+          } else {
+            window.showAdminDashboard();
+          }
+          return;
+        }
+      } catch (err) {
+        console.warn('Server login check failed, using fallback auth.', err);
+      }
+
+      var registeredUsers = getRegisteredUsers();
+      var userMatch = registeredUsers.find(function (user) {
+        return String(user.email || '').trim().toLowerCase() === email.toLowerCase() && String(user.password || '') === pass && (role === 'admin' ? user.role === 'admin' : user.role === 'client');
+      });
+      var demoMatch = (pass === 'password') && (
         (role === 'client' && email === 'client@kgc.ph') ||
         (role === 'admin'  && email === 'admin@kgc.ph')
       );
-      if (!ok) {
+      if (!userMatch && !demoMatch) {
         window.showToast('\u274c Invalid credentials. Check email, password, and role.', 'error');
         return;
       }
       portalState.isLoggedIn = true;
       portalState.role       = role;
-      portalState.userName   = role === 'client' ? 'Client User' : 'Admin User';
+      portalState.userName   = userMatch ? userMatch.name : (role === 'client' ? 'Client User' : 'Admin User');
       portalState.userEmail  = email;
       saveState();
       updateHeaderState();
@@ -2298,11 +2377,56 @@
     };
 
     // ── Register handler ──────────────────────────────────────────────
-    window.handleRegister = function (e) {
+    window.handleRegister = async function (e) {
       e.preventDefault();
-      window.showToast('\u2705 Account request submitted! We will contact you within 24 hours.');
-      window.closeModal('authModal');
-      e.target.reset();
+      var form = e.target;
+      var payload = {
+        name: form.regName.value.trim(),
+        company: form.regCompany.value.trim(),
+        email: form.regEmail.value.trim(),
+        phone: form.regPhone.value.trim(),
+        password: form.regPassword.value,
+        role: 'client'
+      };
+
+      try {
+        var response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        var result = await response.json();
+
+        if (!response.ok || !result || !result.success) {
+          throw new Error(result && result.error ? result.error : 'Unable to create account.');
+        }
+
+        var registeredUsers = getRegisteredUsers();
+        registeredUsers.push({
+          name: payload.name,
+          company: payload.company,
+          email: payload.email.toLowerCase(),
+          phone: payload.phone,
+          password: payload.password,
+          role: 'client'
+        });
+        saveRegisteredUsers(registeredUsers);
+
+        portalState.isLoggedIn = true;
+        portalState.role = 'client';
+        portalState.userName = payload.name;
+        portalState.userEmail = payload.email.toLowerCase();
+        saveState();
+        updateHeaderState();
+        window.closeModal('authModal');
+        form.reset();
+        window.showToast('\u2705 Account created successfully! You are now signed in.');
+        window.openBookingDirect();
+        return;
+      } catch (err) {
+        console.error('Registration error:', err);
+        window.showToast('\u274c ' + (err.message || 'Registration failed.'), 'error');
+      }
     };
 
     // ── Dashboard routing ──────────────────────────────────────────────
@@ -2333,6 +2457,28 @@
       window.scrollTo(0, 0);
     };
 
+    function syncAdminStats(bookings) {
+      var list = Array.isArray(bookings) ? bookings : (portalState.bookings || []);
+      var uniqueClients = new Set(list.filter(function (b) { return b && b.email; }).map(function (b) { return String(b.email).trim().toLowerCase(); })).size;
+      var pending = list.filter(function (b) { return String(b.status || '').toLowerCase() === 'pending'; }).length;
+      var activeProjects = list.filter(function (b) { return String(b.status || '').toLowerCase() === 'approved'; }).length;
+
+      var totalClientsEl = document.getElementById('totalClientsCount');
+      var activeProjectsEl = document.getElementById('activeProjectsCount');
+      var pendingEl = document.getElementById('pendingCount');
+
+      if (totalClientsEl) totalClientsEl.textContent = String(uniqueClients);
+      if (activeProjectsEl) activeProjectsEl.textContent = String(activeProjects);
+      if (pendingEl) pendingEl.textContent = String(pending);
+    }
+
+    function normalizeBookings(data) {
+      if (Array.isArray(data)) return data;
+      if (data && Array.isArray(data.data)) return data.data;
+      if (data && Array.isArray(data.bookings)) return data.bookings;
+      return [];
+    }
+
     // ── Admin Booking Table (fetches from /api/bookings) ──────────────────
     window.renderBookingTable = async function () {
       var tbody = document.getElementById('bookingTableBody');
@@ -2344,14 +2490,11 @@
       try {
         var response = await fetch('/api/bookings');
         var result   = await response.json();
-        var bookings = (result.success && result.data) ? result.data : [];
+        var bookings = normalizeBookings(result);
 
         // Sync local cache
         portalState.bookings = bookings;
-
-        // Update pending count badge
-        var pc = document.getElementById('pendingCount');
-        if (pc) pc.textContent = bookings.filter(function (b) { return b.status === 'Pending'; }).length;
+        syncAdminStats(bookings);
 
         if (!bookings.length) {
           tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400">No bookings yet</td></tr>';
@@ -2366,7 +2509,7 @@
                          : 'badge-pending';
           return '<tr class="border-b border-gray-800 hover:bg-gray-900 transition-colors">' +
             '<td class="py-3 px-4 text-white font-medium">' + escHtml(b.name) + '</td>' +
-            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(b.subsidiaries.join(', ')) + '</td>' +
+            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml((b.subsidiaries || []).join(', ')) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(b.date || '\u2014') + '</td>' +
             '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-bold ' + badgeClass + '">' + escHtml(b.status) + '</span></td>' +
             '<td class="py-3 px-4 text-gray-400 text-xs font-mono">' + escHtml(b.id) + '</td>' +
@@ -2442,7 +2585,7 @@
         var email    = encodeURIComponent(portalState.userEmail || '');
         var response = await fetch('/api/bookings?email=' + email);
         var result   = await response.json();
-        var myBookings = (result.success && result.data) ? result.data : [];
+        var myBookings = normalizeBookings(result);
 
         if (!myBookings.length) {
           tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-400">No bookings yet. Click "+ New Booking" to get started.</td></tr>';
@@ -2455,7 +2598,7 @@
                          : 'badge-pending';
           return '<tr class="border-b border-gray-800 hover:bg-gray-900 transition-colors">' +
             '<td class="py-3 px-4 text-white text-xs font-mono">' + escHtml(b.id) + '</td>' +
-            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(b.subsidiaries.join(', ')) + '</td>' +
+            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml((b.subsidiaries || []).join(', ')) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(b.date || '\u2014') + '</td>' +
             '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-bold ' + badgeClass + '">' + escHtml(b.status) + '</span></td>' +
             '</tr>';

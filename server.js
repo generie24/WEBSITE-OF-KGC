@@ -18,9 +18,16 @@ const HOST = process.env.HOST || 'localhost';
 
 // Path for persistent bookings storage
 const BOOKINGS_FILE = path.join(__dirname, 'bookings.json');
+const USERS_FILE = path.join(__dirname, 'users.json');
+
+const DEMO_USERS = [
+  { id: 'demo-client', role: 'client', name: 'Client User', email: 'client@kgc.ph', password: 'password' },
+  { id: 'demo-admin', role: 'admin', name: 'Admin User', email: 'admin@kgc.ph', password: 'password' }
+];
 
 // ── In-memory bookings store (seeded from disk on startup) ──────────────────
 let bookingsStore = [];
+let usersStore = [];
 
 function loadBookingsFromDisk() {
   try {
@@ -43,7 +50,49 @@ function saveBookingsToDisk() {
   }
 }
 
+function loadUsersFromDisk() {
+  try {
+    if (fs.existsSync(USERS_FILE)) {
+      const raw = fs.readFileSync(USERS_FILE, 'utf8');
+      usersStore = JSON.parse(raw) || [];
+      console.log(`👤 Loaded ${usersStore.length} registered user(s) from users.json`);
+    }
+  } catch (err) {
+    console.warn('⚠️  Could not read users.json, starting fresh:', err.message);
+    usersStore = [];
+  }
+}
+
+function saveUsersToDisk() {
+  try {
+    fs.writeFileSync(USERS_FILE, JSON.stringify(usersStore, null, 2), 'utf8');
+  } catch (err) {
+    console.warn('⚠️  Could not save users.json:', err.message);
+  }
+}
+
+function findUserByCredentials(email, password, role = 'client') {
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  const normalizedPassword = String(password || '');
+  const normalizedRole = String(role || 'client').trim().toLowerCase();
+
+  const registeredUser = usersStore.find((u) => {
+    return String(u.email || '').trim().toLowerCase() === normalizedEmail &&
+      String(u.password || '') === normalizedPassword &&
+      String(u.role || 'client').trim().toLowerCase() === normalizedRole;
+  });
+
+  if (registeredUser) return registeredUser;
+
+  return DEMO_USERS.find((u) => {
+    return u.email.toLowerCase() === normalizedEmail &&
+      u.password === normalizedPassword &&
+      u.role === normalizedRole;
+  }) || null;
+}
+
 loadBookingsFromDisk();
+loadUsersFromDisk();
 
 // ── Middleware ───────────────────────────────────────────────────────────────
 app.use(express.json());
@@ -169,9 +218,9 @@ app.get('/api/bookings', (req, res) => {
   const { email } = req.query;
   let results = bookingsStore;
   if (email) {
-    results = bookingsStore.filter(b => b.email === email);
+    results = bookingsStore.filter(b => b.email === String(email).trim().toLowerCase());
   }
-  res.json({ success: true, count: results.length, data: results });
+  res.json(results);
 });
 
 /**
@@ -237,6 +286,82 @@ app.patch('/api/bookings/:id', (req, res) => {
 
   console.log(`✏️  Booking ${id} status updated to: ${status}`);
   res.json({ success: true, data: booking });
+});
+
+app.post('/api/auth/register', (req, res) => {
+  const { name, company, email, phone, password, role = 'client' } = req.body || {};
+
+  if (!name || !email || !password) {
+    return res.status(400).json({
+      success: false,
+      error: 'Name, email, and password are required.'
+    });
+  }
+
+  const normalizedEmail = String(email).trim().toLowerCase();
+  const userExists = usersStore.some((u) => String(u.email || '').trim().toLowerCase() === normalizedEmail);
+  if (userExists) {
+    return res.status(409).json({
+      success: false,
+      error: 'An account with this email already exists.'
+    });
+  }
+
+  const newUser = {
+    id: 'USR' + Date.now(),
+    role: String(role || 'client').trim().toLowerCase() === 'admin' ? 'admin' : 'client',
+    name: String(name).trim(),
+    company: String(company || '').trim(),
+    email: normalizedEmail,
+    phone: String(phone || '').trim(),
+    password: String(password),
+    createdAt: new Date().toISOString()
+  };
+
+  usersStore.push(newUser);
+  saveUsersToDisk();
+
+  console.log(`✅ New user registered: ${newUser.email} (${newUser.role})`);
+  res.status(201).json({
+    success: true,
+    data: {
+      id: newUser.id,
+      role: newUser.role,
+      name: newUser.name,
+      company: newUser.company,
+      email: newUser.email,
+      phone: newUser.phone
+    }
+  });
+});
+
+app.post('/api/auth/login', (req, res) => {
+  const { email, password, role = 'client' } = req.body || {};
+
+  if (!email || !password) {
+    return res.status(400).json({
+      success: false,
+      error: 'Email and password are required.'
+    });
+  }
+
+  const user = findUserByCredentials(email, password, role);
+  if (!user) {
+    return res.status(401).json({
+      success: false,
+      error: 'Invalid credentials.'
+    });
+  }
+
+  res.json({
+    success: true,
+    data: {
+      id: user.id,
+      name: user.name,
+      email: String(user.email).trim().toLowerCase(),
+      role: String(user.role || 'client').trim().toLowerCase()
+    }
+  });
 });
 
 // ── 404 handler ──────────────────────────────────────────────────────────────
