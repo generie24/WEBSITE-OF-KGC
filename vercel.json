@@ -1,9 +1,17 @@
 {
-    "rewrites": [
-        {
-            "source": "/(.*)",
-            "destination": "/$1"
-        }
-    ],
-    "cleanUrls": true
+  "outputDirectory": ".",
+  "routes": [
+    {
+      "src": "/animations\\.js",
+      "dest": "/animations.js"
+    },
+    {
+      "src": "/images/(.*)",
+      "dest": "/images/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
 }
