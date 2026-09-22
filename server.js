@@ -16,12 +16,53 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || 'localhost';
 
-// Middleware
+// Path for persistent bookings storage
+const BOOKINGS_FILE = path.join(__dirname, 'bookings.json');
+
+// ── In-memory bookings store (seeded from disk on startup) ──────────────────
+let bookingsStore = [];
+
+function loadBookingsFromDisk() {
+  try {
+    if (fs.existsSync(BOOKINGS_FILE)) {
+      const raw = fs.readFileSync(BOOKINGS_FILE, 'utf8');
+      bookingsStore = JSON.parse(raw) || [];
+      console.log(`📂 Loaded ${bookingsStore.length} booking(s) from bookings.json`);
+    }
+  } catch (err) {
+    console.warn('⚠️  Could not read bookings.json, starting fresh:', err.message);
+    bookingsStore = [];
+  }
+}
+
+function saveBookingsToDisk() {
+  try {
+    fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(bookingsStore, null, 2), 'utf8');
+  } catch (err) {
+    console.warn('⚠️  Could not save bookings.json:', err.message);
+  }
+}
+
+loadBookingsFromDisk();
+
+// ── Middleware ───────────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// CORS headers so the front-end can call /api/* from any origin in dev
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') { res.sendStatus(204); return; }
+  next();
+});
+
 // Static files
 app.use(express.static(__dirname));
+
+// Explicit images directory route
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // Request logging
 app.use((req, res, next) => {
@@ -30,7 +71,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
+// ── Routes ───────────────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -46,7 +87,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API - subsidiaries
+// ── API: Subsidiaries ────────────────────────────────────────────────────────
 app.get('/api/subsidiaries', (req, res) => {
   const subsidiaries = [
     {
@@ -118,7 +159,87 @@ app.get('/api/subsidiaries', (req, res) => {
   });
 });
 
-// 404 handler
+// ── API: Bookings ─────────────────────────────────────────────────────────────
+
+/**
+ * GET /api/bookings
+ * Returns all bookings. Pass ?email=x to filter to a specific client's bookings.
+ */
+app.get('/api/bookings', (req, res) => {
+  const { email } = req.query;
+  let results = bookingsStore;
+  if (email) {
+    results = bookingsStore.filter(b => b.email === email);
+  }
+  res.json({ success: true, count: results.length, data: results });
+});
+
+/**
+ * POST /api/bookings
+ * Creates a new booking. Expects the booking payload in the request body.
+ * Returns the saved booking object (with server-assigned id & timestamp).
+ */
+app.post('/api/bookings', (req, res) => {
+  const body = req.body;
+
+  // Basic validation
+  if (!body.name || !body.email || !body.subsidiaries || !Array.isArray(body.subsidiaries) || body.subsidiaries.length === 0) {
+    return res.status(400).json({
+      success: false,
+      error: 'Missing required fields: name, email, and at least one subsidiary.'
+    });
+  }
+
+  const booking = {
+    id: 'BK' + Date.now(),
+    name: String(body.name || '').trim(),
+    email: String(body.email || '').trim().toLowerCase(),
+    phone: String(body.phone || '').trim(),
+    date: String(body.date || '').trim(),
+    subsidiaries: body.subsidiaries,
+    notes: String(body.notes || '').trim(),
+    hytDonation: Boolean(body.hytDonation),
+    status: 'Pending',
+    timestamp: new Date().toISOString()
+  };
+
+  bookingsStore.push(booking);
+  saveBookingsToDisk();
+
+  console.log(`✅ New booking saved: ${booking.id} by ${booking.name} (${booking.email})`);
+  res.status(201).json({ success: true, data: booking });
+});
+
+/**
+ * PATCH /api/bookings/:id
+ * Updates the status of a booking. Body: { status: 'Approved' | 'Rejected' | 'Pending' }
+ */
+app.patch('/api/bookings/:id', (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const allowed = ['Pending', 'Approved', 'Rejected'];
+  if (!status || !allowed.includes(status)) {
+    return res.status(400).json({
+      success: false,
+      error: `Invalid status. Allowed values: ${allowed.join(', ')}`
+    });
+  }
+
+  const booking = bookingsStore.find(b => b.id === id);
+  if (!booking) {
+    return res.status(404).json({ success: false, error: `Booking ${id} not found.` });
+  }
+
+  booking.status = status;
+  booking.updatedAt = new Date().toISOString();
+  saveBookingsToDisk();
+
+  console.log(`✏️  Booking ${id} status updated to: ${status}`);
+  res.json({ success: true, data: booking });
+});
+
+// ── 404 handler ──────────────────────────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({
     error: 'Not Found',
@@ -127,7 +248,7 @@ app.use((req, res) => {
   });
 });
 
-// Error handler
+// ── Error handler ────────────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error('Error:', err.stack);
   res.status(500).json({
@@ -137,7 +258,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
+// ── Start server ─────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log('\n🚀 Klassic Group Corporate Hub Server');
   console.log('=====================================');
@@ -145,11 +266,12 @@ app.listen(PORT, () => {
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`💼 App: ${process.env.APP_NAME || 'Klassic Group Hub'}`);
   console.log(`📊 Health check: http://${HOST}:${PORT}/health`);
-  console.log(`🔌 API endpoint: http://${HOST}:${PORT}/api/subsidiaries`);
+  console.log(`🔌 Subsidiaries API: http://${HOST}:${PORT}/api/subsidiaries`);
+  console.log(`📅 Bookings API:     http://${HOST}:${PORT}/api/bookings`);
   console.log('=====================================\n');
 });
 
-// Graceful shutdown
+// ── Graceful shutdown ────────────────────────────────────────────────────────
 process.on('SIGTERM', () => {
   console.log('SIGTERM signal received: closing HTTP server');
   process.exit(0);
@@ -159,6 +281,3 @@ process.on('SIGINT', () => {
   console.log('\nSIGINT signal received: closing HTTP server');
   process.exit(0);
 });
-
-// Explicit images directory route (ensures /images/* is served correctly)
-app.use('/images', express.static(path.join(__dirname, 'images')));

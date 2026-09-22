@@ -500,6 +500,97 @@
     #authModal input[type="radio"] {
       accent-color: #D4AF37;
     }
+
+    /* === Dashboard mode ===
+     * Only hides <section> and <footer> children of scroll-container.
+     * Modals (.modal-overlay) are <div>s — not affected.
+     * Dashboards (#clientDashboard, #adminDashboard) are <div>s — not affected.
+     */
+    #scroll-container.dashboard-mode > section,
+    #scroll-container.dashboard-mode > footer {
+      display: none !important;
+    }
+
+    /* ── Modal Overlay System ─────────────────────────────────────────────── */
+    /* Modals are hidden by default; .open class makes them flex-centered.    */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0, 0, 0, 0.92);
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      /* Prevent content behind from scrolling when modal is open */
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    /* Modal close button — circular, top-right, always tappable */
+    .modal-close-btn {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #9ca3af;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+      line-height: 1;
+    }
+    .modal-close-btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+      transform: scale(1.1);
+    }
+    .modal-close-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Booking status badge variants */
+    .badge-pending  { background: rgba(202,138,4,0.18);  color: #fbbf24; border: 1px solid rgba(202,138,4,0.35); }
+    .badge-approved { background: rgba(22,163,74,0.18);  color: #4ade80; border: 1px solid rgba(22,163,74,0.35); }
+    .badge-rejected { background: rgba(220,38,38,0.18);  color: #f87171; border: 1px solid rgba(220,38,38,0.35); }
+
+    /* Loading spinner for async table fetches */
+    @keyframes kgc-spin {
+      to { transform: rotate(360deg); }
+    }
+    .kgc-spinner {
+      display: inline-block;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(212,175,55,0.3);
+      border-top-color: #D4AF37;
+      border-radius: 50%;
+      animation: kgc-spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    /* Toast notification */
+    .kgc-toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: linear-gradient(135deg, #D4AF37, #C5A028);
+      color: #121212;
+      padding: 14px 22px;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 14px;
+      z-index: 99999;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+      max-width: 400px;
+      line-height: 1.5;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
   </style>
 </head>
 
@@ -1231,7 +1322,7 @@
     </section>
 
     <!-- BOOKING MODAL -->
-    <div id="bookingModal" class="hidden fixed inset-0 bg-black/90 z-[9999] items-center justify-center p-4">
+    <div id="bookingModal" class="modal-overlay">
       <div
         class="bg-[#1E1E1E] rounded-2xl w-full max-w-2xl border border-gold/20 shadow-2xl max-h-[90vh] overflow-y-auto">
         <div
@@ -1240,7 +1331,7 @@
             <h2 class="text-xl font-bold text-gold">Book KGC Services</h2>
             <p class="text-gray-400 text-sm" id="bookingSubtitle">Select the subsidiaries you need</p>
           </div>
-          <button onclick="window.closeModal('bookingModal')" class="text-gray-500 hover:text-white">
+          <button id="bookingModalClose" onclick="window.closeModal('bookingModal')" class="modal-close-btn" aria-label="Close booking modal">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -1364,7 +1455,7 @@
     </div>
 
     <!-- AUTH MODAL -->
-    <div id="authModal" class="hidden fixed inset-0 bg-black/90 z-[9999] items-center justify-center p-4">
+    <div id="authModal" class="modal-overlay">
       <div class="bg-[#1E1E1E] rounded-2xl w-full max-w-md border border-gold/20 shadow-2xl">
 
         <!-- Header -->
@@ -1373,7 +1464,7 @@
             <h2 class="text-xl font-bold text-white">Sign In to Complete Your Booking</h2>
             <p class="text-gray-400 text-sm mt-0.5">Access your KGC account to continue</p>
           </div>
-          <button onclick="window.closeModal('authModal')" class="text-gray-500 hover:text-white ml-4 flex-shrink-0">
+          <button id="authModalClose" onclick="window.closeModal('authModal')" class="modal-close-btn" aria-label="Close auth modal">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -1548,6 +1639,35 @@
             </div>
           </div>
         </div>
+
+        <!-- My Bookings Table -->
+        <div class="bg-dark-gray rounded-xl p-6 border border-gold/20 mt-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-bold text-gold">My Bookings</h3>
+            <button onclick="window.openBookingModal()"
+              class="px-5 py-2 bg-gold text-[#121212] font-bold rounded-lg hover:opacity-90 transition-all text-sm">
+              + New Booking
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-gray-700">
+                  <th class="text-left py-3 px-4 text-gray-400 font-semibold text-sm">Reference #</th>
+                  <th class="text-left py-3 px-4 text-gray-400 font-semibold text-sm">Services Requested</th>
+                  <th class="text-left py-3 px-4 text-gray-400 font-semibold text-sm">Preferred Date</th>
+                  <th class="text-left py-3 px-4 text-gray-400 font-semibold text-sm">Status</th>
+                </tr>
+              </thead>
+              <tbody id="clientBookingBody">
+                <tr>
+                  <td colspan="4" class="text-center py-8 text-gray-400">No bookings yet. Click "+ New Booking" to get started.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -1555,16 +1675,25 @@
     <div id="adminDashboard" class="hidden min-h-screen py-8 px-4">
       <div class="max-w-7xl mx-auto">
         <div class="bg-dark-gray rounded-xl p-6 mb-8 border border-gold/20">
-          <div class="flex justify-between items-center">
+          <div class="flex justify-between items-center flex-wrap gap-3">
             <div>
               <h2 class="text-3xl font-bold text-white">KGC Master Control - <span class="text-gold">Admin View</span>
               </h2>
               <p class="text-gray-400">Complete oversight of all operations</p>
             </div>
-            <button onclick="window.logout()"
-              class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg">
-              Log Out
-            </button>
+            <div class="flex items-center gap-3">
+              <button id="adminRefreshBtn" onclick="window.refreshAdminBookings()"
+                class="px-5 py-2.5 bg-gold/20 hover:bg-gold/30 text-gold font-semibold rounded-lg border border-gold/40 transition-all text-sm flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Refresh
+              </button>
+              <button onclick="window.logout()"
+                class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg">
+                Log Out
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1597,6 +1726,7 @@
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold">Subsidiaries</th>
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold">Date</th>
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold">Status</th>
+                  <th class="text-left py-3 px-4 text-gray-400 font-semibold">Ref #</th>
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold">Actions</th>
                 </tr>
               </thead>
@@ -1856,61 +1986,64 @@
       });
     }
 
-    // Smooth Scrolling for Navigation Links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const targetId = this.getAttribute('href');
-        const target = document.querySelector(targetId);
+    // ── Smooth Scrolling for Navigation Links (event delegation) ────────────
+    // Using document-level delegation instead of per-element binding so that
+    // nav links always work regardless of login state, dashboard mode, or
+    // any future DOM changes.
+    document.addEventListener('click', function (e) {
+      // Walk up from the click target to find a matching anchor
+      var anchor = e.target.closest('a[href^="#"]');
+      if (!anchor) return;
 
-        if (target) {
-          // Check if it's a company card
-          const isCompanyCard = targetId.includes('company-');
+      var targetId = anchor.getAttribute('href');
+      if (!targetId || targetId === '#') return;
 
-          if (isCompanyCard) {
-            // Get exact measurements
-            const headerHeight = 80; // Fixed header height
-            const windowHeight = window.innerHeight;
+      // Don't intercept external links that happen to start with #
+      var targetEl = document.querySelector(targetId);
+      if (!targetEl) return;
 
-            // Calculate available viewport height (excluding header)
-            const availableHeight = windowHeight - headerHeight;
+      e.preventDefault();
 
-            // Get target element position and height
-            const targetRect = target.getBoundingClientRect();
-            const currentScrollY = window.pageYOffset || document.documentElement.scrollTop;
-            const targetTopFromDocument = targetRect.top + currentScrollY;
-            const targetHeight = target.offsetHeight;
+      var scrollContainer = document.getElementById('scroll-container');
+      var mainNavEl = document.getElementById('mainNav');
 
-            // Calculate the position where card will be centered
-            // We want equal space above and below the card in the visible area
-            const offsetFromTop = (availableHeight - targetHeight) / 2;
+      // ── EXIT DASHBOARD MODE ─────────────────────────────────────────────
+      // Clicking any nav link while a dashboard is visible returns to the site.
+      if (scrollContainer && scrollContainer.classList.contains('dashboard-mode')) {
+        scrollContainer.classList.remove('dashboard-mode');
+        scrollContainer.style.display = '';
+        var cd = document.getElementById('clientDashboard');
+        var ad = document.getElementById('adminDashboard');
+        if (cd) cd.classList.add('hidden');
+        if (ad) ad.classList.add('hidden');
+      }
 
-            // Final scroll position: card top position minus header minus the offset to center
-            const finalScrollPosition = targetTopFromDocument - headerHeight - offsetFromTop;
+      // Small delay so sections are visible again before scrolling
+      setTimeout(function () {
+        var isCompanyCard = targetId.indexOf('company-') !== -1;
+        var headerHeight = 80;
 
-            // Scroll to the calculated position
-            window.scrollTo({
-              top: Math.max(0, finalScrollPosition), // Don't scroll above 0
-              behavior: 'smooth'
-            });
-          } else {
-            // Regular scroll behavior for other sections
-            const targetRect = target.getBoundingClientRect();
-            const targetTop = targetRect.top + window.pageYOffset;
-            const headerHeight = 80;
-
-            window.scrollTo({
-              top: targetTop - headerHeight - 20,
-              behavior: 'smooth'
-            });
-          }
-
-          // Close mobile menu if open
-          if (mainNav.classList.contains('active')) {
-            mainNav.classList.remove('active');
-          }
+        if (isCompanyCard) {
+          var windowHeight = window.innerHeight;
+          var availableHeight = windowHeight - headerHeight;
+          var rect = targetEl.getBoundingClientRect();
+          var currentScrollY = window.pageYOffset || document.documentElement.scrollTop;
+          var targetTopFromDocument = rect.top + currentScrollY;
+          var targetHeight = targetEl.offsetHeight;
+          var offsetFromTop = Math.max(0, (availableHeight - targetHeight) / 2);
+          var finalPos = targetTopFromDocument - headerHeight - offsetFromTop;
+          window.scrollTo({ top: Math.max(0, finalPos), behavior: 'smooth' });
+        } else {
+          var rect2 = targetEl.getBoundingClientRect();
+          var targetTop = rect2.top + window.pageYOffset;
+          window.scrollTo({ top: targetTop - headerHeight - 20, behavior: 'smooth' });
         }
-      });
+      }, 50);
+
+      // Close mobile menu if open
+      if (mainNavEl && mainNavEl.classList.contains('active')) {
+        mainNavEl.classList.remove('active');
+      }
     });
 
     // Header Shadow on Scroll
@@ -1931,52 +2064,78 @@
       role: null,
       userName: '',
       userEmail: '',
-      bookings: []
+      bookings: []   // local cache only; source of truth is the server
     };
 
+    // ── Persist / restore auth session (bookings come from server) ───────────
     function loadState() {
       try {
-        var saved = localStorage.getItem('kgc_user_role');
-        if (saved) portalState = JSON.parse(saved);
-        var savedBookings = localStorage.getItem('kgc_bookings');
-        if (savedBookings) portalState.bookings = JSON.parse(savedBookings);
-      } catch (e) { }
+        var saved = localStorage.getItem('kgc_session');
+        if (saved) {
+          var parsed = JSON.parse(saved);
+          portalState.isLoggedIn = parsed.isLoggedIn || false;
+          portalState.role       = parsed.role       || null;
+          portalState.userName   = parsed.userName   || '';
+          portalState.userEmail  = parsed.userEmail  || '';
+        }
+      } catch (e) { /* ignore */ }
     }
-
     function saveState() {
-      localStorage.setItem('kgc_user_role', JSON.stringify(portalState));
-      localStorage.setItem('kgc_bookings', JSON.stringify(portalState.bookings));
+      localStorage.setItem('kgc_session', JSON.stringify({
+        isLoggedIn: portalState.isLoggedIn,
+        role:       portalState.role,
+        userName:   portalState.userName,
+        userEmail:  portalState.userEmail
+      }));
     }
 
     loadState();
 
-    // --- Header indicator ---
+    // ── Header indicator ─────────────────────────────────────────────────
     function updateHeaderState() {
       var indicator = document.getElementById('userIndicator');
-      var nameEl = document.getElementById('userIndicatorName');
+      var nameEl    = document.getElementById('userIndicatorName');
       if (!indicator) return;
       if (portalState.isLoggedIn) {
         indicator.classList.remove('hidden');
         indicator.classList.add('flex');
-        if (nameEl) nameEl.textContent = portalState.role === 'admin' ? 'Admin Dashboard' : 'My Dashboard (' + portalState.userName + ')';
+        if (nameEl) nameEl.textContent = portalState.role === 'admin'
+          ? 'Admin Dashboard'
+          : 'My Dashboard (' + portalState.userName + ')';
       } else {
         indicator.classList.add('hidden');
         indicator.classList.remove('flex');
       }
     }
     updateHeaderState();
+    // Restore dashboard view if user was logged in before refresh
+    if (portalState.isLoggedIn) {
+      if (portalState.role === 'admin') window.showAdminDashboard && setTimeout(window.showAdminDashboard, 0);
+      else window.showClientDashboard && setTimeout(window.showClientDashboard, 0);
+    }
 
-    // --- Modal open/close ---
+    // ── Modal open/close (uses .modal-overlay.open CSS class) ──────────────
     window.openModal = function (id) {
       var el = document.getElementById(id);
-      if (el) { el.classList.remove('hidden'); el.classList.add('flex'); document.body.style.overflow = 'hidden'; }
+      if (!el) return;
+      el.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      // Backdrop click-to-close (bind once only)
+      if (!el._backdropBound) {
+        el._backdropBound = true;
+        el.addEventListener('click', function (e) {
+          if (e.target === el) window.closeModal(id);
+        });
+      }
     };
     window.closeModal = function (id) {
       var el = document.getElementById(id);
-      if (el) { el.classList.add('hidden'); el.classList.remove('flex'); document.body.style.overflow = 'auto'; }
+      if (!el) return;
+      el.classList.remove('open');
+      document.body.style.overflow = '';
     };
 
-    // --- Book Now: always require login first ---
+    // ── Book Now button ─────────────────────────────────────────────────
     window.handleBookNow = function () {
       if (portalState.isLoggedIn) {
         if (portalState.role === 'client') {
@@ -1991,11 +2150,11 @@
       }
     };
 
-    // --- Open booking modal with pre-filled session data ---
+    // ── Open booking modal (pre-filled with session data) ────────────────
     window.openBookingDirect = function () {
-      var nameEl = document.getElementById('bookingFullName');
+      var nameEl  = document.getElementById('bookingFullName');
       var emailEl = document.getElementById('bookingEmail');
-      if (nameEl) nameEl.value = portalState.userName || '';
+      if (nameEl)  nameEl.value  = portalState.userName  || '';
       if (emailEl) emailEl.value = portalState.userEmail || '';
       var s1 = document.getElementById('bookingStep1');
       var s2 = document.getElementById('bookingStep2');
@@ -2006,10 +2165,10 @@
     };
     window.openBookingModal = window.openBookingDirect;
 
-    // --- Booking steps ---
+    // ── Booking wizard steps ────────────────────────────────────────────
     window.nextBookingStep = function () {
       var checked = document.querySelectorAll('input[name="subsidiary"]:checked');
-      if (checked.length === 0) { alert('Please select at least one subsidiary.'); return; }
+      if (checked.length === 0) { window.showToast('\u26a0\ufe0f Please select at least one subsidiary.', 'error'); return; }
       document.getElementById('bookingStep1').classList.add('hidden');
       document.getElementById('bookingStep2').classList.remove('hidden');
     };
@@ -2017,48 +2176,80 @@
       document.getElementById('bookingStep2').classList.add('hidden');
       document.getElementById('bookingStep1').classList.remove('hidden');
     };
-    window.submitBooking = function (e) {
+
+    // ── Submit booking → POST to /api/bookings ───────────────────────────
+    window.submitBooking = async function (e) {
       e.preventDefault();
       var form = e.target;
       var subs = Array.from(document.querySelectorAll('input[name="subsidiary"]:checked')).map(function (c) { return c.value; });
-      var booking = {
-        id: 'BK' + Date.now(),
-        name: form.fullName.value,
-        email: form.email.value,
-        phone: form.phone.value,
-        date: form.serviceDate.value,
+      if (!subs.length) { window.showToast('\u26a0\ufe0f Please select at least one subsidiary.', 'error'); return; }
+
+      var payload = {
+        name:        form.fullName.value.trim(),
+        email:       form.email.value.trim().toLowerCase(),
+        phone:       form.phone.value.trim(),
+        date:        form.serviceDate.value,
         subsidiaries: subs,
-        notes: form.notes.value,
-        hytDonation: form.hytDonation.checked,
-        status: 'Pending',
-        timestamp: new Date().toISOString()
+        notes:       form.notes.value.trim(),
+        hytDonation: form.hytDonation.checked
       };
-      portalState.bookings.push(booking);
-      saveState();
-      window.closeModal('bookingModal');
-      form.reset();
-      alert('Booking Submitted!\nReference: ' + booking.id + '\nWe will contact you within 24 hours.');
+
+      // Disable submit button while posting
+      var submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting...'; }
+
+      try {
+        var response = await fetch('/api/bookings', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify(payload)
+        });
+        var result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || 'Server error');
+        }
+
+        var booking = result.data;
+        // Also cache locally
+        portalState.bookings.push(booking);
+
+        window.closeModal('bookingModal');
+        form.reset();
+        window.showToast('\u2705 Booking submitted! Ref: ' + booking.id + '. We\'ll contact you within 24h.');
+
+        if (portalState.role === 'client') {
+          window.showClientDashboard();
+        } else {
+          window.showAdminDashboard();
+        }
+      } catch (err) {
+        console.error('Booking submission error:', err);
+        window.showToast('\u274c Failed to submit booking: ' + err.message, 'error');
+      } finally {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Confirm & Submit Request'; }
+      }
     };
 
-    // --- Auth role toggle ---
+    // ── Auth role toggle ────────────────────────────────────────────────
     window.switchAuthRole = function (role) {
-      var cb = document.getElementById('roleToggleClient');
-      var ab = document.getElementById('roleToggleAdmin');
+      var cb  = document.getElementById('roleToggleClient');
+      var ab  = document.getElementById('roleToggleAdmin');
       var inp = document.getElementById('loginRoleInput');
       if (!inp) return;
       inp.value = role;
       if (cb && ab) {
         if (role === 'client') {
-          cb.style.background = '#D4AF37'; cb.style.color = '#121212'; cb.style.fontWeight = '700';
-          ab.style.background = 'transparent'; ab.style.color = '#9ca3af'; ab.style.fontWeight = '500';
+          cb.style.cssText = 'background:#D4AF37;color:#121212;font-weight:700;';
+          ab.style.cssText = 'background:transparent;color:#9ca3af;font-weight:500;';
         } else {
-          ab.style.background = '#D4AF37'; ab.style.color = '#121212'; ab.style.fontWeight = '700';
-          cb.style.background = 'transparent'; cb.style.color = '#9ca3af'; cb.style.fontWeight = '500';
+          ab.style.cssText = 'background:#D4AF37;color:#121212;font-weight:700;';
+          cb.style.cssText = 'background:transparent;color:#9ca3af;font-weight:500;';
         }
       }
     };
 
-    // --- Auth tab switch ---
+    // ── Auth tab switch ─────────────────────────────────────────────────
     window.switchAuthTab = function (tab) {
       var lt = document.getElementById('loginTab');
       var rt = document.getElementById('registerTab');
@@ -2076,22 +2267,25 @@
       }
     };
 
-    // --- Login: client -> booking, admin -> dashboard ---
+    // ── Login handler ─────────────────────────────────────────────────
     window.handleLogin = function (e) {
       e.preventDefault();
-      var form = e.target;
+      var form  = e.target;
       var email = form.loginEmail.value.trim();
-      var pass = form.loginPassword.value;
-      var role = (document.getElementById('loginRoleInput') || {}).value || 'client';
+      var pass  = form.loginPassword.value;
+      var role  = (document.getElementById('loginRoleInput') || {}).value || 'client';
       var ok = (pass === 'password') && (
         (role === 'client' && email === 'client@kgc.ph') ||
-        (role === 'admin' && email === 'admin@kgc.ph')
+        (role === 'admin'  && email === 'admin@kgc.ph')
       );
-      if (!ok) { alert('Invalid credentials. Please check your email, password, and role.'); return; }
+      if (!ok) {
+        window.showToast('\u274c Invalid credentials. Check email, password, and role.', 'error');
+        return;
+      }
       portalState.isLoggedIn = true;
-      portalState.role = role;
-      portalState.userName = role === 'client' ? 'Client User' : 'Admin User';
-      portalState.userEmail = email;
+      portalState.role       = role;
+      portalState.userName   = role === 'client' ? 'Client User' : 'Admin User';
+      portalState.userEmail  = email;
       saveState();
       updateHeaderState();
       window.closeModal('authModal');
@@ -2103,74 +2297,222 @@
       }
     };
 
-    // --- Register ---
+    // ── Register handler ──────────────────────────────────────────────
     window.handleRegister = function (e) {
       e.preventDefault();
-      alert('Account request submitted!\nWe will review and contact you within 24 hours.');
+      window.showToast('\u2705 Account request submitted! We will contact you within 24 hours.');
       window.closeModal('authModal');
       e.target.reset();
     };
 
-    // --- Dashboard routing ---
+    // ── Dashboard routing ──────────────────────────────────────────────
     window.goToDashboard = function () {
       if (portalState.role === 'admin') window.showAdminDashboard();
       else window.showClientDashboard();
     };
+
     window.showClientDashboard = function () {
-      document.getElementById('scroll-container').style.display = 'none';
+      var sc = document.getElementById('scroll-container');
+      sc.style.display = '';
+      sc.classList.add('dashboard-mode');
       document.getElementById('clientDashboard').classList.remove('hidden');
+      document.getElementById('adminDashboard').classList.add('hidden');
       var n = document.getElementById('clientName');
       if (n) n.textContent = portalState.userName;
+      window.renderClientBookings();
       window.scrollTo(0, 0);
     };
+
     window.showAdminDashboard = function () {
-      document.getElementById('scroll-container').style.display = 'none';
+      var sc = document.getElementById('scroll-container');
+      sc.style.display = '';
+      sc.classList.add('dashboard-mode');
       document.getElementById('adminDashboard').classList.remove('hidden');
+      document.getElementById('clientDashboard').classList.add('hidden');
       window.renderBookingTable();
       window.scrollTo(0, 0);
     };
 
-    // --- Booking table ---
-    window.renderBookingTable = function () {
+    // ── Admin Booking Table (fetches from /api/bookings) ──────────────────
+    window.renderBookingTable = async function () {
       var tbody = document.getElementById('bookingTableBody');
       if (!tbody) return;
-      var pc = document.getElementById('pendingCount');
-      if (pc) pc.textContent = portalState.bookings.filter(function (b) { return b.status === 'Pending'; }).length;
-      if (!portalState.bookings.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-400">No bookings yet</td></tr>';
-        return;
+
+      // Show loading state
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400"><span class="kgc-spinner"></span>Loading bookings...</td></tr>';
+
+      try {
+        var response = await fetch('/api/bookings');
+        var result   = await response.json();
+        var bookings = (result.success && result.data) ? result.data : [];
+
+        // Sync local cache
+        portalState.bookings = bookings;
+
+        // Update pending count badge
+        var pc = document.getElementById('pendingCount');
+        if (pc) pc.textContent = bookings.filter(function (b) { return b.status === 'Pending'; }).length;
+
+        if (!bookings.length) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400">No bookings yet</td></tr>';
+          return;
+        }
+
+        // Newest first
+        var sorted = bookings.slice().reverse();
+        tbody.innerHTML = sorted.map(function (b) {
+          var badgeClass = b.status === 'Approved' ? 'badge-approved'
+                         : b.status === 'Rejected' ? 'badge-rejected'
+                         : 'badge-pending';
+          return '<tr class="border-b border-gray-800 hover:bg-gray-900 transition-colors">' +
+            '<td class="py-3 px-4 text-white font-medium">' + escHtml(b.name) + '</td>' +
+            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(b.subsidiaries.join(', ')) + '</td>' +
+            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(b.date || '\u2014') + '</td>' +
+            '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-bold ' + badgeClass + '">' + escHtml(b.status) + '</span></td>' +
+            '<td class="py-3 px-4 text-gray-400 text-xs font-mono">' + escHtml(b.id) + '</td>' +
+            '<td class="py-3 px-4">' +
+              '<div class="flex items-center gap-2">' +
+                '<button onclick="window.viewBooking(\'' + b.id + '\')" class="text-gold text-xs hover:underline">View</button>' +
+                (b.status !== 'Approved' ? '<button onclick="window.updateBookingStatus(\'' + b.id + '\', \'Approved\')" class="px-2 py-0.5 bg-green-700/30 hover:bg-green-700/50 text-green-400 rounded text-xs border border-green-700/40">Approve</button>' : '') +
+                (b.status !== 'Rejected' ? '<button onclick="window.updateBookingStatus(\'' + b.id + '\', \'Rejected\')" class="px-2 py-0.5 bg-red-700/30 hover:bg-red-700/50 text-red-400 rounded text-xs border border-red-700/40">Reject</button>' : '') +
+              '</div>' +
+            '</td>' +
+            '</tr>';
+        }).join('');
+
+      } catch (err) {
+        console.error('Failed to fetch bookings:', err);
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-red-400">\u274c Failed to load bookings. Is the server running?</td></tr>';
       }
-      tbody.innerHTML = portalState.bookings.map(function (b) {
-        return '<tr class="border-b border-gray-800 hover:bg-gray-900">' +
-          '<td class="py-3 px-4 text-white">' + b.name + '</td>' +
-          '<td class="py-3 px-4 text-gray-300 text-sm">' + b.subsidiaries.join(', ') + '</td>' +
-          '<td class="py-3 px-4 text-gray-300 text-sm">' + b.date + '</td>' +
-          '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-bold bg-yellow-600/20 text-yellow-400 border border-yellow-600/30">' + b.status + '</span></td>' +
-          '<td class="py-3 px-4"><button onclick="window.viewBooking(\'' + b.id + '\')" class="text-gold text-sm hover:underline">View</button></td>' +
-          '</tr>';
-      }).join('');
-    };
-    window.viewBooking = function (id) {
-      var b = portalState.bookings.find(function (x) { return x.id === id; });
-      if (b) alert('ID: ' + b.id + '\nClient: ' + b.name + '\nEmail: ' + b.email + '\nDate: ' + b.date + '\nServices: ' + b.subsidiaries.join(', ') + '\nNotes: ' + (b.notes || '-') + '\nHYT: ' + (b.hytDonation ? 'Yes' : 'No'));
     };
 
-    // --- Logout ---
+    // Refresh button handler
+    window.refreshAdminBookings = async function () {
+      var btn = document.getElementById('adminRefreshBtn');
+      if (btn) { btn.disabled = true; btn.querySelector('svg') && (btn.querySelector('svg').style.animation = 'kgc-spin 0.7s linear infinite'); }
+      await window.renderBookingTable();
+      if (btn) { btn.disabled = false; btn.querySelector('svg') && (btn.querySelector('svg').style.animation = ''); }
+      window.showToast('\u2705 Bookings refreshed!');
+    };
+
+    // View full booking details
+    window.viewBooking = function (id) {
+      var b = portalState.bookings.find(function (x) { return x.id === id; });
+      if (!b) return;
+      alert(
+        'Booking ID: '   + b.id +
+        '\nClient:     '  + b.name +
+        '\nEmail:      '  + b.email +
+        '\nPhone:      '  + (b.phone || '\u2014') +
+        '\nDate:       '  + (b.date  || '\u2014') +
+        '\nServices:   '  + b.subsidiaries.join(', ') +
+        '\nNotes:      '  + (b.notes || '\u2014') +
+        '\nHYT Fund:   '  + (b.hytDonation ? 'Yes' : 'No') +
+        '\nStatus:     '  + b.status +
+        '\nSubmitted:  '  + new Date(b.timestamp).toLocaleString()
+      );
+    };
+
+    // Approve / Reject a booking via PATCH /api/bookings/:id
+    window.updateBookingStatus = async function (id, status) {
+      try {
+        var response = await fetch('/api/bookings/' + id, {
+          method:  'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ status: status })
+        });
+        var result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.error || 'Server error');
+        window.showToast('\u2705 Booking ' + id + ' marked as ' + status + '.');
+        window.renderBookingTable(); // re-fetch to reflect new status
+      } catch (err) {
+        console.error('Status update error:', err);
+        window.showToast('\u274c Failed to update status: ' + err.message, 'error');
+      }
+    };
+
+    // ── Client Booking Table (fetches /api/bookings?email=) ───────────────
+    window.renderClientBookings = async function () {
+      var tbody = document.getElementById('clientBookingBody');
+      if (!tbody) return;
+
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-400"><span class="kgc-spinner"></span>Loading your bookings...</td></tr>';
+
+      try {
+        var email    = encodeURIComponent(portalState.userEmail || '');
+        var response = await fetch('/api/bookings?email=' + email);
+        var result   = await response.json();
+        var myBookings = (result.success && result.data) ? result.data : [];
+
+        if (!myBookings.length) {
+          tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-400">No bookings yet. Click "+ New Booking" to get started.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = myBookings.slice().reverse().map(function (b) {
+          var badgeClass = b.status === 'Approved' ? 'badge-approved'
+                         : b.status === 'Rejected' ? 'badge-rejected'
+                         : 'badge-pending';
+          return '<tr class="border-b border-gray-800 hover:bg-gray-900 transition-colors">' +
+            '<td class="py-3 px-4 text-white text-xs font-mono">' + escHtml(b.id) + '</td>' +
+            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(b.subsidiaries.join(', ')) + '</td>' +
+            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(b.date || '\u2014') + '</td>' +
+            '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-bold ' + badgeClass + '">' + escHtml(b.status) + '</span></td>' +
+            '</tr>';
+        }).join('');
+
+      } catch (err) {
+        console.error('Failed to fetch client bookings:', err);
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-red-400">\u274c Could not load bookings.</td></tr>';
+      }
+    };
+
+    // ── XSS guard helper ────────────────────────────────────────────────
+    function escHtml(str) {
+      return String(str || '')
+        .replace(/&/g,  '&amp;')
+        .replace(/</g,  '&lt;')
+        .replace(/>/g,  '&gt;')
+        .replace(/"/g,  '&quot;')
+        .replace(/'/g,  '&#39;');
+    }
+
+    // ── Toast notification ──────────────────────────────────────────────
+    window.showToast = function (msg, type) {
+      var t = document.createElement('div');
+      t.className = 'kgc-toast';
+      if (type === 'error') {
+        t.style.background = 'linear-gradient(135deg, #dc2626, #b91c1c)';
+        t.style.color = '#fff';
+      }
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(function () {
+        t.style.opacity = '0';
+        setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 500);
+      }, 3500);
+    };
+
+    // ── Logout ────────────────────────────────────────────────────
     window.logout = function () {
       if (!confirm('Log out of your KGC account?')) return;
       portalState.isLoggedIn = false;
-      portalState.role = null;
-      portalState.userName = '';
-      portalState.userEmail = '';
+      portalState.role       = null;
+      portalState.userName   = '';
+      portalState.userEmail  = '';
+      portalState.bookings   = [];
       saveState();
       updateHeaderState();
       document.getElementById('clientDashboard').classList.add('hidden');
       document.getElementById('adminDashboard').classList.add('hidden');
-      document.getElementById('scroll-container').style.display = 'block';
+      var sc = document.getElementById('scroll-container');
+      sc.style.display = '';
+      sc.classList.remove('dashboard-mode');
       window.scrollTo(0, 0);
+      window.showToast('\uD83D\uDC4B Logged out. See you next time!');
     };
 
-    console.log('KGC Portal ready. handleBookNow:', typeof window.handleBookNow);
+    console.log('KGC Portal ready. Server API: /api/bookings | handleBookNow:', typeof window.handleBookNow);
 
   </script>
 </body>
