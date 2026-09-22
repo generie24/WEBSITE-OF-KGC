@@ -226,37 +226,57 @@ app.get('/api/bookings', (req, res) => {
 /**
  * POST /api/bookings
  * Creates a new booking. Expects the booking payload in the request body.
- * Returns the saved booking object (with server-assigned id & timestamp).
+ * Returns a confirmation payload accepted by the front-end.
  */
 app.post('/api/bookings', (req, res) => {
-  const body = req.body;
+  try {
+    const body = req.body || {};
+    const rawSubsidiaries = Array.isArray(body.subsidiaries)
+      ? body.subsidiaries
+      : typeof body.subsidiaries === 'string'
+        ? [body.subsidiaries]
+        : [];
+    const sanitizedDate = String(body.date || body.preferredDate || '').trim();
+    const name = String(body.name || '').trim();
+    const email = String(body.email || '').trim().toLowerCase();
 
-  // Basic validation
-  if (!body.name || !body.email || !body.subsidiaries || !Array.isArray(body.subsidiaries) || body.subsidiaries.length === 0) {
-    return res.status(400).json({
+    if (!name || !email || rawSubsidiaries.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields: name, email, and at least one subsidiary.'
+      });
+    }
+
+    const booking = {
+      id: 'BK' + Date.now(),
+      name,
+      email,
+      phone: String(body.phone || '').trim(),
+      date: sanitizedDate,
+      subsidiaries: rawSubsidiaries,
+      notes: String(body.notes || '').trim(),
+      hytDonation: Boolean(body.hytDonation),
+      status: 'Pending',
+      timestamp: new Date().toISOString()
+    };
+
+    bookingsStore.push(booking);
+    saveBookingsToDisk();
+
+    console.log(`✅ New booking saved: ${booking.id} by ${booking.name} (${booking.email})`);
+    return res.status(200).json({
+      success: true,
+      message: 'Booking confirmed',
+      data: booking
+    });
+  } catch (error) {
+    console.error('Booking submission failed:', error);
+    return res.status(500).json({
       success: false,
-      error: 'Missing required fields: name, email, and at least one subsidiary.'
+      error: 'Server error',
+      message: error && error.message ? error.message : 'Unexpected booking submission error'
     });
   }
-
-  const booking = {
-    id: 'BK' + Date.now(),
-    name: String(body.name || '').trim(),
-    email: String(body.email || '').trim().toLowerCase(),
-    phone: String(body.phone || '').trim(),
-    date: String(body.date || '').trim(),
-    subsidiaries: body.subsidiaries,
-    notes: String(body.notes || '').trim(),
-    hytDonation: Boolean(body.hytDonation),
-    status: 'Pending',
-    timestamp: new Date().toISOString()
-  };
-
-  bookingsStore.push(booking);
-  saveBookingsToDisk();
-
-  console.log(`✅ New booking saved: ${booking.id} by ${booking.name} (${booking.email})`);
-  res.status(201).json({ success: true, data: booking });
 });
 
 /**
@@ -384,25 +404,29 @@ app.use((err, req, res, next) => {
 });
 
 // ── Start server ─────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log('\n🚀 Klassic Group Corporate Hub Server');
-  console.log('=====================================');
-  console.log(`📍 Server running at: http://${HOST}:${PORT}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`💼 App: ${process.env.APP_NAME || 'Klassic Group Hub'}`);
-  console.log(`📊 Health check: http://${HOST}:${PORT}/health`);
-  console.log(`🔌 Subsidiaries API: http://${HOST}:${PORT}/api/subsidiaries`);
-  console.log(`📅 Bookings API:     http://${HOST}:${PORT}/api/bookings`);
-  console.log('=====================================\n');
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log('\n🚀 Klassic Group Corporate Hub Server');
+    console.log('=====================================');
+    console.log(`📍 Server running at: http://${HOST}:${PORT}`);
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`💼 App: ${process.env.APP_NAME || 'Klassic Group Hub'}`);
+    console.log(`📊 Health check: http://${HOST}:${PORT}/health`);
+    console.log(`🔌 Subsidiaries API: http://${HOST}:${PORT}/api/subsidiaries`);
+    console.log(`📅 Bookings API:     http://${HOST}:${PORT}/api/bookings`);
+    console.log('=====================================\n');
+  });
 
-// ── Graceful shutdown ────────────────────────────────────────────────────────
-process.on('SIGTERM', () => {
-  console.log('SIGTERM signal received: closing HTTP server');
-  process.exit(0);
-});
+  // ── Graceful shutdown ────────────────────────────────────────────────────────
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM signal received: closing HTTP server');
+    process.exit(0);
+  });
 
-process.on('SIGINT', () => {
-  console.log('\nSIGINT signal received: closing HTTP server');
-  process.exit(0);
-});
+  process.on('SIGINT', () => {
+    console.log('\nSIGINT signal received: closing HTTP server');
+    process.exit(0);
+  });
+}
+
+module.exports = app;

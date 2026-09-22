@@ -2224,23 +2224,34 @@
         hytDonation: form.hytDonation.checked
       };
 
-      // Disable submit button while posting
       var submitBtn = form.querySelector('button[type="submit"]');
       if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting...'; }
 
       try {
         var response = await fetch('/api/bookings', {
-          method:  'POST',
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify(payload)
+          body: JSON.stringify(payload)
         });
         var result = await readJsonResponse(response);
 
-        if (!response.ok || !(result && (result.success || result.data))) {
-          throw new Error((result && result.error) || 'Server error');
+        if (!response.ok || !result || !result.success) {
+          throw new Error((result && (result.error || result.message)) || 'Server error');
         }
 
-        var booking = result.data || result;
+        var booking = result.data || {
+          id: 'BK-PENDING',
+          name: payload.name,
+          email: payload.email,
+          phone: payload.phone,
+          date: payload.date,
+          subsidiaries: payload.subsidiaries,
+          notes: payload.notes,
+          hytDonation: payload.hytDonation,
+          status: 'Pending'
+        };
+
+        if (!portalState.bookings) portalState.bookings = [];
         portalState.bookings.push(booking);
         syncAdminStats(portalState.bookings);
 
@@ -2249,7 +2260,7 @@
           bookingTableBody.innerHTML = '';
         }
 
-        if (bookingTableBody) {
+        if (bookingTableBody && booking.id && booking.name) {
           bookingTableBody.innerHTML = '<tr class="border-b border-gray-800 hover:bg-gray-900 transition-colors">' +
             '<td class="py-3 px-4 text-white font-medium">' + escHtml(booking.name) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml((booking.subsidiaries || []).join(', ')) + '</td>' +
@@ -2262,7 +2273,7 @@
 
         window.closeModal('bookingModal');
         form.reset();
-        window.showToast('\u2705 Booking submitted! Ref: ' + booking.id + '. We\'ll contact you within 24h.');
+        window.showToast('\u2705 ' + (result.message || 'Booking confirmed'), 'success');
 
         if (portalState.role === 'client') {
           window.showClientDashboard();
