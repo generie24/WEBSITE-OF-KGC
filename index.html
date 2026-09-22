@@ -2115,6 +2115,7 @@
     function updateHeaderState() {
       var indicator = document.getElementById('userIndicator');
       var nameEl    = document.getElementById('userIndicatorName');
+      var bookNowBtn = document.getElementById('bookNowBtn');
       if (!indicator) return;
       if (portalState.isLoggedIn) {
         indicator.classList.remove('hidden');
@@ -2125,6 +2126,12 @@
       } else {
         indicator.classList.add('hidden');
         indicator.classList.remove('flex');
+      }
+
+      if (bookNowBtn) {
+        var isAdminOnlyView = portalState.isLoggedIn && portalState.role === 'admin';
+        bookNowBtn.classList.toggle('hidden', isAdminOnlyView);
+        bookNowBtn.setAttribute('aria-hidden', String(isAdminOnlyView));
       }
     }
     updateHeaderState();
