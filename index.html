@@ -824,6 +824,10 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
+              <button type="button" data-company="brains-infinite-innovations" data-book-now="true"
+                class="ml-3 magnetic-btn inline-flex items-center justify-center bg-gold text-[#121212] font-semibold px-6 py-3 rounded-full shadow-lg hover:opacity-90 transition-all">
+                Book Now
+              </button>
             </div>
           </article>
 
@@ -878,6 +882,10 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
+              <button type="button" data-company="klassic-solutions" data-book-now="true"
+                class="ml-3 magnetic-btn inline-flex items-center justify-center bg-gold text-[#121212] font-semibold px-6 py-3 rounded-full shadow-lg hover:opacity-90 transition-all">
+                Book Now
+              </button>
             </div>
           </article>
 
@@ -934,6 +942,10 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
+              <button type="button" data-company="klassic-marketing" data-book-now="true"
+                class="ml-3 magnetic-btn inline-flex items-center justify-center bg-gold text-[#121212] font-semibold px-6 py-3 rounded-full shadow-lg hover:opacity-90 transition-all">
+                Book Now
+              </button>
             </div>
           </article>
 
@@ -989,6 +1001,10 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
+              <button type="button" data-company="westwood-development" data-book-now="true"
+                class="ml-3 magnetic-btn inline-flex items-center justify-center bg-gold text-[#121212] font-semibold px-6 py-3 rounded-full shadow-lg hover:opacity-90 transition-all">
+                Book Now
+              </button>
             </div>
           </article>
 
@@ -1043,6 +1059,10 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
+              <button type="button" data-company="westwood-law" data-book-now="true"
+                class="ml-3 magnetic-btn inline-flex items-center justify-center bg-gold text-[#121212] font-semibold px-6 py-3 rounded-full shadow-lg hover:opacity-90 transition-all">
+                Book Now
+              </button>
             </div>
           </article>
 
@@ -1100,6 +1120,10 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
+              <button type="button" data-company="connector" data-book-now="true"
+                class="ml-3 magnetic-btn inline-flex items-center justify-center bg-gold text-[#121212] font-semibold px-6 py-3 rounded-full shadow-lg hover:opacity-90 transition-all">
+                Book Now
+              </button>
             </div>
           </article>
 
@@ -1157,6 +1181,10 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
+              <button type="button" data-company="the-green-oasis" data-book-now="true"
+                class="ml-3 magnetic-btn inline-flex items-center justify-center bg-gold text-[#121212] font-semibold px-6 py-3 rounded-full shadow-lg hover:opacity-90 transition-all">
+                Book Now
+              </button>
             </div>
           </article>
 
@@ -1223,6 +1251,10 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
+              <button type="button" data-company="luxurious-cleaning" data-book-now="true"
+                class="ml-3 magnetic-btn inline-flex items-center justify-center bg-gold text-[#121212] font-semibold px-6 py-3 rounded-full shadow-lg hover:opacity-90 transition-all">
+                Book Now
+              </button>
             </div>
           </article>
 
@@ -1279,6 +1311,10 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
+              <button type="button" data-company="hyt-foundation" data-book-now="true"
+                class="ml-3 magnetic-btn inline-flex items-center justify-center bg-gold text-[#121212] font-semibold px-6 py-3 rounded-full shadow-lg hover:opacity-90 transition-all">
+                Book Now
+              </button>
             </div>
           </article>
 
@@ -1978,6 +2014,8 @@
 
   </div>
 
+  <script src="./script.js"></script>
+
   <!-- Load animations script -->
   <script src="./animations.js" onerror="(function(){var l=document.getElementById('loader');if(l){l.style.opacity='0';setTimeout(function(){l.classList.add('hidden');},500);}})()"></script>
   <!-- Failsafe: force-hide loader after 3s in case animations.js fails silently -->
@@ -2334,14 +2372,17 @@
     });
 
     // ── Book Now button ─────────────────────────────────────────────────
-    window.handleBookNow = function () {
+    window.handleBookNow = function (companyName) {
       if (portalState.isLoggedIn) {
         if (portalState.role === 'client') {
-          window.openBookingDirect();
+          window.openBookingDirect(companyName || null);
         } else {
           window.showAdminDashboard();
         }
       } else {
+        if (companyName) {
+          try { localStorage.setItem('kgc_pending_booking_company', String(companyName)); } catch (e) {}
+        }
         window.openModal('authModal');
         window.switchAuthRole('client');
         window.switchAuthTab('login');
@@ -2349,7 +2390,7 @@
     };
 
     // ── Open booking modal (pre-filled with session data) ────────────────
-    window.openBookingDirect = function () {
+    window.openBookingDirect = function (companyName) {
       var nameEl  = document.getElementById('bookingFullName');
       var emailEl = document.getElementById('bookingEmail');
       if (nameEl)  nameEl.value  = portalState.userName  || '';
@@ -2359,6 +2400,13 @@
       if (s1) s1.classList.remove('hidden');
       if (s2) s2.classList.add('hidden');
       document.querySelectorAll('input[name="subsidiary"]').forEach(function (cb) { cb.checked = false; });
+      document.querySelectorAll('input[name="companyService"]').forEach(function (cb) { cb.checked = false; });
+      document.querySelectorAll('.subsidiary-services').forEach(function (panel) { panel.classList.add('hidden'); });
+
+      if (companyName && typeof window.preselectCompanyInBooking === 'function') {
+        window.preselectCompanyInBooking(companyName);
+      }
+
       window.openModal('bookingModal');
     };
     window.openBookingModal = window.openBookingDirect;
@@ -2372,6 +2420,42 @@
         result[company].push(checkbox.value);
       });
       return result;
+    };
+
+    window.handlePendingBookingSelection = function () {
+      try {
+        var selection = localStorage.getItem('kgc_pending_booking_company');
+        if (!selection) return false;
+        localStorage.removeItem('kgc_pending_booking_company');
+        if (typeof window.preselectCompanyInBooking === 'function') {
+          window.preselectCompanyInBooking(selection);
+        }
+        window.openBookingDirect(selection);
+        return true;
+      } catch (err) {
+        return false;
+      }
+    };
+
+    window.preselectCompanyInBooking = function (companyName) {
+      if (!companyName) return false;
+      var normalized = String(companyName).trim();
+      var matches = Array.from(document.querySelectorAll('input[name="subsidiary"]')).filter(function (input) {
+        return String(input.value || '').trim().toLowerCase() === normalized.toLowerCase() ||
+          String(input.getAttribute('data-company') || '').trim().toLowerCase() === normalized.toLowerCase() ||
+          String(input.getAttribute('data-company') || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-') === normalized.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      });
+      if (!matches.length) return false;
+      var target = matches[0];
+      target.checked = true;
+      var entry = target.closest('.subsidiary-entry');
+      if (entry) {
+        var panel = entry.querySelector('.subsidiary-services');
+        if (panel) panel.classList.remove('hidden');
+        var boxes = entry.querySelectorAll('input[name="companyService"]');
+        boxes.forEach(function (box) { box.checked = true; });
+      }
+      return true;
     };
 
     window.formatServicesSummary = function (services) {
@@ -2637,7 +2721,14 @@
           window.closeModal('authModal');
           form.reset();
           if (role === 'client') {
-            window.openBookingDirect();
+            if (typeof window.handlePendingBookingSelection === 'function') {
+              var pendingAfterLogin = window.handlePendingBookingSelection();
+              if (!pendingAfterLogin) {
+                window.openBookingDirect();
+              }
+            } else {
+              window.openBookingDirect();
+            }
           } else {
             window.showAdminDashboard();
           }
@@ -2673,7 +2764,14 @@
       window.closeModal('authModal');
       form.reset();
       if (role === 'client') {
-        window.openBookingDirect();
+        if (typeof window.handlePendingBookingSelection === 'function') {
+          var pendingAfterFallbackLogin = window.handlePendingBookingSelection();
+          if (!pendingAfterFallbackLogin) {
+            window.openBookingDirect();
+          }
+        } else {
+          window.openBookingDirect();
+        }
       } else {
         window.showAdminDashboard();
       }
@@ -2746,7 +2844,14 @@
         window.closeModal('authModal');
         form.reset();
         window.showToast('\u2705 Account created successfully! You are now signed in.');
-        window.openBookingDirect();
+        if (typeof window.handlePendingBookingSelection === 'function') {
+          var pendingAfterSignup = window.handlePendingBookingSelection();
+          if (!pendingAfterSignup) {
+            window.openBookingDirect();
+          }
+        } else {
+          window.openBookingDirect();
+        }
         return;
       } catch (err) {
         console.error('Registration error:', err);
