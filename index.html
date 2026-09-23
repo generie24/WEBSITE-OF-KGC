@@ -131,83 +131,7 @@
       border-radius: 8px;
     }
 
-    /* Services menu item - always gold */
-    .nav-item.has-dropdown .text-gold {
-      color: #D4AF37 !important;
-    }
 
-    .nav-item.has-dropdown:hover .text-gold {
-      color: #C5A028 !important;
-    }
-
-    /* Dropdown Styles */
-    .nav-item.has-dropdown {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
-
-    .nav-item.has-dropdown::after {
-      content: '▾';
-      font-size: 12px;
-      transition: transform 0.3s ease;
-    }
-
-    .nav-item.has-dropdown:hover::after {
-      transform: rotate(180deg);
-    }
-
-    .dropdown-menu {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      margin-top: 0.5rem;
-      background: rgba(255, 255, 255, 0.98);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      border-radius: 12px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-      min-width: 320px;
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(-10px);
-      transition: all 0.3s ease;
-      overflow: hidden;
-    }
-
-    .nav-item.has-dropdown:hover .dropdown-menu,
-    .nav-item.has-dropdown.is-open .dropdown-menu {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-    }
-
-    .nav-item.has-dropdown.is-open::after {
-      transform: rotate(180deg);
-    }
-
-    .dropdown-item {
-      display: block;
-      padding: 1rem 1.5rem;
-      color: #1A1A24;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      text-transform: none;
-      letter-spacing: 0.3px;
-      transition: all 0.3s ease;
-      border-left: 3px solid transparent;
-    }
-
-    .dropdown-item:hover {
-      background: linear-gradient(90deg, rgba(212, 175, 55, 0.15), rgba(244, 229, 161, 0.1));
-      border-left-color: #D4AF37;
-      padding-left: 2rem;
-      color: #C5A028;
-    }
-
-    .dropdown-item:not(:last-child) {
       border-bottom: 1px solid rgba(212, 175, 55, 0.1);
     }
 
@@ -708,21 +632,6 @@
       <nav class="main-nav" id="mainNav">
         <a href="#hero" class="nav-item">Home</a>
         <a href="#about" class="nav-item">About</a>
-        <div class="nav-item has-dropdown">
-          <span class="text-gold font-bold">Services</span>
-          <div class="dropdown-menu">
-            <a href="#company-1" class="dropdown-item">Brains Infinite Innovations Inc.</a>
-            <a href="#company-2" class="dropdown-item">Klassic Solutions Inc.</a>
-            <a href="#company-3" class="dropdown-item">Klassic Marketing Inc.</a>
-            <a href="#company-4" class="dropdown-item">Westwood Development Corp.</a>
-            <a href="#company-5" class="dropdown-item">Westwood Law</a>
-            <a href="#company-6" class="dropdown-item">Connector</a>
-            <a href="#company-7" class="dropdown-item">The Green Oasis</a>
-            <a href="#company-8" class="dropdown-item">Luxurious Cleaning Co.</a>
-            <a href="#company-9" class="dropdown-item">HYT Foundation Inc.</a>
-            <a href="#company-10" class="dropdown-item">The Finest Fit</a>
-          </div>
-        </div>
         <a href="#footer" class="nav-item">Contact</a>
         <!-- User indicator shown when logged in -->
         <div id="userIndicator" class="hidden items-center gap-3">
@@ -2278,38 +2187,12 @@
     // Mobile Menu Toggle
     const mobileToggle = document.getElementById('mobileToggle');
     const mainNav = document.getElementById('mainNav');
-    const servicesDropdown = document.querySelector('.nav-item.has-dropdown');
-
-    function closeServicesDropdown() {
-      if (servicesDropdown) {
-        servicesDropdown.classList.remove('is-open');
-      }
-    }
 
     if (mobileToggle) {
       mobileToggle.addEventListener('click', () => {
         mainNav.classList.toggle('active');
       });
     }
-
-    if (servicesDropdown) {
-      servicesDropdown.addEventListener('click', function (event) {
-        if (event.target.closest('.dropdown-item')) {
-          return;
-        }
-        servicesDropdown.classList.toggle('is-open');
-      });
-
-      servicesDropdown.addEventListener('mouseleave', function () {
-        servicesDropdown.classList.remove('is-open');
-      });
-    }
-
-    document.addEventListener('click', function (event) {
-      if (!event.target.closest('.nav-item.has-dropdown') && !event.target.closest('.dropdown-menu')) {
-        closeServicesDropdown();
-      }
-    });
 
     // ── Smooth Scrolling for Navigation Links (event delegation) ────────────
     // Using document-level delegation instead of per-element binding so that
@@ -2326,10 +2209,6 @@
       // Don't intercept external links that happen to start with #
       var targetEl = document.querySelector(targetId);
       if (!targetEl) return;
-
-      if (anchor.classList.contains('dropdown-item')) {
-        closeServicesDropdown();
-      }
 
       e.preventDefault();
 
