@@ -72,7 +72,9 @@
       box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
     }
 
-    body.auth-modal-open .site-header {
+    body.auth-modal-open .site-header,
+    body.booking-modal-open .site-header,
+    body.modal-open .site-header {
       display: none !important;
       visibility: hidden !important;
     }
@@ -528,23 +530,25 @@
       display: none;
       position: fixed;
       inset: 0;
-      z-index: 99999;
+      z-index: 2147483647;
       background: rgba(0, 0, 0, 0.92);
       align-items: center;
       justify-content: center;
       padding: 1rem;
       overflow-y: auto;
+      isolation: isolate;
     }
     .modal-overlay.open {
       display: flex;
     }
     .modal-overlay > div {
       position: relative;
-      z-index: 2;
+      z-index: 3;
       max-height: 85vh;
       overflow-y: auto;
       overscroll-behavior: contain;
       scrollbar-width: thin;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
     }
 
     /* Modal close button — circular, top-right, always tappable */
@@ -2341,6 +2345,12 @@
       var el = document.getElementById(id);
       if (!el) return;
       document.body.classList.toggle('auth-modal-open', id === 'authModal');
+      document.body.classList.toggle('booking-modal-open', id === 'bookingModal');
+      var hasAnyOpenModal = ['bookingModal', 'authModal'].some(function (modalId) {
+        var modalEl = document.getElementById(modalId);
+        return modalEl && modalEl.classList.contains('open');
+      });
+      document.body.classList.toggle('modal-open', hasAnyOpenModal || id === 'bookingModal' || id === 'authModal');
       el.classList.add('open');
       document.body.style.overflow = 'hidden';
       if (!el._backdropBound) {
@@ -2354,13 +2364,12 @@
       var el = document.getElementById(id);
       if (!el) return;
       el.classList.remove('open');
-      if (id === 'authModal') {
-        document.body.classList.remove('auth-modal-open');
-      }
+      document.body.classList.remove('auth-modal-open', 'booking-modal-open');
       var hasAnyOpenModal = ['bookingModal', 'authModal'].some(function (modalId) {
         var modalEl = document.getElementById(modalId);
         return modalEl && modalEl.classList.contains('open');
       });
+      document.body.classList.toggle('modal-open', hasAnyOpenModal);
       document.body.style.overflow = hasAnyOpenModal ? 'hidden' : '';
     };
     document.addEventListener('keydown', function (e) {
