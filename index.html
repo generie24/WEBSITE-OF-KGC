@@ -174,10 +174,15 @@
       overflow: hidden;
     }
 
-    .nav-item.has-dropdown:hover .dropdown-menu {
+    .nav-item.has-dropdown:hover .dropdown-menu,
+    .nav-item.has-dropdown.is-open .dropdown-menu {
       opacity: 1;
       visibility: visible;
       transform: translateY(0);
+    }
+
+    .nav-item.has-dropdown.is-open::after {
+      transform: rotate(180deg);
     }
 
     .dropdown-item {
@@ -321,6 +326,7 @@
       transform: translateY(80px) scale(0.95);
       transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
+      scroll-margin-top: 120px;
     }
 
     /* Background image container */
@@ -2109,12 +2115,38 @@
     // Mobile Menu Toggle
     const mobileToggle = document.getElementById('mobileToggle');
     const mainNav = document.getElementById('mainNav');
+    const servicesDropdown = document.querySelector('.nav-item.has-dropdown');
+
+    function closeServicesDropdown() {
+      if (servicesDropdown) {
+        servicesDropdown.classList.remove('is-open');
+      }
+    }
 
     if (mobileToggle) {
       mobileToggle.addEventListener('click', () => {
         mainNav.classList.toggle('active');
       });
     }
+
+    if (servicesDropdown) {
+      servicesDropdown.addEventListener('click', function (event) {
+        if (event.target.closest('.dropdown-item')) {
+          return;
+        }
+        servicesDropdown.classList.toggle('is-open');
+      });
+
+      servicesDropdown.addEventListener('mouseleave', function () {
+        servicesDropdown.classList.remove('is-open');
+      });
+    }
+
+    document.addEventListener('click', function (event) {
+      if (!event.target.closest('.nav-item.has-dropdown') && !event.target.closest('.dropdown-menu')) {
+        closeServicesDropdown();
+      }
+    });
 
     // ── Smooth Scrolling for Navigation Links (event delegation) ────────────
     // Using document-level delegation instead of per-element binding so that
@@ -2131,6 +2163,10 @@
       // Don't intercept external links that happen to start with #
       var targetEl = document.querySelector(targetId);
       if (!targetEl) return;
+
+      if (anchor.classList.contains('dropdown-item')) {
+        closeServicesDropdown();
+      }
 
       e.preventDefault();
 
@@ -2151,7 +2187,8 @@
       // Small delay so sections are visible again before scrolling
       setTimeout(function () {
         var isCompanyCard = targetId.indexOf('company-') !== -1;
-        var headerHeight = 80;
+        var headerEl = document.querySelector('.site-header');
+        var headerHeight = headerEl ? headerEl.offsetHeight : 80;
 
         if (isCompanyCard) {
           var windowHeight = window.innerHeight;
