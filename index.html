@@ -64,12 +64,17 @@
       top: 0;
       left: 0;
       right: 0;
-      z-index: 1000;
+      z-index: 100;
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(212, 175, 55, 0.3);
       box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    body.auth-modal-open .site-header {
+      display: none !important;
+      visibility: hidden !important;
     }
 
     .header-container {
@@ -517,7 +522,7 @@
       display: none;
       position: fixed;
       inset: 0;
-      z-index: 9999;
+      z-index: 99999;
       background: rgba(0, 0, 0, 0.92);
       align-items: center;
       justify-content: center;
@@ -2260,6 +2265,7 @@
     window.openModal = function (id) {
       var el = document.getElementById(id);
       if (!el) return;
+      document.body.classList.toggle('auth-modal-open', id === 'authModal');
       el.classList.add('open');
       document.body.style.overflow = 'hidden';
       if (!el._backdropBound) {
@@ -2273,6 +2279,9 @@
       var el = document.getElementById(id);
       if (!el) return;
       el.classList.remove('open');
+      if (id === 'authModal') {
+        document.body.classList.remove('auth-modal-open');
+      }
       var hasAnyOpenModal = ['bookingModal', 'authModal'].some(function (modalId) {
         var modalEl = document.getElementById(modalId);
         return modalEl && modalEl.classList.contains('open');
