@@ -81,7 +81,7 @@
 
     const serviceCheckboxes = subsidiaryEntry ? subsidiaryEntry.querySelectorAll('input[name="companyService"]') : [];
     serviceCheckboxes.forEach(function (input) {
-      input.checked = true;
+      input.checked = false;
     });
 
     if (typeof window.toggleSubsidiaryServicePanels === 'function') {
