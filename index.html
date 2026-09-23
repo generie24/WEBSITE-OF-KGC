@@ -108,7 +108,17 @@
     .main-nav {
       display: flex;
       align-items: center;
-      gap: 2rem;
+      width: 100%;
+      justify-content: flex-end;
+    }
+
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 1.5rem;
+      margin-left: auto;
+      padding-right: 2rem;
     }
 
     .nav-item {
@@ -168,6 +178,16 @@
 
       .main-nav.active {
         display: flex;
+      }
+
+      .nav-menu {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: center;
+        gap: 1rem;
+        margin-left: 0;
+        padding-right: 0;
       }
 
       .mobile-toggle {
@@ -630,20 +650,22 @@
 
       <!-- Navigation Menu -->
       <nav class="main-nav" id="mainNav">
-        <a href="#hero" class="nav-item">Home</a>
-        <a href="#about" class="nav-item">About</a>
-        <a href="#footer" class="nav-item">Contact</a>
-        <!-- User indicator shown when logged in -->
-        <div id="userIndicator" class="hidden items-center gap-3">
-          <a href="#" onclick="window.goToDashboard(); return false;"
-            class="text-sm text-gold font-semibold hover:underline" id="userIndicatorName">My Dashboard</a>
-          <span class="text-gray-600">|</span>
-          <a href="#" onclick="window.logout(); return false;" class="text-sm text-gray-400 hover:text-white">Log
-            Out</a>
+        <div class="nav-menu">
+          <a href="#hero" class="nav-item">Home</a>
+          <a href="#about" class="nav-item">About</a>
+          <a href="#footer" class="nav-item">Contact</a>
+          <!-- User indicator shown when logged in -->
+          <div id="userIndicator" class="hidden items-center gap-3">
+            <a href="#" onclick="window.goToDashboard(); return false;"
+              class="text-sm text-gold font-semibold hover:underline" id="userIndicatorName">My Dashboard</a>
+            <span class="text-gray-600">|</span>
+            <a href="#" onclick="window.logout(); return false;" class="text-sm text-gray-400 hover:text-white">Log
+              Out</a>
+          </div>
+          <button onclick="window.handleBookNow()" id="bookNowBtn"
+            class="nav-item bg-gold text-charcoal px-5 py-2 rounded-lg font-bold hover:opacity-90 transition-all shadow-md">Book
+            Now</button>
         </div>
-        <button onclick="window.handleBookNow()" id="bookNowBtn"
-          class="nav-item bg-gold text-charcoal px-5 py-2 rounded-lg font-bold hover:opacity-90 transition-all shadow-md">Book
-          Now</button>
       </nav>
 
       <!-- Mobile Toggle -->
