@@ -267,12 +267,37 @@
     }
 
     /* Company cards */
+    #companies {
+      padding-top: 2rem;
+      padding-bottom: 2rem;
+    }
+
+    #companies .space-y-32 > * + * {
+      margin-top: 1.5rem !important;
+    }
+
     .company-card {
       opacity: 0;
       transform: translateY(80px) scale(0.95);
       transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       scroll-margin-top: 120px;
+      padding: 1.5rem 1rem 1.25rem !important;
+    }
+
+    .company-card h3 {
+      font-size: clamp(1.7rem, 2.4vw, 2.2rem) !important;
+      margin-bottom: 0.5rem !important;
+    }
+
+    .company-card p {
+      font-size: 1rem !important;
+      line-height: 1.6 !important;
+      margin-bottom: 1.25rem !important;
+    }
+
+    .company-card [class*="relative"][class*="z-10"] {
+      padding-top: 0.25rem;
     }
 
     /* Background image container */
@@ -1360,6 +1385,10 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
+              <button type="button" data-company="the-finest-fit" data-book-now="true"
+                class="ml-3 magnetic-btn inline-flex items-center justify-center bg-gold text-[#121212] font-semibold px-6 py-3 rounded-full shadow-lg hover:opacity-90 transition-all">
+                Book Now
+              </button>
             </div>
           </article>
 
