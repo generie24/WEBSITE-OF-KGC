@@ -2497,6 +2497,32 @@
     };
 
     // ── Auth role toggle ────────────────────────────────────────────────
+    window.syncAuthSignupVisibility = function () {
+      var role = (document.getElementById('loginRoleInput') || {}).value || 'client';
+      var regBtn = document.getElementById('tabRegister');
+      var regTab = document.getElementById('registerTab');
+      var loginTab = document.getElementById('loginTab');
+      var activeLoginTab = document.getElementById('tabLogin');
+
+      if (regBtn) {
+        if (role === 'client') {
+          regBtn.classList.remove('hidden');
+        } else {
+          regBtn.classList.add('hidden');
+          if (regTab && !regTab.classList.contains('hidden')) {
+            regTab.classList.add('hidden');
+          }
+          if (loginTab) {
+            loginTab.classList.remove('hidden');
+          }
+          if (activeLoginTab) {
+            activeLoginTab.style.color = '#D4AF37';
+            activeLoginTab.style.borderBottomColor = '#D4AF37';
+          }
+        }
+      }
+    };
+
     window.switchAuthRole = function (role) {
       var cb  = document.getElementById('roleToggleClient');
       var ab  = document.getElementById('roleToggleAdmin');
@@ -2512,15 +2538,22 @@
           cb.style.cssText = 'background:transparent;color:#9ca3af;font-weight:500;';
         }
       }
+      window.syncAuthSignupVisibility();
     };
 
     // ── Auth tab switch ─────────────────────────────────────────────────
     window.switchAuthTab = function (tab) {
+      var role = (document.getElementById('loginRoleInput') || {}).value || 'client';
       var lt = document.getElementById('loginTab');
       var rt = document.getElementById('registerTab');
       var tl = document.getElementById('tabLogin');
       var tr = document.getElementById('tabRegister');
       if (!lt || !rt) return;
+
+      if (role !== 'client' && tab === 'register') {
+        tab = 'login';
+      }
+
       if (tab === 'login') {
         lt.classList.remove('hidden'); rt.classList.add('hidden');
         if (tl) { tl.style.color = '#D4AF37'; tl.style.borderBottomColor = '#D4AF37'; }
