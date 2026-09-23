@@ -2321,6 +2321,41 @@
       });
     };
 
+    window.validateSelectedServiceGroups = function () {
+      var missing = [];
+      document.querySelectorAll('.subsidiary-entry').forEach(function (entry) {
+        var checkbox = entry.querySelector('input[name="subsidiary"]');
+        var panel = entry.querySelector('.subsidiary-services');
+        var selectedCompanyServices = entry.querySelectorAll('input[name="companyService"]:checked');
+        if (!checkbox || !panel) return;
+        if (checkbox.checked && selectedCompanyServices.length === 0) {
+          missing.push({
+            company: checkbox.value,
+            panel: panel
+          });
+        }
+      });
+
+      if (missing.length) {
+        var first = missing[0];
+        if (first && first.panel) {
+          first.panel.classList.remove('hidden');
+          first.panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          first.panel.style.border = '1px solid rgba(248, 113, 113, 0.9)';
+          first.panel.style.boxShadow = '0 0 0 1px rgba(248, 113, 113, 0.5)';
+          setTimeout(function () {
+            if (first && first.panel) {
+              first.panel.style.border = '';
+              first.panel.style.boxShadow = '';
+            }
+          }, 2200);
+        }
+        return false;
+      }
+
+      return true;
+    };
+
     document.addEventListener('change', function (event) {
       if (event.target && event.target.name === 'subsidiary') {
         window.toggleSubsidiaryServicePanels();
@@ -2331,6 +2366,11 @@
     window.nextBookingStep = function () {
       var checked = document.querySelectorAll('input[name="subsidiary"]:checked');
       if (checked.length === 0) { window.showToast('\u26a0\ufe0f Please select at least one subsidiary.', 'error'); return; }
+      var valid = window.validateSelectedServiceGroups();
+      if (!valid) {
+        window.showToast('\u26a0\ufe0f Please select at least one specific service for each chosen company before submitting.', 'error');
+        return;
+      }
       document.getElementById('bookingStep1').classList.add('hidden');
       document.getElementById('bookingStep2').classList.remove('hidden');
     };
@@ -2345,6 +2385,13 @@
       var form = e.target;
       var subs = Array.from(document.querySelectorAll('input[name="subsidiary"]:checked')).map(function (c) { return c.value; });
       if (!subs.length) { window.showToast('\u26a0\ufe0f Please select at least one subsidiary.', 'error'); return; }
+
+      var isValidGroupSelection = window.validateSelectedServiceGroups();
+      if (!isValidGroupSelection) {
+        e.preventDefault();
+        window.showToast('\u26a0\ufe0f Please select at least one specific service for each chosen company before submitting.', 'error');
+        return;
+      }
 
       var selectedServices = window.getSelectedServicesByCompany();
       var payload = {
