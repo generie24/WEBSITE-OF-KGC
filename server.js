@@ -236,6 +236,14 @@ app.post('/api/bookings', (req, res) => {
       : typeof body.subsidiaries === 'string'
         ? [body.subsidiaries]
         : [];
+    const rawServices = body.services && typeof body.services === 'object' ? body.services : {};
+    const services = {};
+    Object.keys(rawServices).forEach((company) => {
+      const values = Array.isArray(rawServices[company]) ? rawServices[company] : [rawServices[company]];
+      services[company] = values
+        .map((value) => String(value || '').trim())
+        .filter(Boolean);
+    });
     const sanitizedDate = String(body.date || body.preferredDate || '').trim();
     const name = String(body.name || '').trim();
     const email = String(body.email || '').trim().toLowerCase();
@@ -254,6 +262,7 @@ app.post('/api/bookings', (req, res) => {
       phone: String(body.phone || '').trim(),
       date: sanitizedDate,
       subsidiaries: rawSubsidiaries,
+      services,
       notes: String(body.notes || '').trim(),
       hytDonation: Boolean(body.hytDonation),
       status: 'Pending',

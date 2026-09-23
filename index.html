@@ -1352,54 +1352,142 @@
 
           <!-- Step 1: Subsidiary Selection -->
           <div id="bookingStep1">
-            <p class="text-gray-400 text-sm mb-4">Select one or more KGC subsidiaries:</p>
-            <div class="space-y-2 mb-6">
-              <label
-                class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
-                <input type="checkbox" name="subsidiary" value="Brains Infinite Innovations"
-                  class="w-4 h-4 flex-shrink-0">
-                <span class="text-white text-sm">Brains Infinite Innovations Inc.</span>
-              </label>
-              <label
-                class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
-                <input type="checkbox" name="subsidiary" value="Klassic Solutions" class="w-4 h-4 flex-shrink-0">
-                <span class="text-white text-sm">Klassic Solutions Inc.</span>
-              </label>
-              <label
-                class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
-                <input type="checkbox" name="subsidiary" value="Klassic Marketing" class="w-4 h-4 flex-shrink-0">
-                <span class="text-white text-sm">Klassic Marketing Inc.</span>
-              </label>
-              <label
-                class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
-                <input type="checkbox" name="subsidiary" value="Westwood Development" class="w-4 h-4 flex-shrink-0">
-                <span class="text-white text-sm">Westwood Development Corp.</span>
-              </label>
-              <label
-                class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
-                <input type="checkbox" name="subsidiary" value="Westwood Law" class="w-4 h-4 flex-shrink-0">
-                <span class="text-white text-sm">Westwood Law</span>
-              </label>
-              <label
-                class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
-                <input type="checkbox" name="subsidiary" value="Connector" class="w-4 h-4 flex-shrink-0">
-                <span class="text-white text-sm">Connector (Business Integration Software)</span>
-              </label>
-              <label
-                class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
-                <input type="checkbox" name="subsidiary" value="Landscape Design" class="w-4 h-4 flex-shrink-0">
-                <span class="text-white text-sm">Landscape Design (The Green Oasis)</span>
-              </label>
-              <label
-                class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
-                <input type="checkbox" name="subsidiary" value="Luxurious Cleaning Co." class="w-4 h-4 flex-shrink-0">
-                <span class="text-white text-sm">Luxurious Cleaning Co.</span>
-              </label>
-              <label
-                class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
-                <input type="checkbox" name="subsidiary" value="HYT Foundation" class="w-4 h-4 flex-shrink-0">
-                <span class="text-white text-sm">HYT Foundation Inc.</span>
-              </label>
+            <p class="text-gray-400 text-sm mb-4">Select one or more KGC subsidiaries and their service needs:</p>
+            <div class="space-y-3 mb-6">
+              <div class="subsidiary-entry">
+                <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
+                  <input type="checkbox" name="subsidiary" value="Brains Infinite Innovations Inc." data-company="Brains Infinite Innovations Inc." class="subsidiary-checkbox w-4 h-4 flex-shrink-0">
+                  <span class="text-white text-sm">Brains Infinite Innovations Inc.</span>
+                </label>
+                <div class="subsidiary-services hidden mt-2 ml-8 space-y-2" data-subsidiary="Brains Infinite Innovations Inc.">
+                  <p class="text-xs text-gray-400">Select services:</p>
+                  <div class="grid gap-2">
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Brains Infinite Innovations Inc." value="Custom Software & App Development" class="w-4 h-4">Custom Software & App Development</label>
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Brains Infinite Innovations Inc." value="AI & IT Solutions Consulting" class="w-4 h-4">AI & IT Solutions Consulting</label>
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Brains Infinite Innovations Inc." value="Cybersecurity & System Audit" class="w-4 h-4">Cybersecurity & System Audit</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="subsidiary-entry">
+                <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
+                  <input type="checkbox" name="subsidiary" value="Klassic Solutions Inc." data-company="Klassic Solutions Inc." class="subsidiary-checkbox w-4 h-4 flex-shrink-0">
+                  <span class="text-white text-sm">Klassic Solutions Inc.</span>
+                </label>
+                <div class="subsidiary-services hidden mt-2 ml-8 space-y-2" data-subsidiary="Klassic Solutions Inc.">
+                  <p class="text-xs text-gray-400">Select services:</p>
+                  <div class="grid gap-2">
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Klassic Solutions Inc." value="Executive & Staff Manpower Outsourcing" class="w-4 h-4">Executive & Staff Manpower Outsourcing</label>
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Klassic Solutions Inc." value="Technical Support & Helpdesk Staffing" class="w-4 h-4">Technical Support & Helpdesk Staffing</label>
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Klassic Solutions Inc." value="Corporate HR & Payroll Management" class="w-4 h-4">Corporate HR & Payroll Management</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="subsidiary-entry">
+                <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
+                  <input type="checkbox" name="subsidiary" value="Klassic Marketing Inc." data-company="Klassic Marketing Inc." class="subsidiary-checkbox w-4 h-4 flex-shrink-0">
+                  <span class="text-white text-sm">Klassic Marketing Inc.</span>
+                </label>
+                <div class="subsidiary-services hidden mt-2 ml-8 space-y-2" data-subsidiary="Klassic Marketing Inc.">
+                  <p class="text-xs text-gray-400">Select services:</p>
+                  <div class="grid gap-2">
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Klassic Marketing Inc." value="Importation & Customs Clearance" class="w-4 h-4">Importation & Customs Clearance</label>
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Klassic Marketing Inc." value="Global Product Distribution & Logistics" class="w-4 h-4">Global Product Distribution & Logistics</label>
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Klassic Marketing Inc." value="Digital Marketing & Brand Strategy" class="w-4 h-4">Digital Marketing & Brand Strategy</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="subsidiary-entry">
+                <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
+                  <input type="checkbox" name="subsidiary" value="Westwood Development Corp." data-company="Westwood Development Corp." class="subsidiary-checkbox w-4 h-4 flex-shrink-0">
+                  <span class="text-white text-sm">Westwood Development Corp.</span>
+                </label>
+                <div class="subsidiary-services hidden mt-2 ml-8 space-y-2" data-subsidiary="Westwood Development Corp.">
+                  <p class="text-xs text-gray-400">Select services:</p>
+                  <div class="grid gap-2">
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Westwood Development Corp." value="Commercial Construction & Renovation" class="w-4 h-4">Commercial Construction & Renovation</label>
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Westwood Development Corp." value="Architectural Planning & Engineering Design" class="w-4 h-4">Architectural Planning & Engineering Design</label>
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Westwood Development Corp." value="Project Management & Site Supervision" class="w-4 h-4">Project Management & Site Supervision</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="subsidiary-entry">
+                <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
+                  <input type="checkbox" name="subsidiary" value="Westwood Law" data-company="Westwood Law" class="subsidiary-checkbox w-4 h-4 flex-shrink-0">
+                  <span class="text-white text-sm">Westwood Law</span>
+                </label>
+                <div class="subsidiary-services hidden mt-2 ml-8 space-y-2" data-subsidiary="Westwood Law">
+                  <p class="text-xs text-gray-400">Select services:</p>
+                  <div class="grid gap-2">
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Westwood Law" value="Corporate Legal Advisory & Compliance" class="w-4 h-4">Corporate Legal Advisory & Compliance</label>
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Westwood Law" value="Contract Drafting & Legal Review" class="w-4 h-4">Contract Drafting & Legal Review</label>
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Westwood Law" value="Dispute Resolution & Litigation Support" class="w-4 h-4">Dispute Resolution & Litigation Support</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="subsidiary-entry">
+                <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
+                  <input type="checkbox" name="subsidiary" value="Connector" data-company="Connector" class="subsidiary-checkbox w-4 h-4 flex-shrink-0">
+                  <span class="text-white text-sm">Connector</span>
+                </label>
+                <div class="subsidiary-services hidden mt-2 ml-8 space-y-2" data-subsidiary="Connector">
+                  <p class="text-xs text-gray-400">Select services:</p>
+                  <div class="grid gap-2">
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Connector" value="Enterprise ERP & CRM Implementation" class="w-4 h-4">Enterprise ERP & CRM Implementation</label>
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Connector" value="Modular Software Integration & API Management" class="w-4 h-4">Modular Software Integration & API Management</label>
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Connector" value="Automated Workflow & Business Intelligence Tools" class="w-4 h-4">Automated Workflow & Business Intelligence Tools</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="subsidiary-entry">
+                <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
+                  <input type="checkbox" name="subsidiary" value="The Green Oasis" data-company="The Green Oasis" class="subsidiary-checkbox w-4 h-4 flex-shrink-0">
+                  <span class="text-white text-sm">The Green Oasis</span>
+                </label>
+                <div class="subsidiary-services hidden mt-2 ml-8 space-y-2" data-subsidiary="The Green Oasis">
+                  <p class="text-xs text-gray-400">Select services:</p>
+                  <div class="grid gap-2">
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="The Green Oasis" value="Commercial & Residential Landscape Design" class="w-4 h-4">Commercial & Residential Landscape Design</label>
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="The Green Oasis" value="Garden Installation & Plant Selection" class="w-4 h-4">Garden Installation & Plant Selection</label>
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="The Green Oasis" value="Grounds Maintenance & Hardscaping" class="w-4 h-4">Grounds Maintenance & Hardscaping</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="subsidiary-entry">
+                <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
+                  <input type="checkbox" name="subsidiary" value="Luxurious Cleaning Co." data-company="Luxurious Cleaning Co." class="subsidiary-checkbox w-4 h-4 flex-shrink-0">
+                  <span class="text-white text-sm">Luxurious Cleaning Co.</span>
+                </label>
+                <div class="subsidiary-services hidden mt-2 ml-8 space-y-2" data-subsidiary="Luxurious Cleaning Co.">
+                  <p class="text-xs text-gray-400">Select services:</p>
+                  <div class="grid gap-2">
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Luxurious Cleaning Co." value="Commercial Office & Facility Deep Cleaning" class="w-4 h-4">Commercial Office & Facility Deep Cleaning</label>
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Luxurious Cleaning Co." value="Post-Construction Site Cleaning" class="w-4 h-4">Post-Construction Site Cleaning</label>
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Luxurious Cleaning Co." value="High-Rise Window & Exterior Pressure Washing" class="w-4 h-4">High-Rise Window & Exterior Pressure Washing</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="subsidiary-entry">
+                <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
+                  <input type="checkbox" name="subsidiary" value="HYT Foundation Inc." data-company="HYT Foundation Inc." class="subsidiary-checkbox w-4 h-4 flex-shrink-0">
+                  <span class="text-white text-sm">HYT Foundation Inc.</span>
+                </label>
+                <div class="subsidiary-services hidden mt-2 ml-8 space-y-2" data-subsidiary="HYT Foundation Inc.">
+                  <p class="text-xs text-gray-400">Select services:</p>
+                  <div class="grid gap-2">
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="HYT Foundation Inc." value="Corporate Social Responsibility (CSR) Partnership" class="w-4 h-4">Corporate Social Responsibility (CSR) Partnership</label>
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="HYT Foundation Inc." value="Youth Leadership & Scholarship Program Support" class="w-4 h-4">Youth Leadership & Scholarship Program Support</label>
+                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="HYT Foundation Inc." value="Community Grant & Social Project Sponsorship" class="w-4 h-4">Community Grant & Social Project Sponsorship</label>
+                  </div>
+                </div>
+              </div>
             </div>
             <button type="button" onclick="window.nextBookingStep()"
               class="w-full py-3 bg-gold text-[#121212] font-bold rounded-lg hover:opacity-90 transition-all">
@@ -1665,13 +1753,14 @@
                 <tr class="border-b border-gray-700">
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold text-sm">Reference #</th>
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold text-sm">Services Requested</th>
+                  <th class="text-left py-3 px-4 text-gray-400 font-semibold text-sm">Subsidiaries</th>
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold text-sm">Preferred Date</th>
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold text-sm">Status</th>
                 </tr>
               </thead>
               <tbody id="clientBookingBody">
                 <tr>
-                  <td colspan="4" class="text-center py-8 text-gray-400">No bookings yet. Click "+ New Booking" to get started.</td>
+                  <td colspan="5" class="text-center py-8 text-gray-400">No bookings yet. Click "+ New Booking" to get started.</td>
                 </tr>
               </tbody>
             </table>
@@ -1733,6 +1822,7 @@
               <thead>
                 <tr class="border-b border-gray-700">
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold">Client</th>
+                  <th class="text-left py-3 px-4 text-gray-400 font-semibold">Services Requested</th>
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold">Subsidiaries</th>
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold">Date</th>
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold">Status</th>
@@ -1742,7 +1832,7 @@
               </thead>
               <tbody id="bookingTableBody">
                 <tr>
-                  <td colspan="5" class="text-center py-8 text-gray-400">No bookings yet</td>
+                  <td colspan="7" class="text-center py-8 text-gray-400">No bookings yet</td>
                 </tr>
               </tbody>
             </table>
@@ -2202,6 +2292,41 @@
     };
     window.openBookingModal = window.openBookingDirect;
 
+    window.getSelectedServicesByCompany = function () {
+      var result = {};
+      document.querySelectorAll('input[name="companyService"]:checked').forEach(function (checkbox) {
+        var company = checkbox.getAttribute('data-company');
+        if (!company) return;
+        if (!result[company]) result[company] = [];
+        result[company].push(checkbox.value);
+      });
+      return result;
+    };
+
+    window.formatServicesSummary = function (services) {
+      if (!services || typeof services !== 'object' || !Object.keys(services).length) return '—';
+      return Object.keys(services).map(function (company) {
+        var items = Array.isArray(services[company]) ? services[company] : [];
+        if (!items.length) return null;
+        return company + ': ' + items.join('; ');
+      }).filter(Boolean).join(' | ');
+    };
+
+    window.toggleSubsidiaryServicePanels = function () {
+      document.querySelectorAll('.subsidiary-entry').forEach(function (entry) {
+        var input = entry.querySelector('input[name="subsidiary"]');
+        var panel = entry.querySelector('.subsidiary-services');
+        if (!input || !panel) return;
+        panel.classList.toggle('hidden', !input.checked);
+      });
+    };
+
+    document.addEventListener('change', function (event) {
+      if (event.target && event.target.name === 'subsidiary') {
+        window.toggleSubsidiaryServicePanels();
+      }
+    });
+
     // ── Booking wizard steps ────────────────────────────────────────────
     window.nextBookingStep = function () {
       var checked = document.querySelectorAll('input[name="subsidiary"]:checked');
@@ -2221,12 +2346,14 @@
       var subs = Array.from(document.querySelectorAll('input[name="subsidiary"]:checked')).map(function (c) { return c.value; });
       if (!subs.length) { window.showToast('\u26a0\ufe0f Please select at least one subsidiary.', 'error'); return; }
 
+      var selectedServices = window.getSelectedServicesByCompany();
       var payload = {
         name:        form.fullName.value.trim(),
         email:       form.email.value.trim().toLowerCase(),
         phone:       form.phone.value.trim(),
         date:        form.serviceDate.value,
         subsidiaries: subs,
+        services:    selectedServices,
         notes:       form.notes.value.trim(),
         hytDonation: form.hytDonation.checked
       };
@@ -2253,6 +2380,7 @@
           phone: payload.phone,
           date: payload.date,
           subsidiaries: payload.subsidiaries,
+          services: payload.services || {},
           notes: payload.notes,
           hytDonation: payload.hytDonation,
           status: 'Pending'
@@ -2270,6 +2398,7 @@
         if (bookingTableBody && booking.id && booking.name) {
           bookingTableBody.innerHTML = '<tr class="border-b border-gray-800 hover:bg-gray-900 transition-colors">' +
             '<td class="py-3 px-4 text-white font-medium">' + escHtml(booking.name) + '</td>' +
+            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(window.formatServicesSummary(booking.services || {}) || (booking.subsidiaries || []).join(', ')) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml((booking.subsidiaries || []).join(', ')) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(booking.date || '\u2014') + '</td>' +
             '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-bold badge-pending">' + escHtml(booking.status || 'Pending') + '</span></td>' +
@@ -2538,8 +2667,10 @@
           var badgeClass = b.status === 'Approved' ? 'badge-approved'
                          : b.status === 'Rejected' ? 'badge-rejected'
                          : 'badge-pending';
+          var serviceSummary = window.formatServicesSummary(b.services || {}) || (b.subsidiaries || []).join(', ');
           return '<tr class="border-b border-gray-800 hover:bg-gray-900 transition-colors">' +
             '<td class="py-3 px-4 text-white font-medium">' + escHtml(b.name) + '</td>' +
+            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(serviceSummary) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml((b.subsidiaries || []).join(', ')) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(b.date || '\u2014') + '</td>' +
             '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-bold ' + badgeClass + '">' + escHtml(b.status) + '</span></td>' +
@@ -2579,7 +2710,8 @@
         '\nEmail:      '  + b.email +
         '\nPhone:      '  + (b.phone || '\u2014') +
         '\nDate:       '  + (b.date  || '\u2014') +
-        '\nServices:   '  + b.subsidiaries.join(', ') +
+        '\nSubsidiaries: ' + (b.subsidiaries || []).join(', ') +
+        '\nServices:   ' + (window.formatServicesSummary(b.services || {}) || '—') +
         '\nNotes:      '  + (b.notes || '\u2014') +
         '\nHYT Fund:   '  + (b.hytDonation ? 'Yes' : 'No') +
         '\nStatus:     '  + b.status +
@@ -2627,8 +2759,10 @@
           var badgeClass = b.status === 'Approved' ? 'badge-approved'
                          : b.status === 'Rejected' ? 'badge-rejected'
                          : 'badge-pending';
+          var serviceSummary = window.formatServicesSummary(b.services || {}) || (b.subsidiaries || []).join(', ');
           return '<tr class="border-b border-gray-800 hover:bg-gray-900 transition-colors">' +
             '<td class="py-3 px-4 text-white text-xs font-mono">' + escHtml(b.id) + '</td>' +
+            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(serviceSummary) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml((b.subsidiaries || []).join(', ')) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(b.date || '\u2014') + '</td>' +
             '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-bold ' + badgeClass + '">' + escHtml(b.status) + '</span></td>' +
