@@ -8,5 +8,29 @@
     "phone": "+63 912",
     "password": "mypassword",
     "createdAt": "2026-09-22T07:35:27.179Z"
+  },
+  {
+    "id": "USR1790140638615",
+    "role": "admin",
+    "name": "Pending Admin",
+    "company": "KGC",
+    "email": "pendingadmin3@example.com",
+    "phone": "123",
+    "password": "abc123",
+    "isApproved": false,
+    "status": "Pending Approval",
+    "createdAt": "2026-09-23T05:17:18.615Z"
+  },
+  {
+    "id": "USR1790140702682",
+    "role": "admin",
+    "name": "Pending Admin",
+    "company": "KGC",
+    "email": "pendingadmin4@example.com",
+    "phone": "123",
+    "password": "abc123",
+    "isApproved": false,
+    "status": "Pending Approval",
+    "createdAt": "2026-09-23T05:18:22.682Z"
   }
 ]

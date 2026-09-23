@@ -1647,6 +1647,13 @@
                   class="w-full px-4 py-3 bg-[#121212] border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-gold">
               </div>
               <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-2">Account Type</label>
+                <select name="regRole" id="regRoleSelect" class="w-full px-4 py-3 bg-[#121212] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-gold">
+                  <option value="client">Client</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div>
                 <label class="block text-sm font-semibold text-gray-300 mb-2">Password</label>
                 <input type="password" name="regPassword" required placeholder="Create a password"
                   class="w-full px-4 py-3 bg-[#121212] border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-gold">
@@ -1811,7 +1818,7 @@
           </div>
         </div>
 
-        <div class="bg-dark-gray rounded-xl p-6 border border-gold/20">
+        <div class="bg-dark-gray rounded-xl p-6 border border-gold/20 mb-8">
           <h3 class="text-2xl font-bold text-gold mb-6">Booking Request Manager</h3>
           <div class="overflow-x-auto">
             <table class="w-full">
@@ -1829,6 +1836,28 @@
               <tbody id="bookingTableBody">
                 <tr>
                   <td colspan="7" class="text-center py-8 text-gray-400">No bookings yet</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="bg-dark-gray rounded-xl p-6 border border-gold/20">
+          <h3 class="text-2xl font-bold text-gold mb-6">Admin Approval Manager</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-gray-700">
+                  <th class="text-left py-3 px-4 text-gray-400 font-semibold">Name</th>
+                  <th class="text-left py-3 px-4 text-gray-400 font-semibold">Company</th>
+                  <th class="text-left py-3 px-4 text-gray-400 font-semibold">Email</th>
+                  <th class="text-left py-3 px-4 text-gray-400 font-semibold">Status</th>
+                  <th class="text-left py-3 px-4 text-gray-400 font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminApprovalTableBody">
+                <tr>
+                  <td colspan="5" class="text-center py-8 text-gray-400">Loading admin approval requests...</td>
                 </tr>
               </tbody>
             </table>
@@ -2535,6 +2564,11 @@
           }
           return;
         }
+
+        if (result && result.error) {
+          window.showToast('\u274c ' + result.error, 'error');
+          return;
+        }
       } catch (err) {
         console.warn('Server login check failed, using fallback auth.', err);
       }
@@ -2570,13 +2604,14 @@
     window.handleRegister = async function (e) {
       e.preventDefault();
       var form = e.target;
+      var role = (form.regRole && form.regRole.value) || 'client';
       var payload = {
         name: form.regName.value.trim(),
         company: form.regCompany.value.trim(),
         email: form.regEmail.value.trim(),
         phone: form.regPhone.value.trim(),
         password: form.regPassword.value,
-        role: 'client'
+        role: role
       };
 
       try {
@@ -2591,16 +2626,37 @@
           throw new Error(result && result.error ? result.error : 'Unable to create account.');
         }
 
-        var registeredUsers = getRegisteredUsers();
-        registeredUsers.push({
+        if (role === 'admin') {
+          var registeredUsers = getRegisteredUsers();
+          registeredUsers.push({
+            name: payload.name,
+            company: payload.company,
+            email: payload.email.toLowerCase(),
+            phone: payload.phone,
+            password: payload.password,
+            role: 'admin',
+            isApproved: false,
+            status: 'Pending Approval'
+          });
+          saveRegisteredUsers(registeredUsers);
+          window.closeModal('authModal');
+          form.reset();
+          window.showToast('Admin account request submitted! Your account requires authorization from an existing Admin before you can log in.', 'success');
+          return;
+        }
+
+        var clientUsers = getRegisteredUsers();
+        clientUsers.push({
           name: payload.name,
           company: payload.company,
           email: payload.email.toLowerCase(),
           phone: payload.phone,
           password: payload.password,
-          role: 'client'
+          role: 'client',
+          isApproved: true,
+          status: 'Approved'
         });
-        saveRegisteredUsers(registeredUsers);
+        saveRegisteredUsers(clientUsers);
 
         portalState.isLoggedIn = true;
         portalState.role = 'client';
@@ -2644,6 +2700,7 @@
       document.getElementById('adminDashboard').classList.remove('hidden');
       document.getElementById('clientDashboard').classList.add('hidden');
       window.renderBookingTable();
+      window.renderAdminApprovalRequests();
       window.scrollTo(0, 0);
     };
 
@@ -2738,9 +2795,61 @@
     window.refreshAdminBookings = async function () {
       var btn = document.getElementById('adminRefreshBtn');
       if (btn) { btn.disabled = true; btn.querySelector('svg') && (btn.querySelector('svg').style.animation = 'kgc-spin 0.7s linear infinite'); }
-      await window.renderBookingTable();
+      await Promise.all([
+        window.renderBookingTable(),
+        window.renderAdminApprovalRequests()
+      ]);
       if (btn) { btn.disabled = false; btn.querySelector('svg') && (btn.querySelector('svg').style.animation = ''); }
       window.showToast('\u2705 Bookings refreshed!');
+    };
+
+    window.renderAdminApprovalRequests = async function () {
+      var tbody = document.getElementById('adminApprovalTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-400"><span class="kgc-spinner"></span>Loading approval requests...</td></tr>';
+
+      try {
+        var response = await fetch('/api/auth/admin-requests');
+        var result = await readJsonResponse(response);
+        var requests = Array.isArray(result && result.data) ? result.data : [];
+
+        if (!requests.length) {
+          tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-400">No pending admin approvals.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = requests.map(function (user) {
+          return '<tr class="border-b border-gray-800 hover:bg-gray-900 transition-colors">' +
+            '<td class="py-3 px-4 text-white font-medium">' + escHtml(user.name || 'Unnamed admin') + '</td>' +
+            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(user.company || '—') + '</td>' +
+            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(user.email || '—') + '</td>' +
+            '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-bold badge-pending">' + escHtml(user.status || 'Pending Approval') + '</span></td>' +
+            '<td class="py-3 px-4"><div class="flex items-center gap-2"><button onclick="window.updateAdminApprovalStatus(\'' + user.id + '\', \'approve\')" class="px-2 py-0.5 bg-green-700/30 hover:bg-green-700/50 text-green-400 rounded text-xs border border-green-700/40">Approve</button><button onclick="window.updateAdminApprovalStatus(\'' + user.id + '\', \'reject\')" class="px-2 py-0.5 bg-red-700/30 hover:bg-red-700/50 text-red-400 rounded text-xs border border-red-700/40">Reject</button></div></td>' +
+            '</tr>';
+        }).join('');
+      } catch (err) {
+        console.error('Failed to load admin requests:', err);
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-red-400">\u274c Failed to load admin approval requests.</td></tr>';
+      }
+    };
+
+    window.updateAdminApprovalStatus = async function (id, action) {
+      try {
+        var response = await fetch('/api/auth/admin-requests/' + id, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: action })
+        });
+        var result = await readJsonResponse(response);
+        if (!response.ok || !result || !result.success) {
+          throw new Error((result && result.error) || 'Approval action failed.');
+        }
+        window.showToast('\u2705 Admin account ' + (action === 'approve' ? 'approved' : 'rejected') + '.', 'success');
+        window.renderAdminApprovalRequests();
+      } catch (err) {
+        console.error('Admin approval update error:', err);
+        window.showToast('\u274c ' + err.message, 'error');
+      }
     };
 
     // View full booking details

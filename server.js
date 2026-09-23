@@ -24,8 +24,8 @@ const LEGACY_BOOKINGS_FILE = path.join(__dirname, 'bookings.json');
 const LEGACY_USERS_FILE = path.join(__dirname, 'users.json');
 
 const DEMO_USERS = [
-  { id: 'demo-client', role: 'client', name: 'Client User', email: 'client@kgc.ph', password: 'password' },
-  { id: 'demo-admin', role: 'admin', name: 'Admin User', email: 'admin@kgc.ph', password: 'password' }
+  { id: 'demo-client', role: 'client', name: 'Client User', email: 'client@kgc.ph', password: 'password', isApproved: true, status: 'Approved' },
+  { id: 'demo-admin', role: 'admin', name: 'Admin User', email: 'admin@kgc.ph', password: 'password', isApproved: true, status: 'Approved' }
 ];
 
 // ── In-memory bookings store (seeded from disk on startup) ──────────────────
@@ -94,15 +94,25 @@ function saveUsersToDisk() {
   }
 }
 
+function normalizeRole(value) {
+  return String(value || 'client').trim().toLowerCase() === 'admin' ? 'admin' : 'client';
+}
+
+function getApprovalStatus(user) {
+  if (!user) return false;
+  if (String(user.role || 'client').trim().toLowerCase() !== 'admin') return true;
+  return user.isApproved === true || user.status === 'Approved' || user.status === 'Active';
+}
+
 function findUserByCredentials(email, password, role = 'client') {
   const normalizedEmail = String(email || '').trim().toLowerCase();
   const normalizedPassword = String(password || '');
-  const normalizedRole = String(role || 'client').trim().toLowerCase();
+  const normalizedRole = normalizeRole(role);
 
   const registeredUser = usersStore.find((u) => {
     return String(u.email || '').trim().toLowerCase() === normalizedEmail &&
       String(u.password || '') === normalizedPassword &&
-      String(u.role || 'client').trim().toLowerCase() === normalizedRole;
+      normalizeRole(u.role || 'client') === normalizedRole;
   });
 
   if (registeredUser) return registeredUser;
@@ -110,7 +120,7 @@ function findUserByCredentials(email, password, role = 'client') {
   return DEMO_USERS.find((u) => {
     return u.email.toLowerCase() === normalizedEmail &&
       u.password === normalizedPassword &&
-      u.role === normalizedRole;
+      normalizeRole(u.role || 'client') === normalizedRole;
   }) || null;
 }
 
@@ -340,6 +350,71 @@ app.patch('/api/bookings/:id', (req, res) => {
   res.json({ success: true, data: booking });
 });
 
+app.get('/api/auth/admin-requests', (req, res) => {
+  const pendingAdmins = usersStore.filter((user) => {
+    const role = normalizeRole(user.role || 'client');
+    return role === 'admin' && !getApprovalStatus(user);
+  }).map((user) => ({
+    id: user.id,
+    name: user.name,
+    company: user.company || '',
+    email: String(user.email || '').trim().toLowerCase(),
+    phone: user.phone || '',
+    status: user.status || 'Pending Approval',
+    createdAt: user.createdAt || new Date().toISOString()
+  }));
+
+  res.json({
+    success: true,
+    data: pendingAdmins
+  });
+});
+
+app.patch('/api/auth/admin-requests/:id', (req, res) => {
+  const { id } = req.params;
+  const { action } = req.body || {};
+
+  if (!['approve', 'reject'].includes(String(action || '').toLowerCase())) {
+    return res.status(400).json({
+      success: false,
+      error: 'Action must be either approve or reject.'
+    });
+  }
+
+  const targetUser = usersStore.find((user) => user.id === id);
+  if (!targetUser) {
+    return res.status(404).json({
+      success: false,
+      error: 'Admin request not found.'
+    });
+  }
+
+  if (normalizeRole(targetUser.role || 'client') !== 'admin') {
+    return res.status(400).json({
+      success: false,
+      error: 'The selected account is not an admin request.'
+    });
+  }
+
+  const approved = String(action).toLowerCase() === 'approve';
+  targetUser.isApproved = approved;
+  targetUser.status = approved ? 'Approved' : 'Rejected';
+  saveUsersToDisk();
+
+  console.log(`🛡️ Admin approval update: ${targetUser.email} -> ${targetUser.status}`);
+
+  res.json({
+    success: true,
+    data: {
+      id: targetUser.id,
+      email: targetUser.email,
+      role: targetUser.role,
+      isApproved: targetUser.isApproved,
+      status: targetUser.status
+    }
+  });
+});
+
 app.post('/api/auth/register', (req, res) => {
   const { name, company, email, phone, password, role = 'client' } = req.body || {};
 
@@ -350,6 +425,7 @@ app.post('/api/auth/register', (req, res) => {
     });
   }
 
+  const normalizedRole = normalizeRole(role);
   const normalizedEmail = String(email).trim().toLowerCase();
   const userExists = usersStore.some((u) => String(u.email || '').trim().toLowerCase() === normalizedEmail);
   if (userExists) {
@@ -359,30 +435,55 @@ app.post('/api/auth/register', (req, res) => {
     });
   }
 
+  const isAdminRequest = normalizedRole === 'admin';
   const newUser = {
     id: 'USR' + Date.now(),
-    role: String(role || 'client').trim().toLowerCase() === 'admin' ? 'admin' : 'client',
+    role: normalizedRole,
     name: String(name).trim(),
     company: String(company || '').trim(),
     email: normalizedEmail,
     phone: String(phone || '').trim(),
     password: String(password),
+    isApproved: !isAdminRequest,
+    status: isAdminRequest ? 'Pending Approval' : 'Approved',
     createdAt: new Date().toISOString()
   };
 
   usersStore.push(newUser);
   saveUsersToDisk();
 
-  console.log(`✅ New user registered: ${newUser.email} (${newUser.role})`);
+  console.log(`✅ New user registered: ${newUser.email} (${newUser.role}) -> ${newUser.status}`);
+
+  if (isAdminRequest) {
+    return res.status(201).json({
+      success: true,
+      requiresApproval: true,
+      message: 'Admin account request submitted! Your account requires authorization from an existing Admin before you can log in.',
+      data: {
+        id: newUser.id,
+        role: newUser.role,
+        name: newUser.name,
+        company: newUser.company,
+        email: newUser.email,
+        phone: newUser.phone,
+        isApproved: newUser.isApproved,
+        status: newUser.status
+      }
+    });
+  }
+
   res.status(201).json({
     success: true,
+    requiresApproval: false,
     data: {
       id: newUser.id,
       role: newUser.role,
       name: newUser.name,
       company: newUser.company,
       email: newUser.email,
-      phone: newUser.phone
+      phone: newUser.phone,
+      isApproved: newUser.isApproved,
+      status: newUser.status
     }
   });
 });
@@ -397,11 +498,33 @@ app.post('/api/auth/login', (req, res) => {
     });
   }
 
-  const user = findUserByCredentials(email, password, role);
+  const normalizedRole = normalizeRole(role);
+  const user = findUserByCredentials(email, password, normalizedRole);
+
   if (!user) {
+    const pendingAdmin = usersStore.find((entry) => {
+      const matchesEmail = String(entry.email || '').trim().toLowerCase() === String(email || '').trim().toLowerCase();
+      const matchesPassword = String(entry.password || '') === String(password || '');
+      return matchesEmail && matchesPassword && normalizeRole(entry.role || 'client') === 'admin' && !getApprovalStatus(entry);
+    });
+
+    if (pendingAdmin) {
+      return res.status(403).json({
+        success: false,
+        error: 'Your Admin account is pending approval from an authorized Admin.'
+      });
+    }
+
     return res.status(401).json({
       success: false,
       error: 'Invalid credentials.'
+    });
+  }
+
+  if (normalizedRole === 'admin' && !getApprovalStatus(user)) {
+    return res.status(403).json({
+      success: false,
+      error: 'Your Admin account is pending approval from an authorized Admin.'
     });
   }
 
@@ -411,7 +534,9 @@ app.post('/api/auth/login', (req, res) => {
       id: user.id,
       name: user.name,
       email: String(user.email).trim().toLowerCase(),
-      role: String(user.role || 'client').trim().toLowerCase()
+      role: String(user.role || 'client').trim().toLowerCase(),
+      isApproved: user.isApproved !== false,
+      status: user.status || 'Approved'
     }
   });
 });
