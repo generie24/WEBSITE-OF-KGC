@@ -16,9 +16,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || 'localhost';
 
-// Path for persistent bookings storage
-const BOOKINGS_FILE = path.join(__dirname, 'bookings.json');
-const USERS_FILE = path.join(__dirname, 'users.json');
+// Durable JSON-backed persistence under data/ with fallback to legacy root files
+const DATA_DIR = path.join(__dirname, 'data');
+const BOOKINGS_FILE = path.join(DATA_DIR, 'bookings.json');
+const USERS_FILE = path.join(DATA_DIR, 'users.json');
+const LEGACY_BOOKINGS_FILE = path.join(__dirname, 'bookings.json');
+const LEGACY_USERS_FILE = path.join(__dirname, 'users.json');
 
 const DEMO_USERS = [
   { id: 'demo-client', role: 'client', name: 'Client User', email: 'client@kgc.ph', password: 'password' },
@@ -29,21 +32,35 @@ const DEMO_USERS = [
 let bookingsStore = [];
 let usersStore = [];
 
+function ensureDataDirectory() {
+  try {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  } catch (err) {
+    console.warn('⚠️  Could not create data directory:', err.message);
+  }
+}
+
 function loadBookingsFromDisk() {
   try {
-    if (fs.existsSync(BOOKINGS_FILE)) {
-      const raw = fs.readFileSync(BOOKINGS_FILE, 'utf8');
+    ensureDataDirectory();
+    const sourceFile = fs.existsSync(BOOKINGS_FILE) ? BOOKINGS_FILE : LEGACY_BOOKINGS_FILE;
+    if (fs.existsSync(sourceFile)) {
+      const raw = fs.readFileSync(sourceFile, 'utf8');
       bookingsStore = JSON.parse(raw) || [];
-      console.log(`📂 Loaded ${bookingsStore.length} booking(s) from bookings.json`);
+      if (sourceFile === LEGACY_BOOKINGS_FILE && !fs.existsSync(BOOKINGS_FILE)) {
+        saveBookingsToDisk();
+      }
+      console.log(`📂 Loaded ${bookingsStore.length} booking(s) from ${path.basename(sourceFile)}`);
     }
   } catch (err) {
-    console.warn('⚠️  Could not read bookings.json, starting fresh:', err.message);
+    console.warn('⚠️  Could not read bookings data, starting fresh:', err.message);
     bookingsStore = [];
   }
 }
 
 function saveBookingsToDisk() {
   try {
+    ensureDataDirectory();
     fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(bookingsStore, null, 2), 'utf8');
   } catch (err) {
     console.warn('⚠️  Could not save bookings.json:', err.message);
@@ -52,19 +69,25 @@ function saveBookingsToDisk() {
 
 function loadUsersFromDisk() {
   try {
-    if (fs.existsSync(USERS_FILE)) {
-      const raw = fs.readFileSync(USERS_FILE, 'utf8');
+    ensureDataDirectory();
+    const sourceFile = fs.existsSync(USERS_FILE) ? USERS_FILE : LEGACY_USERS_FILE;
+    if (fs.existsSync(sourceFile)) {
+      const raw = fs.readFileSync(sourceFile, 'utf8');
       usersStore = JSON.parse(raw) || [];
-      console.log(`👤 Loaded ${usersStore.length} registered user(s) from users.json`);
+      if (sourceFile === LEGACY_USERS_FILE && !fs.existsSync(USERS_FILE)) {
+        saveUsersToDisk();
+      }
+      console.log(`👤 Loaded ${usersStore.length} registered user(s) from ${path.basename(sourceFile)}`);
     }
   } catch (err) {
-    console.warn('⚠️  Could not read users.json, starting fresh:', err.message);
+    console.warn('⚠️  Could not read users data, starting fresh:', err.message);
     usersStore = [];
   }
 }
 
 function saveUsersToDisk() {
   try {
+    ensureDataDirectory();
     fs.writeFileSync(USERS_FILE, JSON.stringify(usersStore, null, 2), 'utf8');
   } catch (err) {
     console.warn('⚠️  Could not save users.json:', err.message);

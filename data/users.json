@@ -1,0 +1,12 @@
+[
+  {
+    "id": "USR1790062527179",
+    "role": "client",
+    "name": "New User",
+    "company": "Acme",
+    "email": "newuser@example.com",
+    "phone": "+63 912",
+    "password": "mypassword",
+    "createdAt": "2026-09-22T07:35:27.179Z"
+  }
+]
