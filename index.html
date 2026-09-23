@@ -578,6 +578,79 @@
       transform: scale(0.95);
     }
 
+    .payment-method-option {
+      position: relative;
+      display: block;
+      cursor: pointer;
+    }
+
+    .payment-method-option input[type="radio"] + .payment-method-card {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      width: 100%;
+      padding: 0.9rem 1rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      background: rgba(18, 18, 18, 0.9);
+      transition: all 0.2s ease;
+    }
+
+    .payment-method-option:hover input[type="radio"] + .payment-method-card {
+      border-color: rgba(212, 175, 55, 0.4);
+      transform: translateY(-1px);
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.18);
+    }
+
+    .payment-method-option input[type="radio"]:checked + .payment-method-card {
+      border-color: rgba(212, 175, 55, 0.9);
+      background: rgba(212, 175, 55, 0.08);
+      box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.28), 0 18px 40px rgba(212, 175, 55, 0.12);
+    }
+
+    .payment-method-icon {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.05);
+      color: #f5d77a;
+      flex-shrink: 0;
+    }
+
+    .payment-method-icon svg {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    .payment-method-gcash { background: rgba(26, 185, 90, 0.15); color: #36d27b; }
+    .payment-method-card-icon { background: rgba(30, 144, 255, 0.12); color: #7bb6ff; }
+    .payment-method-bank-icon { background: rgba(224, 168, 61, 0.14); color: #f6c76a; }
+    .payment-method-invoice-icon { background: rgba(148, 163, 184, 0.14); color: #cbd5e1; }
+
+    .payment-method-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 0.12rem;
+      min-width: 0;
+      text-align: left;
+    }
+
+    .payment-method-name {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.3;
+    }
+
+    .payment-method-subtext {
+      font-size: 0.72rem;
+      color: #9ca3af;
+      line-height: 1.3;
+    }
+
     /* Booking status badge variants */
     .badge-pending  { background: rgba(202,138,4,0.18);  color: #fbbf24; border: 1px solid rgba(202,138,4,0.35); }
     .badge-approved { background: rgba(22,163,74,0.18);  color: #4ade80; border: 1px solid rgba(22,163,74,0.35); }
@@ -1577,15 +1650,62 @@
                 <textarea name="notes" rows="3" placeholder="Describe your project or requirements..."
                   class="w-full px-4 py-3 bg-[#121212] border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-gold resize-none"></textarea>
               </div>
-              <label
-                class="flex items-start gap-3 p-4 bg-[#121212] border border-gold/20 rounded-lg cursor-pointer hover:border-gold/40 transition-all">
-                <input type="checkbox" name="hytDonation" class="mt-0.5 w-4 h-4 flex-shrink-0">
-                <div>
-                  <span class="text-white text-sm font-semibold">Donate 1% to HYT Foundation Inc.</span>
-                  <p class="text-gray-400 text-xs mt-0.5">Support future generation leaders — at no extra cost to you.
-                  </p>
+              <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-3">Payment Method *</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label class="payment-method-option">
+                    <input type="radio" name="paymentMethod" value="GCash / Maya" class="sr-only">
+                    <span class="payment-method-card">
+                      <span class="payment-method-icon payment-method-gcash">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4.5 7.5A2.5 2.5 0 0 1 7 5h10a2.5 2.5 0 0 1 2.5 2.5v9A2.5 2.5 0 0 1 17 19H7a2.5 2.5 0 0 1-2.5-2.5v-9Z"/><path d="M8 9.5h8M8 12.5h5"/><path d="M8 15.5h3.5"/></svg>
+                      </span>
+                      <span class="payment-method-copy">
+                        <span class="payment-method-name">GCash / Maya</span>
+                        <span class="payment-method-subtext">E-Wallet</span>
+                      </span>
+                    </span>
+                  </label>
+
+                  <label class="payment-method-option">
+                    <input type="radio" name="paymentMethod" value="Credit / Debit Card" class="sr-only">
+                    <span class="payment-method-card">
+                      <span class="payment-method-icon payment-method-card-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="5.5" width="17" height="13" rx="2.2"/><path d="M3.5 9.5h17"/><path d="M7 15.5h3.5"/><path d="M15.5 15.5h2.5"/></svg>
+                      </span>
+                      <span class="payment-method-copy">
+                        <span class="payment-method-name">Credit / Debit Card</span>
+                        <span class="payment-method-subtext">Visa / Mastercard</span>
+                      </span>
+                    </span>
+                  </label>
+
+                  <label class="payment-method-option">
+                    <input type="radio" name="paymentMethod" value="Bank Transfer / Direct Deposit" class="sr-only">
+                    <span class="payment-method-card">
+                      <span class="payment-method-icon payment-method-bank-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3.5 9.5 12 4l8.5 5.5"/><path d="M5.5 10.5v7h13v-7"/><path d="M8.5 17.5v-5h7v5"/></svg>
+                      </span>
+                      <span class="payment-method-copy">
+                        <span class="payment-method-name">Bank Transfer</span>
+                        <span class="payment-method-subtext">BDO / BPI / Direct Deposit</span>
+                      </span>
+                    </span>
+                  </label>
+
+                  <label class="payment-method-option">
+                    <input type="radio" name="paymentMethod" value="Cash on Delivery / Corporate Invoice" class="sr-only">
+                    <span class="payment-method-card">
+                      <span class="payment-method-icon payment-method-invoice-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 4.5h8l3 3v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2Z"/><path d="M15 4.5v3h3"/><path d="M8 12h8M8 15.5h6"/></svg>
+                      </span>
+                      <span class="payment-method-copy">
+                        <span class="payment-method-name">Cash / Invoice</span>
+                        <span class="payment-method-subtext">COD / Corporate Billing</span>
+                      </span>
+                    </span>
+                  </label>
                 </div>
-              </label>
+              </div>
             </div>
             <div class="flex gap-3">
               <button type="button" onclick="window.prevBookingStep()"
@@ -1879,6 +1999,7 @@
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold">Services Requested</th>
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold">Subsidiaries</th>
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold">Date</th>
+                  <th class="text-left py-3 px-4 text-gray-400 font-semibold">Payment</th>
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold">Status</th>
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold">Ref #</th>
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold">Actions</th>
@@ -1886,7 +2007,7 @@
               </thead>
               <tbody id="bookingTableBody">
                 <tr>
-                  <td colspan="7" class="text-center py-8 text-gray-400">No bookings yet</td>
+                  <td colspan="8" class="text-center py-8 text-gray-400">No bookings yet</td>
                 </tr>
               </tbody>
             </table>
@@ -2550,6 +2671,13 @@
       var subs = Array.from(document.querySelectorAll('input[name="subsidiary"]:checked')).map(function (c) { return c.value; });
       if (!subs.length) { window.showToast('\u26a0\ufe0f Please select at least one subsidiary.', 'error'); return; }
 
+      var selectedPaymentMethod = Array.from(document.querySelectorAll('input[name="paymentMethod"]:checked')).map(function (c) { return c.value; })[0] || '';
+      if (!selectedPaymentMethod) {
+        e.preventDefault();
+        window.showToast('\u26a0\ufe0f Please select a payment method to proceed.', 'error');
+        return;
+      }
+
       var isValidGroupSelection = window.validateSelectedServiceGroups();
       if (!isValidGroupSelection) {
         e.preventDefault();
@@ -2566,7 +2694,7 @@
         subsidiaries: subs,
         services:    selectedServices,
         notes:       form.notes.value.trim(),
-        hytDonation: form.hytDonation.checked
+        paymentMethod: selectedPaymentMethod
       };
 
       var submitBtn = form.querySelector('button[type="submit"]');
@@ -2593,7 +2721,7 @@
           subsidiaries: payload.subsidiaries,
           services: payload.services || {},
           notes: payload.notes,
-          hytDonation: payload.hytDonation,
+          paymentMethod: payload.paymentMethod,
           status: 'Pending'
         };
 
@@ -2612,6 +2740,7 @@
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(window.formatServicesSummary(booking.services || {}) || (booking.subsidiaries || []).join(', ')) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml((booking.subsidiaries || []).join(', ')) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(booking.date || '\u2014') + '</td>' +
+            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(booking.paymentMethod || '—') + '</td>' +
             '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-bold badge-pending">' + escHtml(booking.status || 'Pending') + '</span></td>' +
             '<td class="py-3 px-4 text-gray-400 text-xs font-mono">' + escHtml(booking.id) + '</td>' +
             '<td class="py-3 px-4"><div class="flex items-center gap-2"><button onclick="window.viewBooking(\'' + booking.id + '\')" class="text-gold text-xs hover:underline">View</button><button onclick="window.updateBookingStatus(\'' + booking.id + '\', \'Approved\')" class="px-2 py-0.5 bg-green-700/30 hover:bg-green-700/50 text-green-400 rounded text-xs border border-green-700/40">Approve</button><button onclick="window.updateBookingStatus(\'' + booking.id + '\', \'Rejected\')" class="px-2 py-0.5 bg-red-700/30 hover:bg-red-700/50 text-red-400 rounded text-xs border border-red-700/40">Reject</button></div></td>' +
@@ -2938,7 +3067,7 @@
       if (!tbody) return;
 
       // Show loading state
-      tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400"><span class="kgc-spinner"></span>Loading bookings...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-gray-400"><span class="kgc-spinner"></span>Loading bookings...</td></tr>';
 
       try {
         var response = await fetch('/api/bookings');
@@ -2950,7 +3079,7 @@
         syncAdminStats(bookings);
 
         if (!bookings.length) {
-          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400">No bookings yet</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-gray-400">No bookings yet</td></tr>';
           return;
         }
 
@@ -2966,6 +3095,7 @@
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(serviceSummary) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml((b.subsidiaries || []).join(', ')) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(b.date || '\u2014') + '</td>' +
+            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(b.paymentMethod || '—') + '</td>' +
             '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-bold ' + badgeClass + '">' + escHtml(b.status) + '</span></td>' +
             '<td class="py-3 px-4 text-gray-400 text-xs font-mono">' + escHtml(b.id) + '</td>' +
             '<td class="py-3 px-4">' +
@@ -2980,7 +3110,7 @@
 
       } catch (err) {
         console.error('Failed to fetch bookings:', err);
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-red-400">\u274c Failed to load bookings. Is the server running?</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-red-400">\u274c Failed to load bookings. Is the server running?</td></tr>';
       }
     };
 
@@ -3057,8 +3187,8 @@
         '\nDate:       '  + (b.date  || '\u2014') +
         '\nSubsidiaries: ' + (b.subsidiaries || []).join(', ') +
         '\nServices:   ' + (window.formatServicesSummary(b.services || {}) || '—') +
+        '\nPayment:    ' + (b.paymentMethod || '—') +
         '\nNotes:      '  + (b.notes || '\u2014') +
-        '\nHYT Fund:   '  + (b.hytDonation ? 'Yes' : 'No') +
         '\nStatus:     '  + b.status +
         '\nSubmitted:  '  + new Date(b.timestamp).toLocaleString()
       );

@@ -280,11 +280,19 @@ app.post('/api/bookings', (req, res) => {
     const sanitizedDate = String(body.date || body.preferredDate || '').trim();
     const name = String(body.name || '').trim();
     const email = String(body.email || '').trim().toLowerCase();
+    const paymentMethod = String(body.paymentMethod || '').trim();
 
     if (!name || !email || rawSubsidiaries.length === 0) {
       return res.status(400).json({
         success: false,
         error: 'Missing required fields: name, email, and at least one subsidiary.'
+      });
+    }
+
+    if (!paymentMethod) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please select a payment method to proceed.'
       });
     }
 
@@ -297,7 +305,7 @@ app.post('/api/bookings', (req, res) => {
       subsidiaries: rawSubsidiaries,
       services,
       notes: String(body.notes || '').trim(),
-      hytDonation: Boolean(body.hytDonation),
+      paymentMethod,
       status: 'Pending',
       timestamp: new Date().toISOString()
     };
