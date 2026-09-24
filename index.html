@@ -503,6 +503,8 @@
       padding-top: 1.5rem !important;
       padding-bottom: 1rem !important;
       margin-bottom: 0.5rem !important;
+      scroll-margin-top: 110px;
+      scroll-padding-top: 110px;
     }
 
     #about .glass-strong {
@@ -2280,6 +2282,11 @@
         var isCompanyCard = targetId.indexOf('company-') !== -1;
         var headerEl = document.querySelector('.site-header');
         var headerHeight = headerEl ? headerEl.offsetHeight : 80;
+
+        if (targetId === '#about') {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
 
         if (isCompanyCard) {
           var windowHeight = window.innerHeight;
