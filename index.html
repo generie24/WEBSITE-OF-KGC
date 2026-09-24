@@ -500,16 +500,21 @@
     }
 
     #about {
-      padding-top: 1.5rem !important;
-      padding-bottom: 1rem !important;
-      margin-bottom: 0.5rem !important;
+      padding-top: 3.5rem !important;
+      padding-bottom: 3.5rem !important;
+      margin-top: 0.75rem !important;
+      margin-bottom: 0.75rem !important;
       scroll-margin-top: 110px;
       scroll-padding-top: 110px;
     }
 
     #about .glass-strong {
-      padding-top: 2rem !important;
-      padding-bottom: 2rem !important;
+      padding-top: 2.75rem !important;
+      padding-bottom: 2.75rem !important;
+      min-height: clamp(330px, 44vh, 500px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     /* ── Modal Overlay System ─────────────────────────────────────────────── */
@@ -2289,7 +2294,7 @@
           var viewportCenter = window.innerHeight / 2;
           var targetCenter = aboutRect.top + aboutRect.height / 2;
           var headerOffset = headerEl ? headerEl.offsetHeight : 80;
-          var finalAboutScroll = currentScrollY + targetCenter - viewportCenter + (headerOffset * 0.18);
+          var finalAboutScroll = currentScrollY + targetCenter - viewportCenter + (headerOffset * 0.38);
           window.scrollTo({ top: Math.max(0, finalAboutScroll), behavior: 'smooth' });
           return;
         }
