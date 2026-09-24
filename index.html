@@ -2294,7 +2294,7 @@
           var viewportCenter = window.innerHeight / 2;
           var targetCenter = aboutRect.top + aboutRect.height / 2;
           var headerOffset = headerEl ? headerEl.offsetHeight : 80;
-          var finalAboutScroll = currentScrollY + targetCenter - viewportCenter + (headerOffset * 0.38);
+          var finalAboutScroll = currentScrollY + targetCenter - viewportCenter + (headerOffset * 1.1);
           window.scrollTo({ top: Math.max(0, finalAboutScroll), behavior: 'smooth' });
           return;
         }
