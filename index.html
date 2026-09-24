@@ -55,7 +55,9 @@
       overflow-x: hidden;
       padding-top: 80px;
       /* Space for fixed header */
-      background: #0A0A0F;
+      background:
+        linear-gradient(rgba(10, 10, 15, 0.6), rgba(10, 10, 15, 0.7)),
+        url('./images/backgrounds/dark-wave-bg.jpg') center center / cover no-repeat fixed;
     }
 
     /* Header Styles */
@@ -207,7 +209,7 @@
       }
     }
 
-    /* Dynamic gradient background */
+    /* Dynamic image background */
     #gradient-bg {
       position: fixed;
       top: 0;
@@ -215,13 +217,9 @@
       width: 100%;
       height: 100vh;
       z-index: -1;
-      background: linear-gradient(135deg,
-          #0A0A0F 0%,
-          #1A1A24 20%,
-          #2A2A35 40%,
-          #1A1A24 60%,
-          #0F0F15 80%,
-          #0A0A0F 100%);
+      background:
+        linear-gradient(rgba(10, 10, 15, 0.55), rgba(10, 10, 15, 0.7)),
+        url('./images/backgrounds/dark-wave-bg.jpg') center center / cover no-repeat;
       transition: background 0.5s ease;
     }
 
