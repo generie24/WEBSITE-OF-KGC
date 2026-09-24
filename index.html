@@ -2288,8 +2288,8 @@
           var currentScrollY = window.pageYOffset || document.documentElement.scrollTop;
           var viewportCenter = window.innerHeight / 2;
           var targetCenter = aboutRect.top + aboutRect.height / 2;
-          var offsetFromHeader = headerEl ? headerEl.offsetHeight / 2 : 0;
-          var finalAboutScroll = currentScrollY + targetCenter - viewportCenter - offsetFromHeader;
+          var headerOffset = headerEl ? headerEl.offsetHeight : 80;
+          var finalAboutScroll = currentScrollY + targetCenter - viewportCenter + (headerOffset * 0.18);
           window.scrollTo({ top: Math.max(0, finalAboutScroll), behavior: 'smooth' });
           return;
         }
