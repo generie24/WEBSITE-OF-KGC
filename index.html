@@ -54,10 +54,28 @@
       color: #FFFFFF;
       overflow-x: hidden;
       padding-top: 80px;
-      /* Space for fixed header */
-      background:
-        linear-gradient(rgba(10, 10, 15, 0.55), rgba(10, 10, 15, 0.78)),
-        url('./images/backgrounds/goldbg.svg') center center / cover no-repeat fixed;
+      min-height: 100vh;
+      background-image: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), url('images/backgrounds/dark-wave-bg.jpg') !important;
+      background-size: cover !important;
+      background-position: center !important;
+      background-repeat: no-repeat !important;
+      background-attachment: fixed !important;
+    }
+
+    #about,
+    .company-grid,
+    #contact,
+    footer,
+    section {
+      background: transparent !important;
+    }
+
+    #about .glass-strong,
+    .company-grid > *,
+    footer .glass-strong,
+    #contact .glass-strong {
+      background: rgba(0, 0, 0, 0.4) !important;
+      border: 1px solid rgba(212, 175, 55, 0.18);
     }
 
     /* Header Styles */
@@ -217,9 +235,8 @@
       width: 100%;
       height: 100vh;
       z-index: -1;
-      background:
-        linear-gradient(rgba(10, 10, 15, 0.45), rgba(10, 10, 15, 0.7)),
-        url('./images/backgrounds/goldbg.svg') center center / cover no-repeat;
+      display: none !important;
+      background: transparent !important;
       transition: background 0.5s ease;
     }
 
