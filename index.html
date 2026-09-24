@@ -501,11 +501,11 @@
 
     #about {
       padding-top: 3.5rem !important;
-      padding-bottom: 3.5rem !important;
-      margin-top: 0.75rem !important;
-      margin-bottom: 0.75rem !important;
-      scroll-margin-top: 110px;
-      scroll-padding-top: 110px;
+    padding-bottom: 3.5rem !important;
+    margin-top: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+    /* CHANGE THIS VALUE: Use a negative value to force lower positioning */
+    scroll-margin-top: -15vh;
     }
 
     #about .glass-strong {
@@ -1963,7 +1963,7 @@
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold">Client</th>
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold">Services Requested</th>
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold">Subsidiaries</th>
-                  <th class="text-left py-3 px-4 text-gray-400 font-semibold">Date</th>
+                  <th class="text-left py-3 px-4 text-gray-400 font-semibold">Date &amp; Time</th>
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold">Payment</th>
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold">Status</th>
                   <th class="text-left py-3 px-4 text-gray-400 font-semibold">Ref #</th>
@@ -2668,7 +2668,8 @@
           services: payload.services || {},
           notes: payload.notes,
           paymentMethod: payload.paymentMethod,
-          status: 'Pending'
+          status: 'Pending',
+          createdAt: new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila', dateStyle: 'short', timeStyle: 'short' })
         };
 
         if (!portalState.bookings) portalState.bookings = [];
@@ -2681,11 +2682,13 @@
         }
 
         if (bookingTableBody && booking.id && booking.name) {
+          var bookingTimeDisplay = formatBookingTimestamp(booking.createdAt || booking.timestamp || booking.date || 'N/A');
+
           bookingTableBody.innerHTML = '<tr class="border-b border-gray-800 hover:bg-gray-900 transition-colors">' +
             '<td class="py-3 px-4 text-white font-medium">' + escHtml(booking.name) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(window.formatServicesSummary(booking.services || {}) || (booking.subsidiaries || []).join(', ')) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml((booking.subsidiaries || []).join(', ')) + '</td>' +
-            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(booking.date || '\u2014') + '</td>' +
+            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(bookingTimeDisplay) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(booking.paymentMethod || '—') + '</td>' +
             '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-bold badge-pending">' + escHtml(booking.status || 'Pending') + '</span></td>' +
             '<td class="py-3 px-4 text-gray-400 text-xs font-mono">' + escHtml(booking.id) + '</td>' +
@@ -2994,6 +2997,28 @@
       return [];
     }
 
+    function formatBookingTimestamp(value) {
+      if (!value && value !== 0) return 'N/A';
+      var text = String(value).trim();
+      if (!text) return 'N/A';
+      if (text.indexOf('/') !== -1 && text.indexOf(':') !== -1) {
+        return text;
+      }
+      try {
+        var parsed = new Date(text);
+        if (!Number.isNaN(parsed.getTime())) {
+          return parsed.toLocaleString('en-US', {
+            timeZone: 'Asia/Manila',
+            dateStyle: 'short',
+            timeStyle: 'short'
+          });
+        }
+      } catch (err) {
+        // no-op
+      }
+      return text;
+    }
+
     async function readJsonResponse(response) {
       var text = await response.text();
       if (!text || !text.trim()) {
@@ -3036,11 +3061,12 @@
                          : b.status === 'Rejected' ? 'badge-rejected'
                          : 'badge-pending';
           var serviceSummary = window.formatServicesSummary(b.services || {}) || (b.subsidiaries || []).join(', ');
+          var bookingTimeDisplay = formatBookingTimestamp(b.createdAt || b.timestamp || b.date || 'N/A');
           return '<tr class="border-b border-gray-800 hover:bg-gray-900 transition-colors">' +
             '<td class="py-3 px-4 text-white font-medium">' + escHtml(b.name) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(serviceSummary) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml((b.subsidiaries || []).join(', ')) + '</td>' +
-            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(b.date || '\u2014') + '</td>' +
+            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(bookingTimeDisplay) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(b.paymentMethod || '—') + '</td>' +
             '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-bold ' + badgeClass + '">' + escHtml(b.status) + '</span></td>' +
             '<td class="py-3 px-4 text-gray-400 text-xs font-mono">' + escHtml(b.id) + '</td>' +

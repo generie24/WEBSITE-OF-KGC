@@ -253,7 +253,13 @@ app.get('/api/bookings', (req, res) => {
   if (email) {
     results = bookingsStore.filter(b => b.email === String(email).trim().toLowerCase());
   }
-  res.json(results);
+
+  const normalizedResults = results.map((booking) => ({
+    ...booking,
+    createdAt: booking.createdAt || booking.timestamp || 'N/A'
+  }));
+
+  res.json(normalizedResults);
 });
 
 /**
@@ -281,6 +287,11 @@ app.post('/api/bookings', (req, res) => {
     const name = String(body.name || '').trim();
     const email = String(body.email || '').trim().toLowerCase();
     const paymentMethod = String(body.paymentMethod || '').trim();
+    const bookingTime = body.createdAt || body.timestamp || new Date().toLocaleString('en-US', {
+      timeZone: 'Asia/Manila',
+      dateStyle: 'short',
+      timeStyle: 'short'
+    });
 
     if (!name || !email || rawSubsidiaries.length === 0) {
       return res.status(400).json({
@@ -307,6 +318,7 @@ app.post('/api/bookings', (req, res) => {
       notes: String(body.notes || '').trim(),
       paymentMethod,
       status: 'Pending',
+      createdAt: bookingTime,
       timestamp: new Date().toISOString()
     };
 
