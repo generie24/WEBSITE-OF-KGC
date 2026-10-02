@@ -494,42 +494,7 @@ app.get('/api/auth/admin-requests', async (req, res) => {
   });
 });
 
-// Resolve a raw username to the account's email so the client can sign in
-// with username OR email. Returns { success, email }.
-app.get('/api/auth/resolve-username', async (req, res) => {
-  const raw = String(req.query.username || '').trim();
-  if (!raw) {
-    return res.status(400).json({ success: false, error: 'A username query parameter is required.' });
-  }
-  try {
-    // Supabase-backed stores resolve via the users table.
-    if (supabaseStore.enabled) {
-      const resolved = await supabaseStore.resolveUserByUsername(raw);
-      if (!resolved) {
-        return res.status(404).json({ success: false, error: 'No account found for that username.' });
-      }
-      return res.json({ success: true, email: resolved.email });
-    }
-
-    // JSON fallback: match against the in-memory users store (username or email).
-    const username = raw.toLowerCase();
-    const match = usersStore.find((u) => {
-      const uName = String(u.username || '').trim().toLowerCase();
-      const uEmail = String(u.email || '').trim().toLowerCase();
-      return uName === username || uEmail === username;
-    });
-    if (!match) {
-      return res.status(404).json({ success: false, error: 'No account found for that username.' });
-    }
-    res.json({ success: true, email: match.email });
-  } catch (error) {
-    console.error('Username resolution failed:', error);
-    res.status(500).json({ success: false, error: 'Unable to resolve username.' });
-  }
-});
-
-// Sync a Supabase Auth client into the public.users table after signUp so the
-// username/email can be resolved for username-based login. Upserts by email.
+// Sync a Supabase Auth client into the public.users directory by email.
 app.post('/api/users/sync', async (req, res) => {
   const body = req.body || {};
   const email = String(body.email || '').trim().toLowerCase();
@@ -539,12 +504,9 @@ app.post('/api/users/sync', async (req, res) => {
 
   try {
     if (supabaseStore.enabled) {
-      // Try upserting with a username column. If the column doesn't exist yet,
-      // supabaseStore.upsertClient will fall back to inserting without it.
       const result = await supabaseStore.upsertClient({
         id: body.id || null,
         email: email,
-        username: String(body.username || '').trim().toLowerCase() || null,
         name: String(body.name || '').trim(),
         company: String(body.company || '').trim(),
         phone: String(body.phone || '').trim(),
@@ -563,7 +525,6 @@ app.post('/api/users/sync', async (req, res) => {
       id: body.id || 'USR' + Date.now(),
       role: 'client',
       name: String(body.name || '').trim(),
-      username: String(body.username || '').trim().toLowerCase() || '',
       company: String(body.company || '').trim(),
       email: email,
       phone: String(body.phone || '').trim(),

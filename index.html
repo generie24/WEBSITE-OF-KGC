@@ -1981,9 +1981,9 @@
           <form onsubmit="window.handleLogin(event)" id="loginForm">
             <input type="hidden" name="loginRole" id="loginRoleInput" value="client">
             <div class="mb-4">
-              <label class="block text-sm font-semibold text-gray-300 mb-2">Email </label>
-              <input type="text" name="loginEmail" id="loginEmail" required placeholder="you@example.com"
-                autocomplete="username"
+              <label class="block text-sm font-semibold text-gray-300 mb-2">Email Address</label>
+              <input type="email" name="loginEmail" id="loginEmail" required placeholder="example@kgc.ph"
+                autocomplete="email"
                 class="w-full px-4 py-3 bg-[#121212] border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-gold">
             </div>
             <div class="mb-5">
@@ -3438,24 +3438,7 @@
       if (role === 'client') {
         try {
           var client = await getSupabaseClient();
-
-          // If the user typed a raw username (no '@'), resolve it to an email via the
-          // backend, which queries the users table by username. Falls back to the raw
-          // value if the backend can't resolve it (so Supabase returns a clean error).
-          var loginEmail = email;
-          if (email && email.indexOf('@') === -1) {
-            try {
-              var resolved = await fetch('/api/auth/resolve-username?username=' + encodeURIComponent(email));
-              var resolvedResult = await readJsonResponse(resolved);
-              if (resolved.ok && resolvedResult && resolvedResult.success && resolvedResult.email) {
-                loginEmail = resolvedResult.email;
-              }
-            } catch (resolveErr) {
-              console.warn('Username resolution failed, proceeding with raw input:', resolveErr.message);
-            }
-          }
-
-          var clientLogin = await client.auth.signInWithPassword({ email: loginEmail, password: pass });
+          var clientLogin = await client.auth.signInWithPassword({ email: email, password: pass });
           if (clientLogin.error) throw clientLogin.error;
           if (!clientLogin.data.user) throw new Error('Supabase did not return a signed-in client.');
           setSupabaseClientUser(clientLogin.data.user);
@@ -3552,11 +3535,8 @@
       e.preventDefault();
       var form = e.target;
       var role = (form.regRole && form.regRole.value) || 'client';
-      var rawUsername = (form.regUsername && form.regUsername.value ? form.regUsername.value : '').trim();
-      var username = rawUsername.toLowerCase().replace(/\s+/g, '');
       var payload = {
         name: form.regName.value.trim(),
-        username: username,
         company: form.regCompany.value.trim(),
         email: form.regEmail.value.trim(),
         phone: form.regPhone.value.trim(),
@@ -3572,7 +3552,6 @@
             password: payload.password,
             options: {
               data: {
-                username: payload.username,
                 name: payload.name,
                 full_name: payload.name,
                 company: payload.company,
@@ -3583,9 +3562,7 @@
           });
           if (signup.error) throw signup.error;
 
-          // Sync the new Supabase Auth client into the public.users table so the
-          // username can be resolved at login. Fire-and-forget; failures are logged
-          // but don't block the signup flow.
+          // Keep the public client directory in sync by email for bookings/admin views.
           try {
             await fetch('/api/users/sync', {
               method: 'POST',
@@ -3593,7 +3570,6 @@
               body: JSON.stringify({
                 id: signup.data.user && signup.data.user.id ? signup.data.user.id : null,
                 email: payload.email,
-                username: payload.username,
                 name: payload.name,
                 company: payload.company,
                 phone: payload.phone
@@ -3645,7 +3621,6 @@
           var registeredUsers = getRegisteredUsers();
           registeredUsers.push({
             name: payload.name,
-            username: payload.username,
             company: payload.company,
             email: payload.email.toLowerCase(),
             phone: payload.phone,
