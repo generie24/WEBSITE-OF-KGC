@@ -24,7 +24,17 @@
   <!-- Three.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
+  <!-- Supabase Auth browser client (uses only the public anon/publishable key). -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
+    // Set these to the Supabase project URL and public anon/publishable key.
+    // Never put the Supabase service-role key in browser code.
+    window.KGC_SUPABASE_CONFIG = window.KGC_SUPABASE_CONFIG || {
+      url: '',
+      anonKey: ''
+    };
+
     tailwind.config = {
       theme: {
         extend: {
@@ -162,6 +172,161 @@
       border-radius: 8px;
     }
 
+    .client-profile-menu {
+      position: relative;
+    }
+
+    .client-profile-trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      max-width: min(260px, 48vw);
+      padding: 0.65rem 0.9rem;
+      border: 1px solid rgba(212, 175, 55, 0.5);
+      border-radius: 10px;
+      background: linear-gradient(145deg, rgba(30, 30, 36, 0.98), rgba(13, 13, 18, 0.98));
+      color: #f4e5a1;
+      font: 600 0.9rem 'Plus Jakarta Sans', sans-serif;
+      cursor: pointer;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .client-profile-trigger:hover,
+    .client-profile-trigger[aria-expanded="true"] {
+      border-color: #D4AF37;
+      box-shadow: 0 0 18px rgba(212, 175, 55, 0.16);
+    }
+
+    .client-profile-trigger-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .client-profile-trigger svg {
+      width: 1rem;
+      height: 1rem;
+      flex: 0 0 auto;
+      transition: transform 0.2s ease;
+    }
+
+    .client-profile-trigger[aria-expanded="true"] svg {
+      transform: rotate(180deg);
+    }
+
+    .client-profile-dropdown {
+      position: absolute;
+      top: calc(100% + 0.65rem);
+      right: 0;
+      z-index: 120;
+      width: 220px;
+      padding: 0.45rem;
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      border-radius: 12px;
+      background: rgba(18, 18, 22, 0.98);
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(16px);
+    }
+
+    .client-profile-dropdown[hidden] {
+      display: none;
+    }
+
+    .client-profile-dropdown button {
+      display: block;
+      width: 100%;
+      padding: 0.8rem 0.85rem;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: #f4f4f5;
+      text-align: left;
+      font: 500 0.9rem 'Inter', sans-serif;
+      cursor: pointer;
+    }
+
+    .client-profile-dropdown button:hover,
+    .client-profile-dropdown button:focus-visible {
+      outline: none;
+      background: rgba(212, 175, 55, 0.12);
+      color: #f4e5a1;
+    }
+
+    .client-profile-modal {
+      width: min(100%, 600px);
+      max-height: min(90vh, 820px);
+      overflow-y: auto;
+      padding: 1.5rem;
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      border-radius: 18px;
+      background: linear-gradient(145deg, #202027, #111116);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65);
+    }
+
+    .client-profile-modal label {
+      display: block;
+      margin-bottom: 0.45rem;
+      color: #d4d4d8;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .client-profile-modal input {
+      width: 100%;
+      padding: 0.8rem 0.9rem;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 9px;
+      outline: none;
+      background: #121216;
+      color: #fff;
+      transition: border-color 0.2s ease;
+    }
+
+    .client-profile-modal input:focus {
+      border-color: #D4AF37;
+    }
+
+    .client-profile-modal input:disabled {
+      cursor: wait;
+      opacity: 0.6;
+    }
+
+    .client-profile-submit {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 1px solid #D4AF37;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #e3c458, #c49a24);
+      color: #151515;
+      font-weight: 700;
+      cursor: pointer;
+      transition: filter 0.2s ease, transform 0.2s ease;
+    }
+
+    .client-profile-submit:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 768px) {
+      .client-profile-menu {
+        width: 100%;
+      }
+
+      .client-profile-trigger {
+        justify-content: space-between;
+        width: 100%;
+        max-width: none;
+      }
+
+      .client-profile-dropdown {
+        position: static;
+        width: 100%;
+        margin-top: 0.5rem;
+        box-shadow: none;
+      }
+    }
+
     .scroll-indicator {
       display: none !important;
     }
@@ -226,6 +391,7 @@
         border-left: 3px solid #D4AF37;
         background: rgba(212, 175, 55, 0.05);
       }
+
     }
 
     /* Dynamic image background */
@@ -719,7 +885,21 @@
           <a href="#hero" class="nav-item">Home</a>
           <a href="#about" class="nav-item">About</a>
           <a href="#footer" class="nav-item">Contact</a>
-          <!-- User indicator shown when logged in -->
+          <!-- This client-only menu is shown only for an active Supabase client session. -->
+          <div id="clientProfileMenu" class="client-profile-menu hidden">
+            <button id="clientProfileTrigger" class="client-profile-trigger" type="button"
+              aria-haspopup="true" aria-expanded="false" aria-controls="clientProfileDropdown">
+              <span id="clientProfileTriggerName" class="client-profile-trigger-name">My Account</span>
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+            <div id="clientProfileDropdown" class="client-profile-dropdown" role="menu" hidden>
+              <button type="button" role="menuitem" onclick="window.openClientProfile()">Edit My Profile</button>
+              <button type="button" role="menuitem" onclick="window.logout()">Log Out</button>
+            </div>
+          </div>
+          <!-- Admin indicator remains separate; client actions live in the menu above. -->
           <div id="userIndicator" class="hidden items-center gap-3">
             <a href="#" onclick="window.goToDashboard(); return false;"
               class="text-sm text-gold font-semibold hover:underline" id="userIndicatorName">My Dashboard</a>
@@ -1751,8 +1931,8 @@
         <div id="loginTab" class="p-6">
           <!-- Demo credentials hint -->
           <div class="mb-5 p-3 rounded-lg bg-[#121212] border border-gold/20 text-xs text-gray-400 space-y-0.5">
-            <p class="text-gold font-semibold mb-1">Demo Credentials</p>
-            <p>Client: <span class="text-white">client@kgc.ph</span> / <span class="text-white">password</span></p>
+            <p class="text-gold font-semibold mb-1">Account Access</p>
+            <p>Clients: sign in with your Supabase Auth account.</p>
             <p>Admin: <span class="text-white">admin@kgc.ph</span> / <span class="text-white">password</span></p>
           </div>
           <form onsubmit="window.handleLogin(event)" id="loginForm">
@@ -1818,6 +1998,58 @@
           </form>
         </div>
 
+      </div>
+    </div>
+
+    <!-- Client profile settings; access is guarded by the active Supabase Auth session. -->
+    <div id="clientProfileModal" class="modal-overlay" role="dialog" aria-modal="true"
+      aria-labelledby="clientProfileTitle">
+      <div class="client-profile-modal">
+        <div class="flex items-start justify-between gap-4 border-b border-white/10 pb-4">
+          <div>
+            <p class="text-xs uppercase tracking-[0.2em] text-gold">Account settings</p>
+            <h2 id="clientProfileTitle" class="mt-1 text-2xl font-bold text-white">Edit My Profile</h2>
+            <p class="mt-1 text-sm text-gray-400">Update your personal and security information.</p>
+          </div>
+          <button type="button" class="modal-close-btn" onclick="window.closeModal('clientProfileModal')"
+            aria-label="Close profile settings">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form id="clientProfileForm" class="mt-5 space-y-4">
+          <h3 class="text-lg font-semibold text-gold">Personal Information</h3>
+          <div>
+            <label for="profileName">Name</label>
+            <input id="profileName" name="name" type="text" autocomplete="name" required maxlength="120">
+          </div>
+          <div>
+            <label for="profileEmail">Email</label>
+            <input id="profileEmail" name="email" type="email" autocomplete="email" required maxlength="254">
+          </div>
+          <div>
+            <label for="profilePhone">Phone Number</label>
+            <input id="profilePhone" name="phone" type="tel" autocomplete="tel" maxlength="40">
+          </div>
+          <button id="saveProfileButton" class="client-profile-submit" type="submit">Save Changes</button>
+        </form>
+
+        <form id="clientPasswordForm" class="mt-7 space-y-4 border-t border-white/10 pt-5">
+          <h3 class="text-lg font-semibold text-gold">Security Settings</h3>
+          <div>
+            <label for="profileNewPassword">New Password</label>
+            <input id="profileNewPassword" name="newPassword" type="password" autocomplete="new-password"
+              minlength="8" required>
+          </div>
+          <div>
+            <label for="profileConfirmPassword">Confirm New Password</label>
+            <input id="profileConfirmPassword" name="confirmPassword" type="password" autocomplete="new-password"
+              minlength="8" required>
+          </div>
+          <button id="updatePasswordButton" class="client-profile-submit" type="submit">Update Password</button>
+        </form>
       </div>
     </div>
 
@@ -2266,6 +2498,22 @@
       });
     }
 
+    var profileTrigger = document.getElementById('clientProfileTrigger');
+    var profileDropdown = document.getElementById('clientProfileDropdown');
+    if (profileTrigger && profileDropdown) {
+      profileTrigger.addEventListener('click', function () {
+        var isExpanded = profileTrigger.getAttribute('aria-expanded') === 'true';
+        profileTrigger.setAttribute('aria-expanded', String(!isExpanded));
+        profileDropdown.hidden = isExpanded;
+      });
+      document.addEventListener('click', function (event) {
+        if (!profileTrigger.contains(event.target) && !profileDropdown.contains(event.target)) {
+          profileDropdown.hidden = true;
+          profileTrigger.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
     // ── Smooth Scrolling for Navigation Links (event delegation) ────────────
     // Using document-level delegation instead of per-element binding so that
     // nav links always work regardless of login state, dashboard mode, or
@@ -2356,8 +2604,15 @@
       role: null,
       userName: '',
       userEmail: '',
+      supabaseAuthUser: null,
       bookings: []   // local cache only; source of truth is the server
     };
+    var supabaseClient = null;
+    var supabaseConfig = window.KGC_SUPABASE_CONFIG || {};
+    if (window.supabase && typeof window.supabase.createClient === 'function' &&
+        supabaseConfig.url && supabaseConfig.anonKey) {
+      supabaseClient = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+    }
 
     // ── Persist / restore auth session (bookings come from server) ───────────
     function loadState() {
@@ -2365,6 +2620,8 @@
         var saved = localStorage.getItem('kgc_session');
         if (saved) {
           var parsed = JSON.parse(saved);
+          // Client access is restored only from the Supabase Auth session, never local UI state.
+          if (parsed.role !== 'admin') return;
           portalState.isLoggedIn = parsed.isLoggedIn || false;
           portalState.role       = parsed.role       || null;
           portalState.userName   = parsed.userName   || '';
@@ -2373,6 +2630,10 @@
       } catch (e) { /* ignore */ }
     }
     function saveState() {
+      if (portalState.role === 'client') {
+        localStorage.removeItem('kgc_session');
+        return;
+      }
       localStorage.setItem('kgc_session', JSON.stringify({
         isLoggedIn: portalState.isLoggedIn,
         role:       portalState.role,
@@ -2393,34 +2654,106 @@
 
     loadState();
 
+    function setSupabaseClientUser(user) {
+      if (!user) return;
+      var metadata = user.user_metadata || {};
+      portalState.isLoggedIn = true;
+      portalState.role = 'client';
+      portalState.userName = metadata.name || metadata.full_name || 'Client';
+      portalState.userEmail = user.email || '';
+      portalState.supabaseAuthUser = user;
+      saveState();
+      updateHeaderState();
+    }
+
+    function clearSupabaseClientUser() {
+      if (portalState.role !== 'client') return;
+      portalState.isLoggedIn = false;
+      portalState.role = null;
+      portalState.userName = '';
+      portalState.userEmail = '';
+      portalState.supabaseAuthUser = null;
+      portalState.bookings = [];
+      saveState();
+      updateHeaderState();
+      var profileModal = document.getElementById('clientProfileModal');
+      if (profileModal && profileModal.classList.contains('open')) {
+        window.closeModal('clientProfileModal');
+      }
+      var clientDashboard = document.getElementById('clientDashboard');
+      if (clientDashboard) clientDashboard.classList.add('hidden');
+      var scrollContainer = document.getElementById('scroll-container');
+      if (scrollContainer) {
+        scrollContainer.style.display = '';
+        scrollContainer.classList.remove('dashboard-mode');
+      }
+    }
+
+    async function initializeSupabaseClientAuth() {
+      if (!supabaseClient) return;
+      supabaseClient.auth.onAuthStateChange(function (_event, session) {
+        if (session && session.user) setSupabaseClientUser(session.user);
+        else clearSupabaseClientUser();
+      });
+
+      var result = await supabaseClient.auth.getSession();
+      if (result.error) throw result.error;
+      if (result.data.session && result.data.session.user) {
+        setSupabaseClientUser(result.data.session.user);
+        if (window.showClientDashboard) window.showClientDashboard();
+      } else {
+        clearSupabaseClientUser();
+      }
+    }
+
     // ── Header indicator ─────────────────────────────────────────────────
     function updateHeaderState() {
       var indicator = document.getElementById('userIndicator');
       var nameEl    = document.getElementById('userIndicatorName');
+      var clientMenu = document.getElementById('clientProfileMenu');
+      var clientName = document.getElementById('clientProfileTriggerName');
       var bookNowBtn = document.getElementById('bookNowBtn');
-      if (!indicator) return;
-      if (portalState.isLoggedIn) {
-        indicator.classList.remove('hidden');
-        indicator.classList.add('flex');
-        if (nameEl) nameEl.textContent = portalState.role === 'admin'
-          ? 'Admin Dashboard'
-          : 'My Dashboard (' + portalState.userName + ')';
-      } else {
-        indicator.classList.add('hidden');
-        indicator.classList.remove('flex');
+      var isAdmin = portalState.isLoggedIn && portalState.role === 'admin';
+      var isSupabaseClient = portalState.isLoggedIn && portalState.role === 'client' && !!portalState.supabaseAuthUser;
+
+      if (indicator) {
+        if (isAdmin) {
+          indicator.classList.remove('hidden');
+          indicator.classList.add('flex');
+          if (nameEl) nameEl.textContent = 'Admin Dashboard';
+        } else {
+          indicator.classList.add('hidden');
+          indicator.classList.remove('flex');
+        }
+      }
+
+      if (clientMenu) {
+        clientMenu.classList.toggle('hidden', !isSupabaseClient);
+        if (clientName) clientName.textContent = portalState.userName || 'My Account';
+        if (!isSupabaseClient) {
+          var dropdown = document.getElementById('clientProfileDropdown');
+          var trigger = document.getElementById('clientProfileTrigger');
+          if (dropdown) dropdown.hidden = true;
+          if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        }
       }
 
       if (bookNowBtn) {
-        var isAdminOnlyView = portalState.isLoggedIn && portalState.role === 'admin';
+        var isAdminOnlyView = isAdmin;
         bookNowBtn.classList.toggle('hidden', isAdminOnlyView);
         bookNowBtn.setAttribute('aria-hidden', String(isAdminOnlyView));
       }
     }
     updateHeaderState();
-    // Restore dashboard view if user was logged in before refresh
-    if (portalState.isLoggedIn) {
-      if (portalState.role === 'admin') window.showAdminDashboard && setTimeout(window.showAdminDashboard, 0);
-      else window.showClientDashboard && setTimeout(window.showClientDashboard, 0);
+    if (supabaseClient) {
+      initializeSupabaseClientAuth().catch(function (error) {
+        console.error('Unable to restore Supabase Auth session:', error);
+        window.showToast('Unable to verify your client session. Please refresh and try again.', 'error');
+      });
+    }
+    // Restore the separate administrator view from its existing server-managed login flow.
+    if (portalState.isLoggedIn && portalState.role === 'admin') {
+      if (window.showAdminDashboard) setTimeout(window.showAdminDashboard, 0);
     }
 
     // ── Modal open/close (uses .modal-overlay.open CSS class) ──────────────
@@ -2429,11 +2762,11 @@
       if (!el) return;
       document.body.classList.toggle('auth-modal-open', id === 'authModal');
       document.body.classList.toggle('booking-modal-open', id === 'bookingModal');
-      var hasAnyOpenModal = ['bookingModal', 'authModal'].some(function (modalId) {
+      var hasAnyOpenModal = ['bookingModal', 'authModal', 'clientProfileModal'].some(function (modalId) {
         var modalEl = document.getElementById(modalId);
         return modalEl && modalEl.classList.contains('open');
       });
-      document.body.classList.toggle('modal-open', hasAnyOpenModal || id === 'bookingModal' || id === 'authModal');
+      document.body.classList.toggle('modal-open', hasAnyOpenModal || id === 'bookingModal' || id === 'authModal' || id === 'clientProfileModal');
       el.classList.add('open');
       document.body.style.overflow = 'hidden';
       if (!el._backdropBound) {
@@ -2448,7 +2781,7 @@
       if (!el) return;
       el.classList.remove('open');
       document.body.classList.remove('auth-modal-open', 'booking-modal-open');
-      var hasAnyOpenModal = ['bookingModal', 'authModal'].some(function (modalId) {
+      var hasAnyOpenModal = ['bookingModal', 'authModal', 'clientProfileModal'].some(function (modalId) {
         var modalEl = document.getElementById(modalId);
         return modalEl && modalEl.classList.contains('open');
       });
@@ -2457,10 +2790,128 @@
     };
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
-      ['bookingModal', 'authModal'].forEach(function (id) {
+      ['bookingModal', 'authModal', 'clientProfileModal'].forEach(function (id) {
         var el = document.getElementById(id);
         if (el && el.classList.contains('open')) { window.closeModal(id); }
       });
+      if (profileDropdown && profileTrigger) {
+        profileDropdown.hidden = true;
+        profileTrigger.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    window.openClientProfile = async function () {
+      if (!supabaseClient || portalState.role !== 'client' || !portalState.supabaseAuthUser) {
+        window.showToast('Sign in to a client account to edit your profile.', 'error');
+        return;
+      }
+
+      try {
+        var result = await supabaseClient.auth.getUser();
+        if (result.error) throw result.error;
+        if (!result.data.user) throw new Error('Your client session has expired. Please sign in again.');
+        setSupabaseClientUser(result.data.user);
+
+        var metadata = result.data.user.user_metadata || {};
+        document.getElementById('profileName').value = metadata.name || metadata.full_name || '';
+        document.getElementById('profileEmail').value = result.data.user.email || '';
+        document.getElementById('profilePhone').value = metadata.phone || '';
+        document.getElementById('profileNewPassword').value = '';
+        document.getElementById('profileConfirmPassword').value = '';
+        var dropdown = document.getElementById('clientProfileDropdown');
+        if (dropdown) dropdown.hidden = true;
+        if (profileTrigger) profileTrigger.setAttribute('aria-expanded', 'false');
+        window.openModal('clientProfileModal');
+      } catch (error) {
+        console.error('Unable to load client profile:', error);
+        window.showToast(error.message || 'Unable to load your profile.', 'error');
+      }
+    };
+
+    document.getElementById('clientProfileForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      if (!supabaseClient || portalState.role !== 'client' || !portalState.supabaseAuthUser) {
+        window.showToast('Sign in to a client account to edit your profile.', 'error');
+        return;
+      }
+
+      var form = event.currentTarget;
+      var button = document.getElementById('saveProfileButton');
+      var name = document.getElementById('profileName').value.trim();
+      var email = document.getElementById('profileEmail').value.trim();
+      var phone = document.getElementById('profilePhone').value.trim();
+      var currentEmail = portalState.userEmail;
+      if (!name) {
+        window.showToast('Please enter your name.', 'error');
+        return;
+      }
+      button.disabled = true;
+      button.textContent = 'Saving...';
+      try {
+        var current = await supabaseClient.auth.getUser();
+        if (current.error) throw current.error;
+        if (!current.data.user) throw new Error('Your client session has expired. Please sign in again.');
+        var userUpdates = {
+          data: Object.assign({}, current.data.user.user_metadata || {}, {
+            name: name,
+            phone: phone
+          })
+        };
+        if (email.toLowerCase() !== String(current.data.user.email || '').toLowerCase()) {
+          userUpdates.email = email;
+        }
+        var updated = await supabaseClient.auth.updateUser(userUpdates);
+        if (updated.error) throw updated.error;
+        if (updated.data.user) setSupabaseClientUser(updated.data.user);
+        form.reset();
+        window.closeModal('clientProfileModal');
+        if (email.toLowerCase() !== currentEmail.toLowerCase()) {
+          window.showToast('Profile saved. Check your inbox to confirm the email address change.', 'success');
+        } else {
+          window.showToast('Your profile has been updated.', 'success');
+        }
+      } catch (error) {
+        console.error('Unable to update client profile:', error);
+        window.showToast(error.message || 'Unable to save your profile.', 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Save Changes';
+      }
+    });
+
+    document.getElementById('clientPasswordForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      if (!supabaseClient || portalState.role !== 'client' || !portalState.supabaseAuthUser) {
+        window.showToast('Sign in to a client account to update your password.', 'error');
+        return;
+      }
+
+      var newPassword = document.getElementById('profileNewPassword').value;
+      var confirmPassword = document.getElementById('profileConfirmPassword').value;
+      var button = document.getElementById('updatePasswordButton');
+      var form = event.currentTarget;
+      if (newPassword !== confirmPassword) {
+        window.showToast('The new passwords do not match.', 'error');
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = 'Updating...';
+      try {
+        var current = await supabaseClient.auth.getUser();
+        if (current.error) throw current.error;
+        if (!current.data.user) throw new Error('Your client session has expired. Please sign in again.');
+        var updated = await supabaseClient.auth.updateUser({ password: newPassword });
+        if (updated.error) throw updated.error;
+        form.reset();
+        window.showToast('Your password has been updated.', 'success');
+      } catch (error) {
+        console.error('Unable to update client password:', error);
+        window.showToast(error.message || 'Unable to update your password.', 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Update Password';
+      }
     });
 
     // ── Book Now button ─────────────────────────────────────────────────
@@ -2806,6 +3257,31 @@
       var pass  = form.loginPassword.value;
       var role  = (document.getElementById('loginRoleInput') || {}).value || 'client';
 
+      if (role === 'client') {
+        if (!supabaseClient) {
+          window.showToast('Client sign-in is unavailable. Configure the Supabase project URL and public key.', 'error');
+          return;
+        }
+        try {
+          var clientLogin = await supabaseClient.auth.signInWithPassword({ email: email, password: pass });
+          if (clientLogin.error) throw clientLogin.error;
+          if (!clientLogin.data.user) throw new Error('Supabase did not return a signed-in client.');
+          setSupabaseClientUser(clientLogin.data.user);
+          window.closeModal('authModal');
+          form.reset();
+          if (typeof window.handlePendingBookingSelection === 'function') {
+            var pendingAfterLogin = window.handlePendingBookingSelection();
+            if (!pendingAfterLogin) window.openBookingDirect();
+          } else {
+            window.openBookingDirect();
+          }
+        } catch (error) {
+          console.error('Client sign-in failed:', error);
+          window.showToast(error.message || 'Unable to sign in. Check your credentials and try again.', 'error');
+        }
+        return;
+      }
+
       try {
         var response = await fetch('/api/auth/login', {
           method: 'POST',
@@ -2848,10 +3324,9 @@
 
       var registeredUsers = getRegisteredUsers();
       var userMatch = registeredUsers.find(function (user) {
-        return String(user.email || '').trim().toLowerCase() === email.toLowerCase() && String(user.password || '') === pass && (role === 'admin' ? user.role === 'admin' : user.role === 'client');
+        return String(user.email || '').trim().toLowerCase() === email.toLowerCase() && String(user.password || '') === pass && user.role === 'admin';
       });
       var demoMatch = (pass === 'password') && (
-        (role === 'client' && email === 'client@kgc.ph') ||
         (role === 'admin'  && email === 'admin@kgc.ph')
       );
       if (!userMatch && !demoMatch) {
@@ -2894,6 +3369,51 @@
         role: role
       };
 
+      if (role === 'client') {
+        if (!supabaseClient) {
+          window.showToast('Client registration is unavailable. Configure the Supabase project URL and public key.', 'error');
+          return;
+        }
+        try {
+          var signup = await supabaseClient.auth.signUp({
+            email: payload.email,
+            password: payload.password,
+            options: {
+              data: {
+                name: payload.name,
+                company: payload.company,
+                phone: payload.phone,
+                role: 'client'
+              }
+            }
+          });
+          if (signup.error) throw signup.error;
+          window.closeModal('authModal');
+          form.reset();
+          if (signup.data.session && signup.data.user) {
+            setSupabaseClientUser(signup.data.user);
+            window.showToast('Account created successfully. You are now signed in.', 'success');
+            if (typeof window.handlePendingBookingSelection === 'function') {
+              var pendingAfterSignup = window.handlePendingBookingSelection();
+              if (!pendingAfterSignup) window.openBookingDirect();
+            } else {
+              window.openBookingDirect();
+            }
+          } else {
+            window.showToast('Account created. Check your email to confirm your account before signing in.', 'success');
+          }
+        } catch (error) {
+          console.error('Client registration error:', error);
+          window.showToast(error.message || 'Unable to create your account.', 'error');
+        }
+        return;
+      }
+
+      if (role !== 'admin') {
+        window.showToast('Invalid account type.', 'error');
+        return;
+      }
+
       try {
         var response = await fetch('/api/auth/register', {
           method: 'POST',
@@ -2924,38 +3444,6 @@
           window.showToast('Admin account request submitted! Your account requires authorization from an existing Admin before you can log in.', 'success');
           return;
         }
-
-        var clientUsers = getRegisteredUsers();
-        clientUsers.push({
-          name: payload.name,
-          company: payload.company,
-          email: payload.email.toLowerCase(),
-          phone: payload.phone,
-          password: payload.password,
-          role: 'client',
-          isApproved: true,
-          status: 'Approved'
-        });
-        saveRegisteredUsers(clientUsers);
-
-        portalState.isLoggedIn = true;
-        portalState.role = 'client';
-        portalState.userName = payload.name;
-        portalState.userEmail = payload.email.toLowerCase();
-        saveState();
-        updateHeaderState();
-        window.closeModal('authModal');
-        form.reset();
-        window.showToast('\u2705 Account created successfully! You are now signed in.');
-        if (typeof window.handlePendingBookingSelection === 'function') {
-          var pendingAfterSignup = window.handlePendingBookingSelection();
-          if (!pendingAfterSignup) {
-            window.openBookingDirect();
-          }
-        } else {
-          window.openBookingDirect();
-        }
-        return;
       } catch (err) {
         console.error('Registration error:', err);
         window.showToast('\u274c ' + (err.message || 'Registration failed.'), 'error');
@@ -3265,21 +3753,45 @@
     };
 
     // ── Logout ────────────────────────────────────────────────────
-    window.logout = function () {
+    window.logout = async function () {
       if (!confirm('Log out of your KGC account?')) return;
+      var isClient = portalState.role === 'client';
+      if (isClient) {
+        if (!supabaseClient || !portalState.supabaseAuthUser) {
+          window.showToast('Your client session could not be verified. Please refresh and try again.', 'error');
+          return;
+        }
+        try {
+          var result = await supabaseClient.auth.signOut();
+          if (result.error) throw result.error;
+        } catch (error) {
+          console.error('Client sign-out failed:', error);
+          window.showToast(error.message || 'Unable to sign out. Please try again.', 'error');
+          return;
+        }
+      }
       portalState.isLoggedIn = false;
       portalState.role       = null;
       portalState.userName   = '';
       portalState.userEmail  = '';
+      portalState.supabaseAuthUser = null;
       portalState.bookings   = [];
       saveState();
       updateHeaderState();
-      document.getElementById('clientDashboard').classList.add('hidden');
-      document.getElementById('adminDashboard').classList.add('hidden');
+      var clientDashboard = document.getElementById('clientDashboard');
+      var adminDashboard = document.getElementById('adminDashboard');
+      if (clientDashboard) clientDashboard.classList.add('hidden');
+      if (adminDashboard) adminDashboard.classList.add('hidden');
       var sc = document.getElementById('scroll-container');
-      sc.style.display = '';
-      sc.classList.remove('dashboard-mode');
+      if (sc) {
+        sc.style.display = '';
+        sc.classList.remove('dashboard-mode');
+      }
       window.scrollTo(0, 0);
+      if (isClient) {
+        window.location.assign('/');
+        return;
+      }
       window.showToast('\uD83D\uDC4B Logged out. See you next time!');
     };
 
