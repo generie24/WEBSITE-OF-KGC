@@ -5,9 +5,10 @@ const { createSupabaseStore } = require('./supabase-store');
 
 // Load environment variables from .env file
 try {
-  if (fs.existsSync('.env')) {
+  const envPath = path.join(__dirname, '.env');
+  if (fs.existsSync(envPath)) {
     const dotenv = require('dotenv');
-    dotenv.config();
+    dotenv.config({ path: envPath });
   }
 } catch (err) {
   console.log('dotenv not found, using default values');
