@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const { createSupabaseStore } = require('./supabase-store');
 
 // Load environment variables from .env file
 try {
@@ -127,6 +128,66 @@ function findUserByCredentials(email, password, role = 'client') {
 loadBookingsFromDisk();
 loadUsersFromDisk();
 
+const supabaseStore = createSupabaseStore();
+
+async function getBookingsStore() {
+  if (supabaseStore.enabled) {
+    try {
+      bookingsStore = await supabaseStore.listBookings();
+    } catch (error) {
+      console.warn('Supabase bookings read failed; using JSON fallback:', error.message);
+    }
+  }
+  return bookingsStore;
+}
+
+async function getUsersStore() {
+  if (supabaseStore.enabled) {
+    try {
+      usersStore = await supabaseStore.listUsers();
+    } catch (error) {
+      console.warn('Supabase users read failed; using JSON fallback:', error.message);
+    }
+  }
+  return usersStore;
+}
+
+async function persistBooking(booking) {
+  if (supabaseStore.enabled) return supabaseStore.insertBooking(booking);
+  bookingsStore.push(booking);
+  saveBookingsToDisk();
+  return booking;
+}
+
+async function persistBookingUpdate(id, changes) {
+  if (supabaseStore.enabled) return supabaseStore.updateBooking(id, changes);
+  const booking = bookingsStore.find((entry) => entry.id === id);
+  if (booking) {
+    Object.assign(booking, changes);
+    saveBookingsToDisk();
+  }
+  return booking;
+}
+
+async function persistUser(user) {
+  if (supabaseStore.enabled) return supabaseStore.insertUser(user);
+  usersStore.push(user);
+  saveUsersToDisk();
+  return user;
+}
+
+async function persistUserUpdate(id, changes) {
+  if (supabaseStore.enabled) return supabaseStore.updateUser(id, changes);
+  const user = usersStore.find((entry) => entry.id === id);
+  if (user) {
+    Object.assign(user, changes);
+    saveUsersToDisk();
+  }
+  return user;
+}
+
+console.log(`Persistence: ${supabaseStore.enabled ? 'Supabase' : 'JSON fallback'}`);
+
 // ── Middleware ───────────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -241,15 +302,36 @@ app.get('/api/subsidiaries', (req, res) => {
   });
 });
 
+app.get('/api/payment-methods', async (req, res) => {
+  try {
+    if (supabaseStore.enabled) {
+      return res.json({ success: true, data: await supabaseStore.listPaymentMethods() });
+    }
+
+    res.json({
+      success: true,
+      data: [
+        { id: 1, code: 'ewallet', name: 'GCash / Maya', description: 'E-Wallet', is_active: true },
+        { id: 2, code: 'card', name: 'Credit / Debit Card', description: 'Visa / Mastercard', is_active: true },
+        { id: 3, code: 'bank_transfer', name: 'Bank Transfer / Direct Deposit', description: 'BDO / BPI / Direct Deposit', is_active: true },
+        { id: 4, code: 'invoice', name: 'Cash on Delivery / Corporate Invoice', description: 'COD / Corporate Billing', is_active: true }
+      ]
+    });
+  } catch (error) {
+    console.error('Payment methods lookup failed:', error);
+    res.status(500).json({ success: false, error: 'Unable to load payment methods.' });
+  }
+});
+
 // ── API: Bookings ─────────────────────────────────────────────────────────────
 
 /**
  * GET /api/bookings
  * Returns all bookings. Pass ?email=x to filter to a specific client's bookings.
  */
-app.get('/api/bookings', (req, res) => {
+app.get('/api/bookings', async (req, res) => {
   const { email } = req.query;
-  let results = bookingsStore;
+  let results = await getBookingsStore();
   if (email) {
     results = bookingsStore.filter(b => b.email === String(email).trim().toLowerCase());
   }
@@ -267,7 +349,7 @@ app.get('/api/bookings', (req, res) => {
  * Creates a new booking. Expects the booking payload in the request body.
  * Returns a confirmation payload accepted by the front-end.
  */
-app.post('/api/bookings', (req, res) => {
+app.post('/api/bookings', async (req, res) => {
   try {
     const body = req.body || {};
     const rawSubsidiaries = Array.isArray(body.subsidiaries)
@@ -322,14 +404,14 @@ app.post('/api/bookings', (req, res) => {
       timestamp: new Date().toISOString()
     };
 
-    bookingsStore.push(booking);
-    saveBookingsToDisk();
+    const savedBooking = await persistBooking(booking);
+    bookingsStore.push(savedBooking);
 
     console.log(`✅ New booking saved: ${booking.id} by ${booking.name} (${booking.email})`);
     return res.status(200).json({
       success: true,
       message: 'Booking confirmed',
-      data: booking
+      data: savedBooking
     });
   } catch (error) {
     console.error('Booking submission failed:', error);
@@ -345,7 +427,7 @@ app.post('/api/bookings', (req, res) => {
  * PATCH /api/bookings/:id
  * Updates the status of a booking. Body: { status: 'Approved' | 'Rejected' | 'Pending' }
  */
-app.patch('/api/bookings/:id', (req, res) => {
+app.patch('/api/bookings/:id', async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
@@ -357,21 +439,22 @@ app.patch('/api/bookings/:id', (req, res) => {
     });
   }
 
-  const booking = bookingsStore.find(b => b.id === id);
+  const currentBookings = await getBookingsStore();
+  const booking = currentBookings.find(b => b.id === id);
   if (!booking) {
     return res.status(404).json({ success: false, error: `Booking ${id} not found.` });
   }
 
-  booking.status = status;
-  booking.updatedAt = new Date().toISOString();
-  saveBookingsToDisk();
+  const updatedAt = new Date().toISOString();
+  const updatedBooking = await persistBookingUpdate(id, { status, updatedAt });
 
   console.log(`✏️  Booking ${id} status updated to: ${status}`);
-  res.json({ success: true, data: booking });
+  res.json({ success: true, data: updatedBooking });
 });
 
-app.get('/api/auth/admin-requests', (req, res) => {
-  const pendingAdmins = usersStore.filter((user) => {
+app.get('/api/auth/admin-requests', async (req, res) => {
+  const currentUsers = await getUsersStore();
+  const pendingAdmins = currentUsers.filter((user) => {
     const role = normalizeRole(user.role || 'client');
     return role === 'admin' && !getApprovalStatus(user);
   }).map((user) => ({
@@ -390,7 +473,7 @@ app.get('/api/auth/admin-requests', (req, res) => {
   });
 });
 
-app.patch('/api/auth/admin-requests/:id', (req, res) => {
+app.patch('/api/auth/admin-requests/:id', async (req, res) => {
   const { id } = req.params;
   const { action } = req.body || {};
 
@@ -401,7 +484,8 @@ app.patch('/api/auth/admin-requests/:id', (req, res) => {
     });
   }
 
-  const targetUser = usersStore.find((user) => user.id === id);
+  const currentUsers = await getUsersStore();
+  const targetUser = currentUsers.find((user) => user.id === id);
   if (!targetUser) {
     return res.status(404).json({
       success: false,
@@ -419,23 +503,26 @@ app.patch('/api/auth/admin-requests/:id', (req, res) => {
   const approved = String(action).toLowerCase() === 'approve';
   targetUser.isApproved = approved;
   targetUser.status = approved ? 'Approved' : 'Rejected';
-  saveUsersToDisk();
+  const updatedUser = await persistUserUpdate(id, {
+    isApproved: targetUser.isApproved,
+    status: targetUser.status
+  });
 
   console.log(`🛡️ Admin approval update: ${targetUser.email} -> ${targetUser.status}`);
 
   res.json({
     success: true,
     data: {
-      id: targetUser.id,
-      email: targetUser.email,
-      role: targetUser.role,
-      isApproved: targetUser.isApproved,
-      status: targetUser.status
+      id: updatedUser.id,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      isApproved: updatedUser.isApproved,
+      status: updatedUser.status
     }
   });
 });
 
-app.post('/api/auth/register', (req, res) => {
+app.post('/api/auth/register', async (req, res) => {
   const { name, company, email, phone, password, role = 'client' } = req.body || {};
 
   if (!name || !email || !password) {
@@ -447,7 +534,8 @@ app.post('/api/auth/register', (req, res) => {
 
   const normalizedRole = normalizeRole(role);
   const normalizedEmail = String(email).trim().toLowerCase();
-  const userExists = usersStore.some((u) => String(u.email || '').trim().toLowerCase() === normalizedEmail);
+  const currentUsers = await getUsersStore();
+  const userExists = currentUsers.some((u) => String(u.email || '').trim().toLowerCase() === normalizedEmail);
   if (userExists) {
     return res.status(409).json({
       success: false,
@@ -469,8 +557,8 @@ app.post('/api/auth/register', (req, res) => {
     createdAt: new Date().toISOString()
   };
 
-  usersStore.push(newUser);
-  saveUsersToDisk();
+  const savedUser = await persistUser(newUser);
+  usersStore.push(savedUser);
 
   console.log(`✅ New user registered: ${newUser.email} (${newUser.role}) -> ${newUser.status}`);
 
@@ -480,14 +568,14 @@ app.post('/api/auth/register', (req, res) => {
       requiresApproval: true,
       message: 'Admin account request submitted! Your account requires authorization from an existing Admin before you can log in.',
       data: {
-        id: newUser.id,
-        role: newUser.role,
-        name: newUser.name,
-        company: newUser.company,
-        email: newUser.email,
-        phone: newUser.phone,
-        isApproved: newUser.isApproved,
-        status: newUser.status
+        id: savedUser.id,
+        role: savedUser.role,
+        name: savedUser.name,
+        company: savedUser.company,
+        email: savedUser.email,
+        phone: savedUser.phone,
+        isApproved: savedUser.isApproved,
+        status: savedUser.status
       }
     });
   }
@@ -496,19 +584,19 @@ app.post('/api/auth/register', (req, res) => {
     success: true,
     requiresApproval: false,
     data: {
-      id: newUser.id,
-      role: newUser.role,
-      name: newUser.name,
-      company: newUser.company,
-      email: newUser.email,
-      phone: newUser.phone,
-      isApproved: newUser.isApproved,
-      status: newUser.status
+      id: savedUser.id,
+      role: savedUser.role,
+      name: savedUser.name,
+      company: savedUser.company,
+      email: savedUser.email,
+      phone: savedUser.phone,
+      isApproved: savedUser.isApproved,
+      status: savedUser.status
     }
   });
 });
 
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   const { email, password, role = 'client' } = req.body || {};
 
   if (!email || !password) {
@@ -519,6 +607,7 @@ app.post('/api/auth/login', (req, res) => {
   }
 
   const normalizedRole = normalizeRole(role);
+  await getUsersStore();
   const user = findUserByCredentials(email, password, normalizedRole);
 
   if (!user) {

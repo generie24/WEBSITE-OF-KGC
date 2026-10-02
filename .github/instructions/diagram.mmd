@@ -1,0 +1,51 @@
+flowchart TD
+    A([User Opens Login Modal]) --> B{Select Role}
+    
+    B -- Client --> C[Client Role Selected]
+    B -- Admin/Employee --> D[Admin/Employee Role Selected]
+    
+    C --> E[Enter Email & Password]
+    D --> E
+    
+    E --> F[Submit Form]
+    F --> G[POST /api/auth/login]
+    G --> H{API Success?}
+    
+    %% Success Flow
+    H -- Yes --> I[Save Session]
+    I --> J{User Role?}
+    
+    J -- Admin --> K[Show Admin Dashboard]
+    J -- Client --> L{Pending Booking Selection?}
+    
+    L -- Yes --> M[Open Booking Modal with Subsidiary Selected]
+    L -- No --> N[Open Booking Modal]
+    
+    K --> Z([Login Complete])
+    M --> Z
+    N --> Z
+
+    %% Error Flows
+    H -- No --> O{Error Type?}
+    
+    O -- Authentication Error --> P[Show Error Message]
+    P --> Q[Keep Login Modal Open]
+    Q --> R([Wait for Retry])
+
+    O -- Request Failed --> S{Fallback Credentials Valid?}
+    
+    S -- Invalid --> T[Show Error Message]
+    T --> U[Keep Login Modal Open]
+    U --> R
+    
+    S -- Valid --> V[Save Session]
+    V --> W{User Role?}
+    
+    W -- Admin --> K
+    W -- Client --> X{Pending Booking Selection?}
+    
+    X -- Yes --> Y[Open Booking Modal with Subsidiary Selected]
+    X -- No --> N1[Open Booking Modal]
+    
+    Y --> Z
+    N1 --> Z
