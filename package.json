@@ -8,7 +8,8 @@
     "dev:ts": "tsx watch server.ts",
     "build": "tsc",
     "start": "node server.js",
-    "migrate:supabase": "node supabase-migrate.js"
+    "migrate:supabase": "node supabase-migrate.js",
+    "migrate:client-auth": "node migrate-client-auth.js"
   },
   "keywords": [
     "corporate",

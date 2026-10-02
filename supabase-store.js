@@ -56,6 +56,46 @@ function createSupabaseStore() {
       return (data || []).map(mapUser);
     },
 
+    // Resolve a raw username (from the login form) to the account's email.
+    // Tries a `username` column first; if the column is missing (PGRST204), falls
+    // back to loading all users and matching in-memory on email only.
+    async resolveUserByUsername(rawUsername) {
+      const username = String(rawUsername || '').trim().toLowerCase();
+      if (!username) return null;
+
+      // Fast path: query the users table by username column (works once the column exists).
+      try {
+        const { data, error } = await client.from('users')
+          .select('id, email, username, name, role')
+          .eq('username', username)
+          .maybeSingle();
+        if (!error && data) {
+          return { email: data.email, username: data.username || username, name: data.name, role: data.role };
+        }
+      } catch (err) {
+        console.warn('resolveUserByUsername: username column query failed, falling back to in-memory match:', err.message);
+      }
+
+      // Fallback: load all users (only standard columns) and match in-memory on email,
+      // in case the user typed their email into the username field. The username column
+      // may not exist yet, so we don't select it here.
+      try {
+        const { data, error } = await client.from('users').select('id, email, name, role');
+        if (error) throw error;
+        const match = (data || []).find((u) => {
+          const uEmail = String(u.email || '').trim().toLowerCase();
+          return uEmail === username;
+        });
+        if (match) {
+          return { email: match.email, username: username, name: match.name, role: match.role };
+        }
+      } catch (err) {
+        console.warn('resolveUserByUsername: in-memory fallback failed:', err.message);
+      }
+
+      return null;
+    },
+
     async listPaymentMethods() {
       const { data, error } = await client.from('payment_methods')
         .select('id, code, name, description, is_active')
@@ -82,6 +122,68 @@ function createSupabaseStore() {
       return mapUser(data);
     },
 
+    // Upsert a client row by email, tolerating a missing `username` column.
+    // Called from /api/users/sync after a Supabase Auth signUp so username-based
+    // login can resolve the username to an email via the users table.
+    async upsertClient(user) {
+      // Try with username first.
+      try {
+        const existing = await client.from('users').select('id').eq('email', user.email).maybeSingle();
+        if (existing.error && existing.error.code !== 'PGRST116') {
+          // fall through to try insert
+        }
+        const payload = {
+          id: user.id,
+          role: 'client',
+          name: user.name,
+          company: user.company || '',
+          email: user.email,
+          phone: user.phone || '',
+          password: '',
+          is_approved: true,
+          status: 'Approved',
+          created_at: user.createdAt
+        };
+        if (user.username) payload.username = user.username;
+
+        if (existing.data) {
+          const { data, error } = await client.from('users').update(payload).eq('id', existing.data.id).select().single();
+          if (error) throw error;
+          return mapUser(data);
+        }
+        const { data, error } = await client.from('users').insert(payload).select().single();
+        if (error) throw error;
+        return mapUser(data);
+      } catch (err) {
+        // If the username column is missing (PGRST204), retry without it.
+        if (String(err.message || '').includes('username') || (err.code === 'PGRST204')) {
+          console.warn('upsertClient: username column missing, retrying without it:', err.message);
+          const payload = {
+            id: user.id,
+            role: 'client',
+            name: user.name,
+            company: user.company || '',
+            email: user.email,
+            phone: user.phone || '',
+            password: '',
+            is_approved: true,
+            status: 'Approved',
+            created_at: user.createdAt
+          };
+          const existing = await client.from('users').select('id').eq('email', user.email).maybeSingle();
+          if (existing.data) {
+            const { data, error } = await client.from('users').update(payload).eq('id', existing.data.id).select().single();
+            if (error) throw error;
+            return mapUser(data);
+          }
+          const { data, error } = await client.from('users').insert(payload).select().single();
+          if (error) throw error;
+          return mapUser(data);
+        }
+        throw err;
+      }
+    },
+
     async updateUser(id, changes) {
       const patch = {};
       if (Object.prototype.hasOwnProperty.call(changes, 'isApproved')) patch.is_approved = changes.isApproved;
@@ -98,16 +200,24 @@ function createSupabaseStore() {
     },
 
     async insertBooking(booking) {
-      const [userResult, paymentResult] = await Promise.all([
-        client.from('users').select('id').eq('email', booking.email).maybeSingle(),
-        client.from('payment_methods').select('id').eq('name', booking.paymentMethod).maybeSingle()
-      ]);
-      if (userResult.error) throw userResult.error;
-      if (paymentResult.error) throw paymentResult.error;
+      // Resolve the user_id (optional — a booking may come from a non-registered email).
+      let userId = null;
+      try {
+        const userResult = await client.from('users').select('id').eq('email', booking.email).maybeSingle();
+        if (userResult.error) throw userResult.error;
+        userId = userResult.data ? userResult.data.id : null;
+      } catch (err) {
+        // If the users table is missing or the lookup fails, still allow the booking to save.
+        console.warn('insertBooking: user lookup failed, proceeding with user_id=null:', err.message);
+        userId = null;
+      }
 
-      const { data, error } = await client.from('bookings').insert({
+      // Build the insert payload defensively. We only include columns the frontend actually
+      // sends and that we know most basic bookings tables have. payment_method_id and
+      // payment_methods table lookups are omitted because the current Supabase schema does
+      // not include them; the human-readable payment_method string is enough for the UI.
+      const insertPayload = {
         id: booking.id,
-        user_id: userResult.data ? userResult.data.id : null,
         name: booking.name,
         email: booking.email,
         phone: booking.phone,
@@ -116,11 +226,16 @@ function createSupabaseStore() {
         services: booking.services,
         notes: booking.notes,
         payment_method: booking.paymentMethod,
-        payment_method_id: paymentResult.data ? paymentResult.data.id : null,
         status: booking.status,
         created_at: booking.createdAt,
         timestamp: booking.timestamp
-      }).select().single();
+      };
+
+      // user_id is only added if we successfully resolved it; otherwise we leave it out
+      // to avoid schema mismatch errors on tables that don't have the column.
+      if (userId) insertPayload.user_id = userId;
+
+      const { data, error } = await client.from('bookings').insert(insertPayload).select().single();
       if (error) throw error;
       return mapBooking(data);
     },

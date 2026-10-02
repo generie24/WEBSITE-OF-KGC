@@ -176,42 +176,58 @@
       position: relative;
     }
 
-    .client-profile-trigger {
+    /* Borderless text-style profile trigger ("Hi, [Name]! ▾") — replaces the old dark pill/box. */
+    .profile-text-trigger {
       display: inline-flex;
       align-items: center;
-      gap: 0.65rem;
-      max-width: min(260px, 48vw);
-      padding: 0.65rem 0.9rem;
-      border: 1px solid rgba(212, 175, 55, 0.5);
-      border-radius: 10px;
-      background: linear-gradient(145deg, rgba(30, 30, 36, 0.98), rgba(13, 13, 18, 0.98));
-      color: #f4e5a1;
+      gap: 0.4rem;
+      max-width: min(280px, 50vw);
+      padding: 0.5rem 0.25rem;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: #D4AF37;
       font: 600 0.9rem 'Plus Jakarta Sans', sans-serif;
+      letter-spacing: 0.5px;
       cursor: pointer;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      transition: color 0.2s ease, opacity 0.2s ease;
     }
 
-    .client-profile-trigger:hover,
-    .client-profile-trigger[aria-expanded="true"] {
-      border-color: #D4AF37;
-      box-shadow: 0 0 18px rgba(212, 175, 55, 0.16);
+    .profile-text-trigger:hover,
+    .profile-text-trigger[aria-expanded="true"] {
+      color: #f4e5a1;
+      background: transparent;
+      box-shadow: none;
     }
 
-    .client-profile-trigger-name {
+    .profile-text-name {
+       color: #dfb76c !important;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    .client-profile-trigger svg {
-      width: 1rem;
-      height: 1rem;
+    .profile-text-icon {
+      width: 1.1rem;
+      height: 1.1rem;
+      flex: 0 0 auto;
+      color: #D4AF37;
+    }
+
+    .profile-text-chevron {
+      width: 0.9rem;
+      height: 0.9rem;
       flex: 0 0 auto;
       transition: transform 0.2s ease;
     }
 
-    .client-profile-trigger[aria-expanded="true"] svg {
+    .profile-text-trigger[aria-expanded="true"] .profile-text-chevron {
       transform: rotate(180deg);
+    }
+
+    /* MY BOOKINGS link — styled to match the text-trigger aesthetic. */
+    .nav-text-link {
+      text-transform: uppercase;
     }
 
     .client-profile-dropdown {
@@ -233,7 +249,9 @@
     }
 
     .client-profile-dropdown button {
-      display: block;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
       width: 100%;
       padding: 0.8rem 0.85rem;
       border: 0;
@@ -243,6 +261,12 @@
       text-align: left;
       font: 500 0.9rem 'Inter', sans-serif;
       cursor: pointer;
+    }
+
+    .client-profile-dropdown .dropdown-emoji {
+      flex: 0 0 auto;
+      font-size: 1rem;
+      line-height: 1;
     }
 
     .client-profile-dropdown button:hover,
@@ -313,8 +337,8 @@
         width: 100%;
       }
 
-      .client-profile-trigger {
-        justify-content: space-between;
+      .profile-text-trigger {
+        justify-content: flex-start;
         width: 100%;
         max-width: none;
       }
@@ -885,28 +909,47 @@
           <a href="#hero" class="nav-item">Home</a>
           <a href="#about" class="nav-item">About</a>
           <a href="#footer" class="nav-item">Contact</a>
-          <!-- This client-only menu is shown only for an active Supabase client session. -->
+
+          <!-- MY BOOKINGS: shown for any logged-in user (client or admin). Routes via goToDashboard(). -->
+          <a href="#" id="clientDashboardLink" class="nav-item nav-text-link hidden">My Bookings</a>
+          <a href="#" id="navAdminDashboardLink" class="nav-item nav-text-link hidden"
+            style="display:none" onclick="window.goToDashboard(); return false;">DASHBOARD</a>
+
+          <!-- PROFILE DROPDOWN: borderless text trigger "Hi, [Name]! ▾" -->
           <div id="clientProfileMenu" class="client-profile-menu hidden">
-            <button id="clientProfileTrigger" class="client-profile-trigger" type="button"
+            <button id="clientProfileTrigger" class="profile-text-trigger" type="button"
               aria-haspopup="true" aria-expanded="false" aria-controls="clientProfileDropdown">
-              <span id="clientProfileTriggerName" class="client-profile-trigger-name">My Account</span>
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <svg class="profile-text-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM12 14a7 7 0 0 0-7 7h14a7 7 0 0 0-7-7z" />
+              </svg>
+              <span id="clientProfileTriggerName" class="profile-text-name">Hi, there!</span>
+              <svg class="profile-text-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" />
               </svg>
             </button>
             <div id="clientProfileDropdown" class="client-profile-dropdown" role="menu" hidden>
-              <button type="button" role="menuitem" onclick="window.openClientProfile()">Edit My Profile</button>
-              <button type="button" role="menuitem" onclick="window.logout()">Log Out</button>
+              <button type="button" role="menuitem" id="btnEditProfile" onclick="window.openClientProfile()">
+                <span class="dropdown-emoji">⚙️</span> Edit My Profile
+              </button>
+              <button type="button" role="menuitem" id="btnChangePassword" onclick="window.openChangePassword()">
+                <span class="dropdown-emoji">🔑</span> Change Password
+              </button>
+              <button type="button" role="menuitem" id="btnLogout" onclick="window.logout()">
+                <span class="dropdown-emoji">🚪</span> Log Out
+              </button>
             </div>
           </div>
-          <!-- Admin indicator remains separate; client actions live in the menu above. -->
-          <div id="userIndicator" class="hidden items-center gap-3">
+
+          <!-- Legacy admin indicator (kept for safety; hidden in favor of the unified dropdown). -->
+          <div id="userIndicator" class="hidden items-center gap-3" aria-hidden="true">
             <a href="#" onclick="window.goToDashboard(); return false;"
               class="text-sm text-gold font-semibold hover:underline" id="userIndicatorName">My Dashboard</a>
             <span class="text-gray-600">|</span>
             <a href="#" onclick="window.logout(); return false;" class="text-sm text-gray-400 hover:text-white">Log
               Out</a>
           </div>
+
           <button onclick="window.handleBookNow()" id="bookNowBtn"
             class="nav-item bg-gold text-charcoal px-5 py-2 rounded-lg font-bold hover:opacity-90 transition-all shadow-md">Book
             Now</button>
@@ -1932,14 +1975,15 @@
           <!-- Demo credentials hint -->
           <div class="mb-5 p-3 rounded-lg bg-[#121212] border border-gold/20 text-xs text-gray-400 space-y-0.5">
             <p class="text-gold font-semibold mb-1">Account Access</p>
-            <p>Clients: sign in with your Supabase Auth account.</p>
+            <p>Clients:<span class="text-white">client@kgc.ph</span> / <span class="text-white">password</span></p>
             <p>Admin: <span class="text-white">admin@kgc.ph</span> / <span class="text-white">password</span></p>
           </div>
           <form onsubmit="window.handleLogin(event)" id="loginForm">
             <input type="hidden" name="loginRole" id="loginRoleInput" value="client">
             <div class="mb-4">
-              <label class="block text-sm font-semibold text-gray-300 mb-2">Email / Username</label>
-              <input type="email" name="loginEmail" required placeholder="you@example.com"
+              <label class="block text-sm font-semibold text-gray-300 mb-2">Email </label>
+              <input type="text" name="loginEmail" id="loginEmail" required placeholder="you@example.com or username"
+                autocomplete="username"
                 class="w-full px-4 py-3 bg-[#121212] border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-gold">
             </div>
             <div class="mb-5">
@@ -1969,8 +2013,15 @@
                   class="w-full px-4 py-3 bg-[#121212] border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-gold">
               </div>
               <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-2">Username</label>
+                <input type="text" name="regUsername" id="signupUsername" required
+                  placeholder="e.g., juandelacruz01" autocomplete="username"
+                  class="w-full px-4 py-3 bg-[#121212] border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-gold">
+              </div>
+              <div>
                 <label class="block text-sm font-semibold text-gray-300 mb-2">Email</label>
-                <input type="email" name="regEmail" required placeholder="you@example.com"
+                <input type="email" name="regEmail" id="regEmail" required placeholder="you@example.com"
+                  autocomplete="email"
                   class="w-full px-4 py-3 bg-[#121212] border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-gold">
               </div>
               <div>
@@ -1978,13 +2029,7 @@
                 <input type="tel" name="regPhone" required placeholder="+63 9XX XXX XXXX"
                   class="w-full px-4 py-3 bg-[#121212] border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-gold">
               </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-300 mb-2">Account Type</label>
-                <select name="regRole" id="regRoleSelect" class="w-full px-4 py-3 bg-[#121212] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-gold">
-                  <option value="client">Client</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
+             
               <div>
                 <label class="block text-sm font-semibold text-gray-300 mb-2">Password</label>
                 <input type="password" name="regPassword" required placeholder="Create a password"
@@ -2053,6 +2098,40 @@
       </div>
     </div>
 
+    <!-- Dedicated Change Password modal (opened from the profile dropdown). -->
+    <div id="clientPasswordModal" class="modal-overlay" role="dialog" aria-modal="true"
+      aria-labelledby="clientPasswordTitle">
+      <div class="client-profile-modal">
+        <div class="flex items-start justify-between gap-4 border-b border-white/10 pb-4">
+          <div>
+            <p class="text-xs uppercase tracking-[0.2em] text-gold">Account security</p>
+            <h2 id="clientPasswordTitle" class="mt-1 text-2xl font-bold text-white">Change Password</h2>
+            <p class="mt-1 text-sm text-gray-400">Choose a new password for your account.</p>
+          </div>
+          <button type="button" class="modal-close-btn" onclick="window.closeModal('clientPasswordModal')"
+            aria-label="Close change password">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form id="clientPasswordChangeForm" class="mt-5 space-y-4">
+          <div>
+            <label for="changePasswordNew">New Password</label>
+            <input id="changePasswordNew" name="newPassword" type="password" autocomplete="new-password"
+              minlength="8" required>
+          </div>
+          <div>
+            <label for="changePasswordConfirm">Confirm New Password</label>
+            <input id="changePasswordConfirm" name="confirmPassword" type="password" autocomplete="new-password"
+              minlength="8" required>
+          </div>
+          <button id="changePasswordSubmit" class="client-profile-submit" type="submit">Update Password</button>
+        </form>
+      </div>
+    </div>
+
     <!-- CLIENT DASHBOARD -->
     <div id="clientDashboard" class="hidden min-h-screen py-8 px-4">
       <div class="max-w-7xl mx-auto">
@@ -2083,49 +2162,6 @@
           <div class="bg-dark-gray p-6 rounded-xl border border-gold/20">
             <h3 class="font-bold text-xl text-gold mb-2">HYT Foundation</h3>
             <p class="text-gray-400 text-sm">Support youth programs</p>
-          </div>
-        </div>
-
-        <div class="bg-dark-gray rounded-xl p-6 border border-gold/20">
-          <h3 class="text-2xl font-bold text-gold mb-6">Complete KGC Subsidiary Directory</h3>
-          <div class="grid md:grid-cols-3 gap-6">
-            <div class="bg-charcoal p-6 rounded-lg border border-gold/10">
-              <h4 class="font-bold text-lg text-white mb-2">Brains Infinite Innovations Inc.</h4>
-              <p class="text-gray-400 text-sm">A group of competent professionals dedicated to creating reliable
-                solutions.</p>
-            </div>
-            <div class="bg-charcoal p-6 rounded-lg border border-gold/10">
-              <h4 class="font-bold text-lg text-white mb-2">Klassic Solutions Inc.</h4>
-              <p class="text-gray-400 text-sm">Manpower services organization providing creative solutions.</p>
-            </div>
-            <div class="bg-charcoal p-6 rounded-lg border border-gold/10">
-              <h4 class="font-bold text-lg text-white mb-2">Klassic Marketing Inc.</h4>
-              <p class="text-gray-400 text-sm">Global market access in importation and trading.</p>
-            </div>
-            <div class="bg-charcoal p-6 rounded-lg border border-gold/10">
-              <h4 class="font-bold text-lg text-white mb-2">Westwood Development Corp.</h4>
-              <p class="text-gray-400 text-sm">Changing traditional construction methodologies.</p>
-            </div>
-            <div class="bg-charcoal p-6 rounded-lg border border-gold/10">
-              <h4 class="font-bold text-lg text-white mb-2">Westwood Law</h4>
-              <p class="text-gray-400 text-sm">Specialized practice with domain experts in law.</p>
-            </div>
-            <div class="bg-charcoal p-6 rounded-lg border border-gold/10">
-              <h4 class="font-bold text-lg text-white mb-2">Connector</h4>
-              <p class="text-gray-400 text-sm">Modular business integration software system.</p>
-            </div>
-            <div class="bg-charcoal p-6 rounded-lg border border-gold/10">
-              <h4 class="font-bold text-lg text-white mb-2">The Green Oasis</h4>
-              <p class="text-gray-400 text-sm">Professional landscape design specialists.</p>
-            </div>
-            <div class="bg-charcoal p-6 rounded-lg border border-gold/10">
-              <h4 class="font-bold text-lg text-white mb-2">Luxurious Cleaning Co.</h4>
-              <p class="text-gray-400 text-sm">Trusted professional commercial and residential cleaning.</p>
-            </div>
-            <div class="bg-charcoal p-6 rounded-lg border border-gold/10">
-              <h4 class="font-bold text-lg text-white mb-2">HYT Foundation Inc.</h4>
-              <p class="text-gray-400 text-sm">Supporting future generation leaders and youth development.</p>
-            </div>
           </div>
         </div>
 
@@ -2227,8 +2263,32 @@
           </div>
         </div>
 
+        <div class="bg-dark-gray rounded-xl p-6 border border-gold/20 mb-8">
+          <h3 class="text-2xl font-bold text-gold mb-6">Pending Booking Approvals</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-gray-700">
+                  <th class="text-left py-3 px-4 text-gray-400 font-semibold">Client</th>
+                  <th class="text-left py-3 px-4 text-gray-400 font-semibold">Services</th>
+                  <th class="text-left py-3 px-4 text-gray-400 font-semibold">Subsidiaries</th>
+                  <th class="text-left py-3 px-4 text-gray-400 font-semibold">Submitted</th>
+                  <th class="text-left py-3 px-4 text-gray-400 font-semibold">Status</th>
+                  <th class="text-left py-3 px-4 text-gray-400 font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="pendingBookingApprovalTableBody">
+                <tr>
+                  <td colspan="6" class="text-center py-8 text-gray-400">Loading pending booking approvals...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <div class="bg-dark-gray rounded-xl p-6 border border-gold/20">
-          <h3 class="text-2xl font-bold text-gold mb-6">Admin Approval Manager</h3>
+          <h3 class="text-2xl font-bold text-gold mb-2">Admin Account Approval Manager</h3>
+          <p class="text-sm text-gray-400 mb-6">Review registrations submitted for admin access.</p>
           <div class="overflow-x-auto">
             <table class="w-full">
               <thead>
@@ -2514,6 +2574,15 @@
       });
     }
 
+    // MY BOOKINGS nav link → routes to the client or admin dashboard by role.
+    var clientDashboardLink = document.getElementById('clientDashboardLink');
+    if (clientDashboardLink) {
+      clientDashboardLink.addEventListener('click', function (e) {
+        e.preventDefault();
+        window.goToDashboard();
+      });
+    }
+
     // ── Smooth Scrolling for Navigation Links (event delegation) ────────────
     // Using document-level delegation instead of per-element binding so that
     // nav links always work regardless of login state, dashboard mode, or
@@ -2540,6 +2609,7 @@
       if (scrollContainer && scrollContainer.classList.contains('dashboard-mode')) {
         scrollContainer.classList.remove('dashboard-mode');
         scrollContainer.style.display = '';
+        stopAdminDashboardPolling();
         var cd = document.getElementById('clientDashboard');
         var ad = document.getElementById('adminDashboard');
         if (cd) cd.classList.add('hidden');
@@ -2607,11 +2677,37 @@
       supabaseAuthUser: null,
       bookings: []   // local cache only; source of truth is the server
     };
+    var adminDashboardRefreshTimer = null;
     var supabaseClient = null;
+    var supabaseClientPromise = null;
     var supabaseConfig = window.KGC_SUPABASE_CONFIG || {};
     if (window.supabase && typeof window.supabase.createClient === 'function' &&
         supabaseConfig.url && supabaseConfig.anonKey) {
       supabaseClient = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+    }
+
+    function getSupabaseClient() {
+      if (supabaseClient) return Promise.resolve(supabaseClient);
+      if (supabaseClientPromise) return supabaseClientPromise;
+      if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+        return Promise.reject(new Error('The Supabase Auth library did not load. Check your internet connection and refresh.'));
+      }
+
+      supabaseClientPromise = fetch('/api/client-config', { cache: 'no-store' })
+        .then(async function (response) {
+          var config = await readJsonResponse(response);
+          if (!response.ok || !config || !config.url || !config.anonKey) {
+            throw new Error((config && config.error) || 'Client sign-in is not configured on the server.');
+          }
+          supabaseConfig = config;
+          supabaseClient = window.supabase.createClient(config.url, config.anonKey);
+          return supabaseClient;
+        })
+        .catch(function (error) {
+          supabaseClientPromise = null;
+          throw error;
+        });
+      return supabaseClientPromise;
     }
 
     // ── Persist / restore auth session (bookings come from server) ───────────
@@ -2690,13 +2786,13 @@
     }
 
     async function initializeSupabaseClientAuth() {
-      if (!supabaseClient) return;
-      supabaseClient.auth.onAuthStateChange(function (_event, session) {
+      var client = await getSupabaseClient();
+      client.auth.onAuthStateChange(function (_event, session) {
         if (session && session.user) setSupabaseClientUser(session.user);
         else clearSupabaseClientUser();
       });
 
-      var result = await supabaseClient.auth.getSession();
+      var result = await client.auth.getSession();
       if (result.error) throw result.error;
       if (result.data.session && result.data.session.user) {
         setSupabaseClientUser(result.data.session.user);
@@ -2709,28 +2805,31 @@
     // ── Header indicator ─────────────────────────────────────────────────
     function updateHeaderState() {
       var indicator = document.getElementById('userIndicator');
-      var nameEl    = document.getElementById('userIndicatorName');
       var clientMenu = document.getElementById('clientProfileMenu');
       var clientName = document.getElementById('clientProfileTriggerName');
+      var dashboardLink = document.getElementById('clientDashboardLink');
+      var adminDashboardLink = document.getElementById('navAdminDashboardLink');
       var bookNowBtn = document.getElementById('bookNowBtn');
+      var btnEditProfile = document.getElementById('btnEditProfile');
+      var btnChangePassword = document.getElementById('btnChangePassword');
+      var companyBookButtons = document.querySelectorAll('[data-book-now="true"]');
       var isAdmin = portalState.isLoggedIn && portalState.role === 'admin';
       var isSupabaseClient = portalState.isLoggedIn && portalState.role === 'client' && !!portalState.supabaseAuthUser;
+      // Unified dropdown + dashboard link show for any logged-in user (client or admin).
+      var showAccountNav = portalState.isLoggedIn && (isSupabaseClient || isAdmin);
 
+      // Legacy admin indicator is always hidden now; admins use the unified dropdown.
       if (indicator) {
-        if (isAdmin) {
-          indicator.classList.remove('hidden');
-          indicator.classList.add('flex');
-          if (nameEl) nameEl.textContent = 'Admin Dashboard';
-        } else {
-          indicator.classList.add('hidden');
-          indicator.classList.remove('flex');
-        }
+        indicator.classList.add('hidden');
+        indicator.classList.remove('flex');
+        indicator.setAttribute('aria-hidden', 'true');
       }
 
       if (clientMenu) {
-        clientMenu.classList.toggle('hidden', !isSupabaseClient);
-        if (clientName) clientName.textContent = portalState.userName || 'My Account';
-        if (!isSupabaseClient) {
+        clientMenu.classList.toggle('hidden', !showAccountNav);
+        var displayName = portalState.userName || (isAdmin ? 'Admin' : 'there');
+        if (clientName) clientName.textContent = 'Hi, ' + displayName + '!';
+        if (!showAccountNav) {
           var dropdown = document.getElementById('clientProfileDropdown');
           var trigger = document.getElementById('clientProfileTrigger');
           if (dropdown) dropdown.hidden = true;
@@ -2738,19 +2837,40 @@
         }
       }
 
-      if (bookNowBtn) {
-        var isAdminOnlyView = isAdmin;
-        bookNowBtn.classList.toggle('hidden', isAdminOnlyView);
-        bookNowBtn.setAttribute('aria-hidden', String(isAdminOnlyView));
+      // Keep client and admin dashboard links separate so each routes to the right view.
+      // Admins only see Log Out in the dropdown.
+      var showClientOnly = isSupabaseClient && !isAdmin;
+      if (dashboardLink) {
+        dashboardLink.classList.toggle('hidden', !showClientOnly);
+        dashboardLink.style.display = showClientOnly ? '' : 'none';
       }
-    }
-    updateHeaderState();
-    if (supabaseClient) {
-      initializeSupabaseClientAuth().catch(function (error) {
-        console.error('Unable to restore Supabase Auth session:', error);
-        window.showToast('Unable to verify your client session. Please refresh and try again.', 'error');
+      if (adminDashboardLink) {
+        adminDashboardLink.classList.toggle('hidden', !isAdmin);
+        adminDashboardLink.style.display = isAdmin ? 'block' : 'none';
+        adminDashboardLink.setAttribute('aria-hidden', String(!isAdmin));
+      }
+      if (btnEditProfile) {
+        btnEditProfile.style.display = showClientOnly ? '' : 'none';
+      }
+      if (btnChangePassword) {
+        btnChangePassword.style.display = showClientOnly ? '' : 'none';
+      }
+
+      if (bookNowBtn) {
+        bookNowBtn.style.display = isAdmin ? 'none' : '';
+        bookNowBtn.classList.toggle('hidden', isAdmin);
+        bookNowBtn.setAttribute('aria-hidden', String(isAdmin));
+      }
+
+      companyBookButtons.forEach(function (button) {
+        button.style.display = isAdmin ? 'none' : '';
+        button.setAttribute('aria-hidden', String(isAdmin));
       });
     }
+    updateHeaderState();
+    initializeSupabaseClientAuth().catch(function (error) {
+      console.error('Unable to initialize Supabase client authentication:', error);
+    });
     // Restore the separate administrator view from its existing server-managed login flow.
     if (portalState.isLoggedIn && portalState.role === 'admin') {
       if (window.showAdminDashboard) setTimeout(window.showAdminDashboard, 0);
@@ -2904,6 +3024,69 @@
         var updated = await supabaseClient.auth.updateUser({ password: newPassword });
         if (updated.error) throw updated.error;
         form.reset();
+        window.showToast('Your password has been updated.', 'success');
+      } catch (error) {
+        console.error('Unable to update client password:', error);
+        window.showToast(error.message || 'Unable to update your password.', 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Update Password';
+      }
+    });
+
+    // ── Dedicated Change Password modal (opened from the profile dropdown) ──
+    window.openChangePassword = async function () {
+      if (!supabaseClient || portalState.role !== 'client' || !portalState.supabaseAuthUser) {
+        window.showToast('Sign in to a client account to change your password.', 'error');
+        return;
+      }
+      try {
+        var result = await supabaseClient.auth.getUser();
+        if (result.error) throw result.error;
+        if (!result.data.user) throw new Error('Your client session has expired. Please sign in again.');
+        setSupabaseClientUser(result.data.user);
+
+        var newField = document.getElementById('changePasswordNew');
+        var confirmField = document.getElementById('changePasswordConfirm');
+        if (newField) newField.value = '';
+        if (confirmField) confirmField.value = '';
+
+        var dropdown = document.getElementById('clientProfileDropdown');
+        if (dropdown) dropdown.hidden = true;
+        if (profileTrigger) profileTrigger.setAttribute('aria-expanded', 'false');
+        window.openModal('clientPasswordModal');
+      } catch (error) {
+        console.error('Unable to open change password:', error);
+        window.showToast(error.message || 'Unable to open change password.', 'error');
+      }
+    };
+
+    document.getElementById('clientPasswordChangeForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      if (!supabaseClient || portalState.role !== 'client' || !portalState.supabaseAuthUser) {
+        window.showToast('Sign in to a client account to update your password.', 'error');
+        return;
+      }
+
+      var newPassword = document.getElementById('changePasswordNew').value;
+      var confirmPassword = document.getElementById('changePasswordConfirm').value;
+      var button = document.getElementById('changePasswordSubmit');
+      var form = event.currentTarget;
+      if (newPassword !== confirmPassword) {
+        window.showToast('The new passwords do not match.', 'error');
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = 'Updating...';
+      try {
+        var current = await supabaseClient.auth.getUser();
+        if (current.error) throw current.error;
+        if (!current.data.user) throw new Error('Your client session has expired. Please sign in again.');
+        var updated = await supabaseClient.auth.updateUser({ password: newPassword });
+        if (updated.error) throw updated.error;
+        form.reset();
+        window.closeModal('clientPasswordModal');
         window.showToast('Your password has been updated.', 'success');
       } catch (error) {
         console.error('Unable to update client password:', error);
@@ -3159,7 +3342,7 @@
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(booking.paymentMethod || '—') + '</td>' +
             '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-bold badge-pending">' + escHtml(booking.status || 'Pending') + '</span></td>' +
             '<td class="py-3 px-4 text-gray-400 text-xs font-mono">' + escHtml(booking.id) + '</td>' +
-            '<td class="py-3 px-4"><div class="flex items-center gap-2"><button onclick="window.viewBooking(\'' + booking.id + '\')" class="text-gold text-xs hover:underline">View</button><button onclick="window.updateBookingStatus(\'' + booking.id + '\', \'Approved\')" class="px-2 py-0.5 bg-green-700/30 hover:bg-green-700/50 text-green-400 rounded text-xs border border-green-700/40">Approve</button><button onclick="window.updateBookingStatus(\'' + booking.id + '\', \'Rejected\')" class="px-2 py-0.5 bg-red-700/30 hover:bg-red-700/50 text-red-400 rounded text-xs border border-red-700/40">Reject</button></div></td>' +
+            '<td class="py-3 px-4">' + renderBookingActions(booking) + '</td>' +
             '</tr>' + bookingTableBody.innerHTML;
         }
 
@@ -3258,12 +3441,26 @@
       var role  = (document.getElementById('loginRoleInput') || {}).value || 'client';
 
       if (role === 'client') {
-        if (!supabaseClient) {
-          window.showToast('Client sign-in is unavailable. Configure the Supabase project URL and public key.', 'error');
-          return;
-        }
         try {
-          var clientLogin = await supabaseClient.auth.signInWithPassword({ email: email, password: pass });
+          var client = await getSupabaseClient();
+
+          // If the user typed a raw username (no '@'), resolve it to an email via the
+          // backend, which queries the users table by username. Falls back to the raw
+          // value if the backend can't resolve it (so Supabase returns a clean error).
+          var loginEmail = email;
+          if (email && email.indexOf('@') === -1) {
+            try {
+              var resolved = await fetch('/api/auth/resolve-username?username=' + encodeURIComponent(email));
+              var resolvedResult = await readJsonResponse(resolved);
+              if (resolved.ok && resolvedResult && resolvedResult.success && resolvedResult.email) {
+                loginEmail = resolvedResult.email;
+              }
+            } catch (resolveErr) {
+              console.warn('Username resolution failed, proceeding with raw input:', resolveErr.message);
+            }
+          }
+
+          var clientLogin = await client.auth.signInWithPassword({ email: loginEmail, password: pass });
           if (clientLogin.error) throw clientLogin.error;
           if (!clientLogin.data.user) throw new Error('Supabase did not return a signed-in client.');
           setSupabaseClientUser(clientLogin.data.user);
@@ -3360,8 +3557,11 @@
       e.preventDefault();
       var form = e.target;
       var role = (form.regRole && form.regRole.value) || 'client';
+      var rawUsername = (form.regUsername && form.regUsername.value ? form.regUsername.value : '').trim();
+      var username = rawUsername.toLowerCase().replace(/\s+/g, '');
       var payload = {
         name: form.regName.value.trim(),
+        username: username,
         company: form.regCompany.value.trim(),
         email: form.regEmail.value.trim(),
         phone: form.regPhone.value.trim(),
@@ -3370,17 +3570,16 @@
       };
 
       if (role === 'client') {
-        if (!supabaseClient) {
-          window.showToast('Client registration is unavailable. Configure the Supabase project URL and public key.', 'error');
-          return;
-        }
         try {
-          var signup = await supabaseClient.auth.signUp({
+          var client = await getSupabaseClient();
+          var signup = await client.auth.signUp({
             email: payload.email,
             password: payload.password,
             options: {
               data: {
+                username: payload.username,
                 name: payload.name,
+                full_name: payload.name,
                 company: payload.company,
                 phone: payload.phone,
                 role: 'client'
@@ -3388,6 +3587,27 @@
             }
           });
           if (signup.error) throw signup.error;
+
+          // Sync the new Supabase Auth client into the public.users table so the
+          // username can be resolved at login. Fire-and-forget; failures are logged
+          // but don't block the signup flow.
+          try {
+            await fetch('/api/users/sync', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                id: signup.data.user && signup.data.user.id ? signup.data.user.id : null,
+                email: payload.email,
+                username: payload.username,
+                name: payload.name,
+                company: payload.company,
+                phone: payload.phone
+              })
+            });
+          } catch (syncErr) {
+            console.warn('Client profile sync failed (non-blocking):', syncErr.message);
+          }
+
           window.closeModal('authModal');
           form.reset();
           if (signup.data.session && signup.data.user) {
@@ -3430,6 +3650,7 @@
           var registeredUsers = getRegisteredUsers();
           registeredUsers.push({
             name: payload.name,
+            username: payload.username,
             company: payload.company,
             email: payload.email.toLowerCase(),
             phone: payload.phone,
@@ -3457,6 +3678,7 @@
     };
 
     window.showClientDashboard = function () {
+      stopAdminDashboardPolling();
       var sc = document.getElementById('scroll-container');
       sc.style.display = '';
       sc.classList.add('dashboard-mode');
@@ -3476,8 +3698,29 @@
       document.getElementById('clientDashboard').classList.add('hidden');
       window.renderBookingTable();
       window.renderAdminApprovalRequests();
+      startAdminDashboardPolling();
       window.scrollTo(0, 0);
     };
+
+    function stopAdminDashboardPolling() {
+      if (adminDashboardRefreshTimer) {
+        window.clearInterval(adminDashboardRefreshTimer);
+        adminDashboardRefreshTimer = null;
+      }
+    }
+
+    function startAdminDashboardPolling() {
+      stopAdminDashboardPolling();
+      adminDashboardRefreshTimer = window.setInterval(function () {
+        var dashboard = document.getElementById('adminDashboard');
+        if (portalState.role !== 'admin' || !dashboard || dashboard.classList.contains('hidden') ||
+            document.visibilityState !== 'visible') {
+          return;
+        }
+        window.renderBookingTable();
+        window.renderAdminApprovalRequests();
+      }, 15000);
+    }
 
     function syncAdminStats(bookings) {
       var list = Array.isArray(bookings) ? bookings : (portalState.bookings || []);
@@ -3526,23 +3769,85 @@
     async function readJsonResponse(response) {
       var text = await response.text();
       if (!text || !text.trim()) {
+        if (!response.ok) {
+          throw new Error('Server request failed (HTTP ' + response.status + ').');
+        }
         return {};
       }
       try {
         return JSON.parse(text);
       } catch (err) {
-        console.warn('Non-JSON response received:', text.slice(0, 200));
-        return {};
+        var details = text.trim().replace(/\s+/g, ' ').slice(0, 160);
+        var hint = response.status === 403
+          ? ' The server blocked this request; verify the deployment API route and access rules.'
+          : '';
+        var punctuation = /[.!?]$/.test(details) ? '' : '.';
+        throw new Error('Server returned a non-JSON response (HTTP ' + response.status + '): ' + details + punctuation + hint);
       }
     }
 
-    // ── Admin Booking Table (fetches from /api/bookings) ──────────────────
+    function renderPendingBookingApprovals(bookings) {
+      var tbody = document.getElementById('pendingBookingApprovalTableBody');
+      if (!tbody) return;
+
+      var pendingBookings = (Array.isArray(bookings) ? bookings : []).filter(function (booking) {
+        return String(booking && booking.status || '').trim().toLowerCase() === 'pending';
+      });
+
+      if (!pendingBookings.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400">No pending booking approvals.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = pendingBookings.slice().reverse().map(function (booking) {
+        var serviceSummary = window.formatServicesSummary(booking.services || {}) ||
+          (Array.isArray(booking.subsidiaries) ? booking.subsidiaries.join(', ') : '');
+        var submittedAt = formatBookingTimestamp(booking.createdAt || booking.timestamp || booking.date || 'N/A');
+        var bookingId = String(booking.id || '');
+
+        return '<tr class="border-b border-gray-800 hover:bg-gray-900 transition-colors">' +
+          '<td class="py-3 px-4"><div class="text-white font-medium">' + escHtml(booking.name || 'Unnamed client') + '</div>' +
+            '<div class="text-gray-400 text-xs">' + escHtml(booking.email || '') + '</div></td>' +
+          '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(serviceSummary || '—') + '</td>' +
+          '<td class="py-3 px-4 text-gray-300 text-sm">' +
+            escHtml(Array.isArray(booking.subsidiaries) ? booking.subsidiaries.join(', ') : '—') + '</td>' +
+          '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(submittedAt) + '</td>' +
+          '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-bold badge-pending">' +
+            escHtml(booking.status || 'Pending') + '</span></td>' +
+          '<td class="py-3 px-4">' + renderBookingActions(booking) + '</td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    function renderBookingActions(booking) {
+      var bookingId = String(booking.id || '');
+      var status = String(booking.status || '').trim().toLowerCase();
+      var actions = '<button onclick="window.viewBooking(\'' + bookingId + '\')" ' +
+        'class="text-gold text-xs hover:underline">View</button>';
+
+      if (status !== 'approved') {
+        actions += '<button onclick="window.updateBookingStatus(\'' + bookingId + '\', \'Approved\')" ' +
+          'class="px-2 py-0.5 bg-green-700/30 hover:bg-green-700/50 text-green-400 rounded text-xs border border-green-700/40">Approve</button>';
+      }
+      if (status !== 'approved' && status !== 'rejected') {
+        actions += '<button onclick="window.updateBookingStatus(\'' + bookingId + '\', \'Rejected\')" ' +
+          'class="px-2 py-0.5 bg-red-700/30 hover:bg-red-700/50 text-red-400 rounded text-xs border border-red-700/40">Reject</button>';
+      }
+
+      return '<div class="flex items-center gap-2">' + actions + '</div>';
+    }
+
+    // ── Admin booking tables (all bookings and pending approvals share one fetch) ──
     window.renderBookingTable = async function () {
       var tbody = document.getElementById('bookingTableBody');
       if (!tbody) return;
 
       // Show loading state
       tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-gray-400"><span class="kgc-spinner"></span>Loading bookings...</td></tr>';
+      var pendingTbody = document.getElementById('pendingBookingApprovalTableBody');
+      if (pendingTbody) {
+        pendingTbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400"><span class="kgc-spinner"></span>Loading pending booking approvals...</td></tr>';
+      }
 
       try {
         var response = await fetch('/api/bookings');
@@ -3552,6 +3857,7 @@
         // Sync local cache
         portalState.bookings = bookings;
         syncAdminStats(bookings);
+        renderPendingBookingApprovals(bookings);
 
         if (!bookings.length) {
           tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-gray-400">No bookings yet</td></tr>';
@@ -3561,8 +3867,9 @@
         // Newest first
         var sorted = bookings.slice().reverse();
         tbody.innerHTML = sorted.map(function (b) {
-          var badgeClass = b.status === 'Approved' ? 'badge-approved'
-                         : b.status === 'Rejected' ? 'badge-rejected'
+          var status = String(b.status || '').trim().toLowerCase();
+          var badgeClass = status === 'approved' ? 'badge-approved'
+                         : status === 'rejected' ? 'badge-rejected'
                          : 'badge-pending';
           var serviceSummary = window.formatServicesSummary(b.services || {}) || (b.subsidiaries || []).join(', ');
           var bookingTimeDisplay = formatBookingTimestamp(b.createdAt || b.timestamp || b.date || 'N/A');
@@ -3572,21 +3879,18 @@
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml((b.subsidiaries || []).join(', ')) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(bookingTimeDisplay) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(b.paymentMethod || '—') + '</td>' +
-            '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-bold ' + badgeClass + '">' + escHtml(b.status) + '</span></td>' +
+            '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-bold ' + badgeClass + '">' + escHtml(b.status || 'Pending') + '</span></td>' +
             '<td class="py-3 px-4 text-gray-400 text-xs font-mono">' + escHtml(b.id) + '</td>' +
-            '<td class="py-3 px-4">' +
-              '<div class="flex items-center gap-2">' +
-                '<button onclick="window.viewBooking(\'' + b.id + '\')" class="text-gold text-xs hover:underline">View</button>' +
-                (b.status !== 'Approved' ? '<button onclick="window.updateBookingStatus(\'' + b.id + '\', \'Approved\')" class="px-2 py-0.5 bg-green-700/30 hover:bg-green-700/50 text-green-400 rounded text-xs border border-green-700/40">Approve</button>' : '') +
-                (b.status !== 'Rejected' ? '<button onclick="window.updateBookingStatus(\'' + b.id + '\', \'Rejected\')" class="px-2 py-0.5 bg-red-700/30 hover:bg-red-700/50 text-red-400 rounded text-xs border border-red-700/40">Reject</button>' : '') +
-              '</div>' +
-            '</td>' +
+            '<td class="py-3 px-4">' + renderBookingActions(b) + '</td>' +
             '</tr>';
         }).join('');
 
       } catch (err) {
         console.error('Failed to fetch bookings:', err);
         tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-red-400">\u274c Failed to load bookings. Is the server running?</td></tr>';
+        if (pendingTbody) {
+          pendingTbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-red-400">\u274c Failed to load pending booking approvals.</td></tr>';
+        }
       }
     };
 
@@ -3678,7 +3982,7 @@
           headers: { 'Content-Type': 'application/json' },
           body:    JSON.stringify({ status: status })
         });
-        var result = await response.json();
+        var result = await readJsonResponse(response);
         if (!response.ok || !result.success) throw new Error(result.error || 'Server error');
         window.showToast('\u2705 Booking ' + id + ' marked as ' + status + '.');
         window.renderBookingTable(); // re-fetch to reflect new status
@@ -3755,6 +4059,7 @@
     // ── Logout ────────────────────────────────────────────────────
     window.logout = async function () {
       if (!confirm('Log out of your KGC account?')) return;
+      stopAdminDashboardPolling();
       var isClient = portalState.role === 'client';
       if (isClient) {
         if (!supabaseClient || !portalState.supabaseAuthUser) {
