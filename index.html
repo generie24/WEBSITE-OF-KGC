@@ -749,6 +749,51 @@
       scrollbar-width: thin;
       box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
     }
+    #bookingDetailsModal {
+      background: rgba(0, 0, 0, 0.6);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+    }
+    #bookingDetailsModal.open > div {
+      animation: booking-details-enter 180ms ease-out both;
+    }
+    @keyframes booking-details-enter {
+      from { opacity: 0; transform: translateY(8px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #bookingDetailsModal.open > div { animation: none; }
+    }
+    @media print {
+      body.booking-details-print * { visibility: hidden !important; }
+      body.booking-details-print #bookingDetailsModal,
+      body.booking-details-print #bookingDetailsModal * { visibility: visible !important; }
+      body.booking-details-print #bookingDetailsModal {
+        display: block !important;
+        position: absolute;
+        inset: 0;
+        padding: 0;
+        overflow: visible;
+        background: #fff;
+      }
+      body.booking-details-print #bookingDetailsModal > div {
+        width: 100%;
+        max-width: none;
+        max-height: none;
+        overflow: visible;
+        border: 0;
+        background: #fff;
+        color: #111827;
+        box-shadow: none;
+      }
+      body.booking-details-print #bookingDetailsModal button { display: none !important; }
+      body.booking-details-print #bookingDetailsModal .booking-detail-card {
+        border-color: #d1d5db;
+        background: #fff;
+      }
+      body.booking-details-print #bookingDetailsModal .booking-detail-value { color: #111827; }
+      body.booking-details-print #bookingDetailsModal .booking-detail-label { color: #4b5563; }
+    }
 
     /* Modal close button — circular, top-right, always tappable */
     .modal-close-btn {
@@ -2127,6 +2172,103 @@
       </div>
     </div>
 
+    <!-- Admin booking details modal -->
+    <div id="bookingDetailsModal" class="modal-overlay" role="dialog" aria-modal="true"
+      aria-labelledby="bookingDetailsTitle" aria-describedby="bookingDetailsDescription" aria-hidden="true">
+      <div class="w-full max-w-2xl overflow-y-auto rounded-2xl border border-gray-800 bg-[#1A1D24] text-white">
+        <div class="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-gray-800 bg-[#1A1D24] px-6 py-5">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Booking overview</p>
+            <h2 id="bookingDetailsTitle" class="mt-1 text-xl font-bold text-white sm:text-2xl">Booking Request Details</h2>
+            <p id="bookingDetailsDescription" class="sr-only">Booking status, client information, and request details.</p>
+          </div>
+          <button id="bookingDetailsClose" type="button" class="modal-close-btn"
+            onclick="window.closeModal('bookingDetailsModal')" aria-label="Close booking details">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="space-y-6 p-6">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Booking ID</p>
+              <div class="mt-1 flex items-center gap-2">
+                <span id="bookingDetailsId" class="font-mono text-sm font-semibold text-gray-100"></span>
+                <button id="bookingDetailsCopyId" type="button"
+                  class="inline-flex items-center gap-1 rounded-md border border-gray-700 px-2 py-1 text-xs text-gray-300 transition hover:border-gold/60 hover:text-gold"
+                  aria-label="Copy booking ID">
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 8V5.8A1.8 1.8 0 0 1 9.8 4h8.4A1.8 1.8 0 0 1 20 5.8v8.4a1.8 1.8 0 0 1-1.8 1.8H16M5.8 8h8.4A1.8 1.8 0 0 1 16 9.8v8.4a1.8 1.8 0 0 1-1.8 1.8H5.8A1.8 1.8 0 0 1 4 18.2V9.8A1.8 1.8 0 0 1 5.8 8Z" />
+                  </svg>
+                  Copy ID
+                </button>
+              </div>
+            </div>
+            <span id="bookingDetailsStatus"
+              class="rounded-full border px-3 py-1 text-xs font-semibold"
+              aria-label="Booking status"></span>
+          </div>
+
+          <section aria-labelledby="bookingClientHeading">
+            <h3 id="bookingClientHeading" class="mb-3 text-sm font-semibold text-gold">Client Information</h3>
+            <dl class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div class="booking-detail-card rounded-xl border border-gray-800 bg-[#12151B] p-4">
+                <dt class="booking-detail-label text-xs text-gray-500">Client Name</dt>
+                <dd id="bookingDetailsName" class="booking-detail-value mt-1 break-words text-sm font-medium text-gray-100"></dd>
+              </div>
+              <div class="booking-detail-card rounded-xl border border-gray-800 bg-[#12151B] p-4">
+                <dt class="booking-detail-label text-xs text-gray-500">Email</dt>
+                <dd id="bookingDetailsEmail" class="booking-detail-value mt-1 break-all text-sm font-medium text-gray-100"></dd>
+              </div>
+              <div class="booking-detail-card rounded-xl border border-gray-800 bg-[#12151B] p-4 sm:col-span-2">
+                <dt class="booking-detail-label text-xs text-gray-500">Phone</dt>
+                <dd id="bookingDetailsPhone" class="booking-detail-value mt-1 break-words text-sm font-medium text-gray-100"></dd>
+              </div>
+            </dl>
+          </section>
+
+          <section aria-labelledby="bookingRequestHeading">
+            <h3 id="bookingRequestHeading" class="mb-3 text-sm font-semibold text-gold">Request Details</h3>
+            <dl class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div class="booking-detail-card rounded-xl border border-gray-800 bg-[#12151B] p-4">
+                <dt class="booking-detail-label text-xs text-gray-500">Date</dt>
+                <dd id="bookingDetailsDate" class="booking-detail-value mt-1 break-words text-sm font-medium text-gray-100"></dd>
+              </div>
+              <div class="booking-detail-card rounded-xl border border-gray-800 bg-[#12151B] p-4">
+                <dt class="booking-detail-label text-xs text-gray-500">Payment Method</dt>
+                <dd id="bookingDetailsPayment" class="booking-detail-value mt-1 break-words text-sm font-medium text-gray-100"></dd>
+              </div>
+              <div class="booking-detail-card rounded-xl border border-gray-800 bg-[#12151B] p-4 sm:col-span-2">
+                <dt class="booking-detail-label text-xs text-gray-500">Subsidiary</dt>
+                <dd id="bookingDetailsSubsidiaries" class="booking-detail-value mt-1 break-words text-sm font-medium text-gray-100"></dd>
+              </div>
+              <div class="booking-detail-card rounded-xl border border-gray-800 bg-[#12151B] p-4 sm:col-span-2">
+                <dt class="booking-detail-label text-xs text-gray-500">Services</dt>
+                <dd id="bookingDetailsServices" class="booking-detail-value mt-1 whitespace-pre-line break-words text-sm font-medium text-gray-100"></dd>
+              </div>
+              <div class="booking-detail-card rounded-xl border border-gray-800 bg-[#12151B] p-4 sm:col-span-2">
+                <dt class="booking-detail-label text-xs text-gray-500">Notes</dt>
+                <dd id="bookingDetailsNotes" class="booking-detail-value mt-1 whitespace-pre-wrap break-words text-sm text-gray-300"></dd>
+              </div>
+            </dl>
+          </section>
+        </div>
+
+        <div class="flex flex-col-reverse gap-3 border-t border-gray-800 px-6 py-4 sm:flex-row sm:justify-end">
+          <button id="bookingDetailsPrint" type="button"
+            class="rounded-lg border border-gray-700 px-5 py-2.5 text-sm font-semibold text-gray-200 transition hover:border-gold/60 hover:text-gold">
+            Print / Export
+          </button>
+          <button type="button" onclick="window.closeModal('bookingDetailsModal')"
+            class="rounded-lg bg-gold px-5 py-2.5 text-sm font-bold text-[#121212] transition hover:bg-[#E5C158] focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-[#1A1D24]">
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- CLIENT DASHBOARD -->
     <div id="clientDashboard" class="hidden min-h-screen py-8 px-4">
       <div class="max-w-7xl mx-auto">
@@ -2872,17 +3014,23 @@
     }
 
     // ── Modal open/close (uses .modal-overlay.open CSS class) ──────────────
-    window.openModal = function (id) {
-      var el = document.getElementById(id);
-      if (!el) return;
-      document.body.classList.toggle('auth-modal-open', id === 'authModal');
-      document.body.classList.toggle('booking-modal-open', id === 'bookingModal');
-      var hasAnyOpenModal = ['bookingModal', 'authModal', 'clientProfileModal'].some(function (modalId) {
+    var portalModalIds = ['bookingModal', 'authModal', 'clientProfileModal', 'clientPasswordModal', 'bookingDetailsModal'];
+    function hasOpenPortalModal() {
+      return portalModalIds.some(function (modalId) {
         var modalEl = document.getElementById(modalId);
         return modalEl && modalEl.classList.contains('open');
       });
-      document.body.classList.toggle('modal-open', hasAnyOpenModal || id === 'bookingModal' || id === 'authModal' || id === 'clientProfileModal');
+    }
+
+    window.openModal = function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el._returnFocus = document.activeElement;
+      document.body.classList.toggle('auth-modal-open', id === 'authModal');
+      document.body.classList.toggle('booking-modal-open', id === 'bookingModal');
+      document.body.classList.toggle('modal-open', hasOpenPortalModal() || portalModalIds.indexOf(id) !== -1);
       el.classList.add('open');
+      el.setAttribute('aria-hidden', 'false');
       document.body.style.overflow = 'hidden';
       if (!el._backdropBound) {
         el._backdropBound = true;
@@ -2895,20 +3043,38 @@
       var el = document.getElementById(id);
       if (!el) return;
       el.classList.remove('open');
+      el.setAttribute('aria-hidden', 'true');
       document.body.classList.remove('auth-modal-open', 'booking-modal-open');
-      var hasAnyOpenModal = ['bookingModal', 'authModal', 'clientProfileModal'].some(function (modalId) {
-        var modalEl = document.getElementById(modalId);
-        return modalEl && modalEl.classList.contains('open');
-      });
+      var hasAnyOpenModal = hasOpenPortalModal();
       document.body.classList.toggle('modal-open', hasAnyOpenModal);
       document.body.style.overflow = hasAnyOpenModal ? 'hidden' : '';
+      if (!hasAnyOpenModal && el._returnFocus && typeof el._returnFocus.focus === 'function') {
+        el._returnFocus.focus();
+      }
     };
     document.addEventListener('keydown', function (e) {
-      if (e.key !== 'Escape') return;
-      ['bookingModal', 'authModal', 'clientProfileModal'].forEach(function (id) {
-        var el = document.getElementById(id);
-        if (el && el.classList.contains('open')) { window.closeModal(id); }
-      });
+      var detailsModal = document.getElementById('bookingDetailsModal');
+      if (e.key === 'Escape') {
+        var openModalId = portalModalIds.slice().reverse().find(function (id) {
+          var modalEl = document.getElementById(id);
+          return modalEl && modalEl.classList.contains('open');
+        });
+        if (openModalId) window.closeModal(openModalId);
+      } else if (e.key === 'Tab' && detailsModal && detailsModal.classList.contains('open')) {
+        var focusable = Array.from(detailsModal.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+          .filter(function (element) { return element.getClientRects().length > 0; });
+        if (focusable.length) {
+          var first = focusable[0];
+          var last = focusable[focusable.length - 1];
+          if (e.shiftKey && (document.activeElement === first || document.activeElement === detailsModal)) {
+            e.preventDefault();
+            last.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
       if (profileDropdown && profileTrigger) {
         profileDropdown.hidden = true;
         profileTrigger.setAttribute('aria-expanded', 'false');
@@ -3929,20 +4095,67 @@
     window.viewBooking = function (id) {
       var b = portalState.bookings.find(function (x) { return x.id === id; });
       if (!b) return;
-      alert(
-        'Booking ID: '   + b.id +
-        '\nClient:     '  + b.name +
-        '\nEmail:      '  + b.email +
-        '\nPhone:      '  + (b.phone || '\u2014') +
-        '\nDate:       '  + (b.date  || '\u2014') +
-        '\nSubsidiaries: ' + (b.subsidiaries || []).join(', ') +
-        '\nServices:   ' + (window.formatServicesSummary(b.services || {}) || '—') +
-        '\nPayment:    ' + (b.paymentMethod || '—') +
-        '\nNotes:      '  + (b.notes || '\u2014') +
-        '\nStatus:     '  + b.status +
-        '\nSubmitted:  '  + new Date(b.timestamp).toLocaleString()
-      );
+      var setDetail = function (elementId, value, fallback) {
+        var element = document.getElementById(elementId);
+        if (element) element.textContent = value == null || String(value).trim() === '' ? (fallback || '\u2014') : String(value);
+      };
+      var status = String(b.status || 'Pending');
+      var normalizedStatus = status.trim().toLowerCase();
+      var statusBadge = document.getElementById('bookingDetailsStatus');
+      var statusClasses = normalizedStatus === 'approved'
+        ? 'border-green-500/30 bg-green-500/10 text-green-400'
+        : normalizedStatus === 'rejected'
+          ? 'border-red-500/30 bg-red-500/10 text-red-400'
+          : normalizedStatus === 'pending'
+            ? 'border-amber-400/30 bg-amber-400/10 text-amber-300'
+            : 'border-gray-600 bg-gray-700/30 text-gray-300';
+
+      setDetail('bookingDetailsId', b.id);
+      setDetail('bookingDetailsName', b.name);
+      setDetail('bookingDetailsEmail', b.email);
+      setDetail('bookingDetailsPhone', b.phone);
+      setDetail('bookingDetailsDate', b.date);
+      setDetail('bookingDetailsPayment', b.paymentMethod);
+      setDetail('bookingDetailsSubsidiaries', Array.isArray(b.subsidiaries) ? b.subsidiaries.join(', ') : b.subsidiaries);
+      setDetail('bookingDetailsServices', window.formatServicesSummary(b.services || {}));
+      setDetail('bookingDetailsNotes', b.notes, 'No notes provided.');
+      if (statusBadge) {
+        statusBadge.textContent = status;
+        statusBadge.className = 'rounded-full border px-3 py-1 text-xs font-semibold ' + statusClasses;
+      }
+
+      window.openModal('bookingDetailsModal');
+      var closeButton = document.getElementById('bookingDetailsClose');
+      if (closeButton) closeButton.focus();
     };
+
+    document.getElementById('bookingDetailsCopyId').addEventListener('click', async function () {
+      var bookingId = document.getElementById('bookingDetailsId').textContent;
+      if (!bookingId) return;
+      try {
+        if (!navigator.clipboard || !navigator.clipboard.writeText) {
+          throw new Error('Clipboard access is not available in this browser.');
+        }
+        await navigator.clipboard.writeText(bookingId);
+        window.showToast('Booking ID copied.', 'success');
+      } catch (error) {
+        console.error('Unable to copy booking ID:', error);
+        window.showToast(error.message || 'Unable to copy booking ID.', 'error');
+      }
+    });
+
+    document.getElementById('bookingDetailsPrint').addEventListener('click', function () {
+      var clearPrintMode = function () { document.body.classList.remove('booking-details-print'); };
+      document.body.classList.add('booking-details-print');
+      window.addEventListener('afterprint', clearPrintMode, { once: true });
+      try {
+        window.print();
+      } catch (error) {
+        clearPrintMode();
+        console.error('Unable to print booking details:', error);
+        window.showToast(error.message || 'Unable to print booking details.', 'error');
+      }
+    });
 
     // Approve / Reject a booking via PATCH /api/bookings/:id
     window.updateBookingStatus = async function (id, status) {
