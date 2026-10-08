@@ -127,22 +127,9 @@ function createSupabaseStore() {
     },
 
     async insertBooking(booking) {
-      // Resolve the user_id (optional — a booking may come from a non-registered email).
-      let userId = null;
-      try {
-        const userResult = await client.from('users').select('id').eq('email', booking.email).maybeSingle();
-        if (userResult.error) throw userResult.error;
-        userId = userResult.data ? userResult.data.id : null;
-      } catch (err) {
-        // If the users table is missing or the lookup fails, still allow the booking to save.
-        console.warn('insertBooking: user lookup failed, proceeding with user_id=null:', err.message);
-        userId = null;
-      }
-
       // Build the insert payload defensively. We only include columns the frontend actually
-      // sends and that we know most basic bookings tables have. payment_method_id and
-      // payment_methods table lookups are omitted because the current Supabase schema does
-      // not include them; the human-readable payment_method string is enough for the UI.
+      // sends and that most basic bookings tables have. Optional user_id and payment_method_id
+      // relations are omitted to support deployments where those columns are not present.
       const insertPayload = {
         id: booking.id,
         name: booking.name,
@@ -157,10 +144,6 @@ function createSupabaseStore() {
         created_at: booking.createdAt,
         timestamp: booking.timestamp
       };
-
-      // user_id is only added if we successfully resolved it; otherwise we leave it out
-      // to avoid schema mismatch errors on tables that don't have the column.
-      if (userId) insertPayload.user_id = userId;
 
       const { data, error } = await client.from('bookings').insert(insertPayload).select().single();
       if (error) throw error;
