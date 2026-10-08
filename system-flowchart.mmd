@@ -1,0 +1,51 @@
+flowchart LR
+  subgraph Browser["Web browser"]
+    Visitor["Client or admin"]
+    Website["KGC website and portal<br/>index.html"]
+    Frontend["Portal logic<br/>script.js and inline JavaScript"]
+    AdminSession[("Admin session<br/>localStorage")]
+    Visitor --> Website
+    Website --> Frontend
+    Frontend --> AdminSession
+  end
+
+  subgraph Server["Node.js and Express server"]
+    Express["Express app<br/>server.js"]
+    AuthAPI["Admin login and account APIs"]
+    BookingAPI["Booking and payment APIs"]
+    AdminAPI["Admin booking and approval APIs"]
+    StoreAdapter["Data store adapter<br/>supabase-store.js"]
+    Express --> AuthAPI
+    Express --> BookingAPI
+    Express --> AdminAPI
+    AuthAPI --> StoreAdapter
+    BookingAPI --> StoreAdapter
+    AdminAPI --> StoreAdapter
+  end
+
+  subgraph SupabaseServices["Supabase services"]
+    SupabaseAuth["Supabase Auth<br/>client sign-in"]
+    SupabaseDB[("Supabase database<br/>users, bookings, payment methods")]
+  end
+
+  subgraph FallbackStorage["Local fallback storage"]
+    JsonFiles[("JSON files<br/>data/users.json<br/>data/bookings.json")]
+  end
+
+  Website -->|"Page and static assets"| Express
+  Frontend -->|"GET /api/client-config"| Express
+  Frontend -->|"Admin login and account APIs"| AuthAPI
+  Frontend -->|"Submit and read bookings; payment methods"| BookingAPI
+  Frontend -->|"Approve bookings and admin accounts"| AdminAPI
+  Frontend -->|"Client sign-in"| SupabaseAuth
+  SupabaseAuth -->|"Client auth session"| Frontend
+  StoreAdapter -->|"When Supabase is configured"| SupabaseDB
+  StoreAdapter -->|"When Supabase is not configured"| JsonFiles
+
+  classDef client fill:#3b82f6,stroke:#2563eb,color:#ffffff
+  classDef service fill:#6366f1,stroke:#4f46e5,color:#ffffff
+  classDef storage fill:#374151,stroke:#d4af37,color:#ffffff
+
+  class Visitor,Website,Frontend client
+  class Express,AuthAPI,BookingAPI,AdminAPI,StoreAdapter,SupabaseAuth service
+  class AdminSession,SupabaseDB,JsonFiles storage

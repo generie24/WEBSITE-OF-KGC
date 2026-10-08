@@ -391,11 +391,7 @@ app.post('/api/bookings', async (req, res) => {
     const name = String(body.name || '').trim();
     const email = String(body.email || '').trim().toLowerCase();
     const paymentMethod = String(body.paymentMethod || '').trim();
-    const bookingTime = body.createdAt || body.timestamp || new Date().toLocaleString('en-US', {
-      timeZone: 'Asia/Manila',
-      dateStyle: 'short',
-      timeStyle: 'short'
-    });
+    const bookingTime = body.createdAt || body.timestamp || new Date().toISOString();
 
     if (!name || !email || rawSubsidiaries.length === 0) {
       return res.status(400).json({
