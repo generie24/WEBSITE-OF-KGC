@@ -3300,7 +3300,7 @@
         var result = await readJsonResponse(response);
 
         if (!response.ok || !result || !result.success) {
-          throw new Error((result && (result.error || result.message)) || 'Server error');
+          throw new Error((result && (result.message || result.error)) || 'Server error');
         }
 
         var booking = result.data || {
