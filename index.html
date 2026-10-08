@@ -756,14 +756,14 @@
     }
     #bookingDetailsModal > .booking-receipt {
       display: flex;
-      width: min(100%, 620px);
+      width: min(100%, 600px);
       height: min(760px, 88vh);
       max-height: 88vh;
       flex-direction: column;
       overflow: hidden;
       border-color: #252b38;
-      border-radius: 1.25rem;
-      background: #131722;
+      border-radius: 0.875rem;
+      background: #12151c;
       color: #f3f4f6;
     }
     #bookingDetailsModal .booking-receipt-scroll {
@@ -784,16 +784,52 @@
       border-radius: 999px;
       background: rgba(212, 175, 55, 0.45);
     }
-    #bookingDetailsModal .booking-receipt-divider {
-      border: 0;
-      border-top: 1px dashed rgba(229, 193, 88, 0.38);
-    }
-    #bookingDetailsModal .booking-receipt-detail + .booking-receipt-detail {
-      border-top: 1px dashed rgba(148, 163, 184, 0.15);
-    }
     #bookingDetailsModal .booking-receipt-notes {
-      border-left: 3px solid #d4af37;
-      background: rgba(229, 193, 88, 0.07);
+      color: #e5e7eb;
+    }
+    #bookingDetailsModal .booking-document-row {
+      display: grid;
+      grid-template-columns: minmax(115px, 0.8fr) minmax(0, 1.5fr);
+      align-items: start;
+      gap: 1rem;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+      padding: 0.85rem 0;
+    }
+    #bookingDetailsModal .booking-document-row:last-child {
+      border-bottom: 0;
+    }
+    #bookingDetailsModal .booking-document-notes {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    @media (max-width: 480px) {
+      #bookingDetailsModal .booking-receipt-header {
+        position: relative;
+        flex-wrap: wrap;
+        padding: 1rem;
+      }
+      #bookingDetailsModal .booking-receipt-header > div:first-child {
+        flex: 1 1 100%;
+        padding-right: 2.5rem;
+      }
+      #bookingDetailsModal .booking-receipt-header > div:last-child {
+        width: 100%;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 0.75rem;
+      }
+      #bookingDetailsModal .booking-receipt-header > div:last-child > div {
+        text-align: left;
+      }
+      #bookingDetailsModal .booking-receipt-header > div:last-child > button {
+        position: absolute;
+        top: 0.75rem;
+        right: 1rem;
+      }
+      #bookingDetailsModal .booking-document-row {
+        grid-template-columns: minmax(90px, 0.65fr) minmax(0, 1.35fr);
+        gap: 0.75rem;
+      }
     }
     @media (max-height: 480px) {
       #bookingDetailsModal > .booking-receipt { height: 94vh; max-height: 94vh; }
@@ -829,7 +865,7 @@
       body.booking-details-print #bookingDetailsModal > div {
         display: block;
         width: 100%;
-        max-width: 620px;
+        max-width: 600px;
         height: auto;
         max-height: none;
         overflow: visible;
@@ -850,6 +886,9 @@
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
       }
+      body.booking-details-print #bookingDetailsModal .booking-receipt {
+        background: #fff !important;
+      }
       body.booking-details-print #bookingDetailsModal .booking-receipt-brand,
       body.booking-details-print #bookingDetailsModal .booking-receipt-heading,
       body.booking-details-print #bookingDetailsModal .booking-receipt-section-title {
@@ -859,23 +898,21 @@
         border-color: #9ca3af !important;
         background: #f3f4f6 !important;
       }
-      body.booking-details-print #bookingDetailsModal .booking-receipt-client-card,
       body.booking-details-print #bookingDetailsModal .booking-receipt-notes {
         border-color: #d1d5db !important;
         background: #f9fafb !important;
       }
-      body.booking-details-print #bookingDetailsModal .booking-receipt-detail + .booking-receipt-detail,
-      body.booking-details-print #bookingDetailsModal .booking-receipt-divider {
+      body.booking-details-print #bookingDetailsModal .booking-document-row {
         border-color: #9ca3af !important;
       }
       body.booking-details-print #bookingDetailsModal .booking-receipt-footer {
         border-color: #d1d5db !important;
         background: #fff !important;
       }
-      @page {
-        size: A4 portrait;
-        margin: 14mm;
+      body.booking-details-print #bookingDetailsModal .booking-document-row {
+        break-inside: avoid;
       }
+      @page { size: A4 portrait; margin: 14mm; }
     }
 
     /* Modal close button — circular, top-right, always tappable */
@@ -2260,14 +2297,18 @@
       aria-labelledby="bookingDetailsTitle" aria-describedby="bookingDetailsDescription" aria-hidden="true">
       <div class="booking-receipt">
         <header class="booking-receipt-header flex shrink-0 items-start justify-between gap-4 border-b border-white/10 px-6 py-5 sm:px-8">
-          <div>
+          <div class="min-w-0">
             <p class="booking-receipt-brand text-[10px] font-extrabold tracking-[0.2em] text-[#E5C158]">KLASSIC GROUP OF COMPANIES</p>
-            <h2 id="bookingDetailsTitle" class="booking-receipt-heading mt-3 text-2xl font-black tracking-[0.12em] text-white">BOOKING RECEIPT</h2>
-            <p id="bookingDetailsDescription" class="sr-only">Booking status, client information, and request details.</p>
+            <p class="mt-1.5 text-xs text-gray-400">This is your booking receipt</p>
+            <p id="bookingDetailsDescription" class="sr-only">Booking confirmation for the client and requested services.</p>
           </div>
-          <div class="flex items-center gap-3">
-            <span id="bookingDetailsStatus" class="booking-receipt-status rounded-full border px-3 py-1.5 text-[10px] font-extrabold tracking-[0.16em]"
-              aria-label="Booking status"></span>
+          <div class="flex shrink-0 items-start gap-3">
+            <div class="text-right">
+              <h2 id="bookingDetailsTitle" class="booking-receipt-heading text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400">Booking Number</h2>
+              <p id="bookingDetailsId" class="mt-1 max-w-[190px] break-all font-mono text-lg font-extrabold leading-tight text-[#E5C158]"></p>
+              <span id="bookingDetailsStatus" class="booking-receipt-status mt-2 inline-flex rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
+                aria-label="Booking status"></span>
+            </div>
             <button id="bookingDetailsClose" type="button" class="modal-close-btn print:hidden"
               onclick="window.closeModal('bookingDetailsModal')" aria-label="Close booking receipt">
               <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -2278,97 +2319,80 @@
         </header>
 
         <div class="booking-receipt-scroll px-6 py-5 sm:px-8">
-          <div class="flex flex-wrap items-end justify-between gap-4 pb-5">
-            <div class="min-w-0">
-              <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500">Reference number</p>
-              <div class="mt-1.5 flex flex-wrap items-center gap-2">
-                <span class="text-sm text-gray-500">Ref:</span>
-                <span id="bookingDetailsId" class="break-all font-mono text-sm font-bold text-gray-100"></span>
-                <button id="bookingDetailsCopyId" type="button"
-                  class="inline-flex items-center gap-1 rounded-md border border-[#343b49] px-2 py-1 text-[11px] font-semibold text-[#E5C158] transition hover:border-[#E5C158]/70 print:hidden"
-                  aria-label="Copy booking reference">
-                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 8V5.8A1.8 1.8 0 0 1 9.8 4h8.4A1.8 1.8 0 0 1 20 5.8v8.4a1.8 1.8 0 0 1-1.8 1.8H16M5.8 8h8.4A1.8 1.8 0 0 1 16 9.8v8.4a1.8 1.8 0 0 1-1.8 1.8H5.8A1.8 1.8 0 0 1 4 18.2V9.8A1.8 1.8 0 0 1 5.8 8Z" />
-                  </svg>
-                  Click to Copy
-                </button>
-              </div>
-            </div>
-            <div class="sm:text-right">
-              <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500">Transaction date</p>
-              <p id="bookingDetailsCreatedAt" class="mt-1.5 text-sm font-medium text-gray-200"></p>
-            </div>
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-800 pb-4">
+            <p class="text-xs text-gray-500">
+              Issued <time id="bookingDetailsCreatedAt" class="font-medium text-gray-300"></time>
+            </p>
+            <button id="bookingDetailsCopyId" type="button"
+              class="inline-flex items-center gap-1.5 rounded-md border border-gray-700 px-2.5 py-1.5 text-xs font-semibold text-[#E5C158] transition hover:border-[#E5C158]/70 print:hidden"
+              aria-label="Copy booking number">
+              <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 8V5.8A1.8 1.8 0 0 1 9.8 4h8.4A1.8 1.8 0 0 1 20 5.8v8.4a1.8 1.8 0 0 1-1.8 1.8H16M5.8 8h8.4A1.8 1.8 0 0 1 16 9.8v8.4a1.8 1.8 0 0 1-1.8 1.8H5.8A1.8 1.8 0 0 1 4 18.2V9.8A1.8 1.8 0 0 1 5.8 8Z" />
+              </svg>
+              Copy number
+            </button>
           </div>
 
-          <hr class="booking-receipt-divider">
-
           <section class="py-5" aria-labelledby="bookingClientHeading">
-            <h3 id="bookingClientHeading" class="booking-receipt-section-title mb-3 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#E5C158]">Client Information</h3>
-            <dl class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div class="booking-receipt-client-card rounded-lg border border-white/[0.07] bg-[#0F131C] p-3">
-                <dt class="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Client Name</dt>
-                <dd id="bookingDetailsName" class="mt-1 break-words text-sm font-semibold text-gray-100"></dd>
+            <h3 id="bookingClientHeading" class="booking-receipt-section-title mb-2 border-b border-gray-700 pb-2 text-xs font-extrabold uppercase tracking-[0.15em] text-[#E5C158]">Your Details</h3>
+            <dl>
+              <div class="booking-document-row">
+                <dt class="text-sm text-gray-400">Name</dt>
+                <dd id="bookingDetailsName" class="break-words text-right text-sm font-medium text-gray-100"></dd>
               </div>
-              <div class="booking-receipt-client-card rounded-lg border border-white/[0.07] bg-[#0F131C] p-3">
-                <dt class="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Email</dt>
-                <dd id="bookingDetailsEmail" class="mt-1 break-all text-sm font-medium text-gray-200"></dd>
+              <div class="booking-document-row">
+                <dt class="text-sm text-gray-400">Email address</dt>
+                <dd id="bookingDetailsEmail" class="break-all text-right text-sm font-medium text-gray-100"></dd>
               </div>
-              <div class="booking-receipt-client-card rounded-lg border border-white/[0.07] bg-[#0F131C] p-3 sm:col-span-2">
-                <dt class="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Phone</dt>
-                <dd id="bookingDetailsPhone" class="mt-1 break-words text-sm font-medium text-gray-200"></dd>
+              <div class="booking-document-row">
+                <dt class="text-sm text-gray-400">Phone</dt>
+                <dd id="bookingDetailsPhone" class="break-words text-right text-sm font-medium text-gray-100"></dd>
               </div>
             </dl>
           </section>
 
-          <hr class="booking-receipt-divider">
-
           <section class="py-5" aria-labelledby="bookingRequestHeading">
-            <h3 id="bookingRequestHeading" class="booking-receipt-section-title mb-3 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#E5C158]">Request Breakdown</h3>
-            <dl class="overflow-hidden rounded-xl border border-white/[0.08] bg-[#0F131C] px-4">
-              <div class="booking-receipt-detail grid grid-cols-[110px_1fr] gap-3 py-3">
-                <dt class="text-xs font-medium text-gray-500">Service date</dt>
-                <dd id="bookingDetailsDate" class="break-words text-right text-sm font-semibold text-gray-100"></dd>
+            <h3 id="bookingRequestHeading" class="booking-receipt-section-title mb-2 border-b border-gray-700 pb-2 text-xs font-extrabold uppercase tracking-[0.15em] text-[#E5C158]">Booking Details</h3>
+            <dl>
+              <div class="booking-document-row">
+                <dt class="text-sm text-gray-400">Subsidiary</dt>
+                <dd id="bookingDetailsSubsidiaries" class="break-words text-right text-sm font-medium text-gray-100"></dd>
               </div>
-              <div class="booking-receipt-detail grid grid-cols-[110px_1fr] gap-3 py-3">
-                <dt class="text-xs font-medium text-gray-500">Subsidiary</dt>
-                <dd id="bookingDetailsSubsidiaries" class="break-words text-right text-sm font-semibold text-gray-100"></dd>
+              <div class="booking-document-row">
+                <dt class="text-sm text-gray-400">Services</dt>
+                <dd id="bookingDetailsServices" class="whitespace-pre-line break-words text-right text-sm font-medium leading-relaxed text-gray-100"></dd>
               </div>
-              <div class="booking-receipt-detail grid grid-cols-[110px_1fr] gap-3 py-3">
-                <dt class="text-xs font-medium text-gray-500">Service selected</dt>
-                <dd id="bookingDetailsServices" class="whitespace-pre-line break-words text-right text-sm font-medium leading-relaxed text-gray-200"></dd>
+              <div class="booking-document-row">
+                <dt class="text-sm text-gray-400">Booking Date</dt>
+                <dd id="bookingDetailsDate" class="break-words text-right text-sm font-medium text-gray-100"></dd>
               </div>
-              <div class="booking-receipt-detail grid grid-cols-[110px_1fr] gap-3 py-3">
-                <dt class="text-xs font-medium text-gray-500">Payment method</dt>
-                <dd id="bookingDetailsPayment" class="break-words text-right text-sm font-semibold text-gray-100"></dd>
+              <div class="booking-document-row">
+                <dt class="text-sm text-gray-400">Payment Method</dt>
+                <dd id="bookingDetailsPayment" class="break-words text-right text-sm font-medium text-gray-100"></dd>
+              </div>
+              <div class="booking-document-row">
+                <dt class="text-sm text-gray-400">Notes</dt>
+                <dd id="bookingDetailsNotes" class="booking-document-notes booking-receipt-notes text-right text-sm text-gray-200"></dd>
               </div>
             </dl>
-
-            <div class="booking-receipt-notes mt-4 rounded-r-lg px-4 py-3">
-              <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-[#E5C158]">Client notes</p>
-              <p id="bookingDetailsNotes" class="mt-1.5 whitespace-pre-wrap break-words text-sm leading-relaxed text-gray-300"></p>
-            </div>
           </section>
         </div>
 
-        <footer class="booking-receipt-footer shrink-0 border-t border-white/10 bg-[#10141D] px-6 py-4 sm:px-8">
-          <div class="booking-receipt-summary mb-4 flex items-center justify-between gap-4">
-            <div>
-              <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500">Booking summary</p>
-              <p class="mt-1 text-xs text-gray-400">Service request status</p>
-            </div>
-            <p id="bookingDetailsFooterStatus" class="text-right text-sm font-extrabold tracking-wide text-[#E5C158]"></p>
-          </div>
+        <footer class="booking-receipt-footer shrink-0 border-t border-gray-800 px-6 py-4 sm:px-8">
+          <p class="mb-4 text-center text-xs leading-relaxed text-gray-500">
+            Your receipt is automatically generated. This serves as proof of your booking transaction.
+          </p>
           <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <button id="bookingDetailsPrint" type="button"
               class="inline-flex items-center justify-center gap-2 rounded-lg border border-[#D4AF37]/60 px-4 py-2.5 text-sm font-semibold text-[#E5C158] transition hover:bg-[#D4AF37]/10 print:hidden">
               <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 8V4h10v4M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M7 14h10v6H7z" />
               </svg>
-              Download / Print PDF
+              Print / Export
             </button>
             <button type="button" onclick="window.closeModal('bookingDetailsModal')"
               class="rounded-lg bg-[#D4AF37] px-6 py-2.5 text-sm font-bold text-[#0B0E14] transition hover:bg-[#E5C158] focus:outline-none focus:ring-2 focus:ring-[#E5C158] focus:ring-offset-2 focus:ring-offset-[#131722] print:hidden">
-              Done
+              Close
             </button>
           </div>
         </footer>
@@ -4230,8 +4254,6 @@
         statusBadge.textContent = status.toUpperCase();
         statusBadge.className = 'booking-receipt-status rounded-full border px-3 py-1.5 text-[10px] font-extrabold tracking-[0.16em] ' + statusClasses;
       }
-      setDetail('bookingDetailsFooterStatus', status.toUpperCase());
-
       window.openModal('bookingDetailsModal');
       var closeButton = document.getElementById('bookingDetailsClose');
       if (closeButton) closeButton.focus();
