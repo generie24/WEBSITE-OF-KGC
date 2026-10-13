@@ -950,6 +950,695 @@
       transform: scale(0.95);
     }
 
+    /* ══════════════════════════════════════════════════════════════════════
+       BOOKING WIZARD (multi-step) — scoped under #bookingModal
+       Dark-gold theme: #121212 / #1E1E1E surfaces, gold accents #D4AF37 / #FACC15
+       ══════════════════════════════════════════════════════════════════════ */
+    #bookingModal .kgc-wizard-shell {
+      display: flex;
+      width: min(100%, 1040px);
+      height: min(880px, 90vh);
+      max-height: 90vh;
+      flex-direction: column;
+      overflow: hidden;
+      border-radius: 1rem;
+      border: 1px solid rgba(212, 175, 55, 0.22);
+      background: #1a1a1a;
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.65);
+    }
+    /* Neutralise the generic `.modal-overlay > div` scroll box for the wizard shell */
+    #bookingModal > .kgc-wizard-shell {
+      max-height: 90vh;
+      overflow: hidden;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────────── */
+    #bookingModal .kgc-wizard-header {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.1rem 1.5rem 0.9rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      background: #1a1a1a;
+    }
+
+    /* ── Stepper tab bar ────────────────────────────────────────────────── */
+    #bookingModal .kgc-stepper {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: stretch;
+      gap: 0;
+      overflow-x: auto;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      background: #151515;
+      scrollbar-width: none;
+    }
+    #bookingModal .kgc-stepper::-webkit-scrollbar { display: none; }
+
+    #bookingModal .kgc-step-tab {
+      position: relative;
+      display: flex;
+      flex: 1 1 0;
+      min-width: 152px;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.85rem 0.9rem;
+      background: transparent;
+      border: 0;
+      border-top: 3px solid transparent;
+      color: #8b8b8b;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    }
+    #bookingModal .kgc-step-tab:hover { color: #d8d8d8; background: rgba(255, 255, 255, 0.02); }
+    #bookingModal .kgc-step-tab .kgc-step-dot {
+      display: flex;
+      width: 1.55rem;
+      height: 1.55rem;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: 1.5px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.03);
+      color: #9ca3af;
+      font-size: 0.74rem;
+      font-weight: 700;
+      transition: all 0.2s ease;
+    }
+    #bookingModal .kgc-step-tab .kgc-step-label { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+    #bookingModal .kgc-step-tab .kgc-step-kicker {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: #6b6b6b;
+    }
+    #bookingModal .kgc-step-tab .kgc-step-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    #bookingModal .kgc-step-tab.is-active {
+      border-top-color: #FACC15;
+      background: rgba(250, 204, 21, 0.07);
+      color: #ffffff;
+    }
+    #bookingModal .kgc-step-tab.is-active .kgc-step-dot {
+      border-color: #FACC15;
+      background: #FACC15;
+      color: #121212;
+      box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.16);
+    }
+    #bookingModal .kgc-step-tab.is-active .kgc-step-kicker { color: #FACC15; }
+
+    #bookingModal .kgc-step-tab.is-complete { border-top-color: rgba(212, 175, 55, 0.75); color: #d9cfa8; }
+    #bookingModal .kgc-step-tab.is-complete .kgc-step-dot {
+      border-color: rgba(212, 175, 55, 0.85);
+      background: rgba(212, 175, 55, 0.16);
+      color: #FACC15;
+    }
+    #bookingModal .kgc-step-tab .kgc-step-check { display: none; }
+    #bookingModal .kgc-step-tab.is-complete .kgc-step-check { display: block; }
+    #bookingModal .kgc-step-tab.is-complete .kgc-step-num { display: none; }
+
+    /* ── Body (scrollable step content) ─────────────────────────────────── */
+    #bookingModal .kgc-wizard-body {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 1.4rem 1.5rem 1.6rem;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(212, 175, 55, 0.4) transparent;
+    }
+    #bookingModal .kgc-wizard-body::-webkit-scrollbar { width: 6px; }
+    #bookingModal .kgc-wizard-body::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.4); border-radius: 999px; }
+    #bookingModal .kgc-panel[hidden] { display: none !important; }
+
+    #bookingModal .kgc-section-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.2rem;
+    }
+    #bookingModal .kgc-section-sub { font-size: 0.8rem; color: #9ca3af; }
+
+    /* ── Step 1 two-column layout ───────────────────────────────────────── */
+    #bookingModal .kgc-step1-grid {
+      display: grid;
+      grid-template-columns: 190px minmax(0, 1fr);
+      gap: 1.15rem;
+      align-items: start;
+    }
+
+    #bookingModal .kgc-cat-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    #bookingModal .kgc-cat-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6b6b6b;
+      padding-left: 0.35rem;
+      margin-bottom: 0.1rem;
+    }
+    #bookingModal .kgc-cat-pill {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.68rem 0.8rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.7rem;
+      background: #141414;
+      color: #b8b8b8;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+    #bookingModal .kgc-cat-pill:hover { border-color: rgba(212, 175, 55, 0.35); color: #fff; }
+    #bookingModal .kgc-cat-pill.is-active {
+      border-color: rgba(212, 175, 55, 0.9);
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.22), rgba(212, 175, 55, 0.08));
+      color: #FACC15;
+      box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.25);
+    }
+    #bookingModal .kgc-cat-pill .kgc-cat-count {
+      min-width: 1.35rem;
+      padding: 0 0.35rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.07);
+      color: #9ca3af;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-align: center;
+    }
+    #bookingModal .kgc-cat-pill.is-active .kgc-cat-count { background: rgba(250, 204, 21, 0.22); color: #FACC15; }
+
+    #bookingModal .kgc-subs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 0.8rem;
+    }
+
+    /* ── Subsidiary card ────────────────────────────────────────────────── */
+    #bookingModal .kgc-subs-card {
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 0.85rem;
+      background: #141414;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+    #bookingModal .kgc-subs-card:hover { border-color: rgba(212, 175, 55, 0.35); }
+    #bookingModal .kgc-subs-card.is-active {
+      border-color: rgba(212, 175, 55, 0.85);
+      background: #16150f;
+      box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.25), 0 16px 40px rgba(0, 0, 0, 0.35);
+    }
+    #bookingModal .kgc-subs-card-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      padding: 0.85rem 0.9rem;
+      cursor: pointer;
+    }
+    #bookingModal .kgc-subs-headtext { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; }
+    #bookingModal .kgc-subs-logo {
+      display: flex;
+      width: 2.1rem;
+      height: 2.1rem;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.6rem;
+      background: rgba(212, 175, 55, 0.12);
+      color: #FACC15;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+    #bookingModal .kgc-subs-name { display: block; font-size: 0.86rem; font-weight: 700; color: #fff; line-height: 1.25; }
+    #bookingModal .kgc-subs-tagline { display: block; font-size: 0.68rem; color: #8b8b8b; line-height: 1.3; margin-top: 0.15rem; }
+    #bookingModal .kgc-subs-check {
+      display: flex;
+      width: 1.15rem;
+      height: 1.15rem;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
+      border-radius: 0.35rem;
+      background: rgba(255, 255, 255, 0.03);
+      color: transparent;
+      transition: all 0.16s ease;
+    }
+    #bookingModal .kgc-subs-card.is-active .kgc-subs-check {
+      border-color: #FACC15;
+      background: #FACC15;
+      color: #121212;
+    }
+
+    #bookingModal .kgc-subs-body { padding: 0 0.9rem 0.9rem; }
+    #bookingModal .kgc-subs-viewbtn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.42rem 0.75rem;
+      border-radius: 0.5rem;
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      background: transparent;
+      color: #d9c37a;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+    #bookingModal .kgc-subs-viewbtn:hover { background: rgba(212, 175, 55, 0.14); color: #FACC15; }
+
+    /* ── Service rows inside an active card ─────────────────────────────── */
+    #bookingModal .kgc-svc-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      margin-bottom: 0.7rem;
+      padding-top: 0.7rem;
+      border-top: 1px dashed rgba(255, 255, 255, 0.09);
+    }
+    #bookingModal .kgc-svc-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.55rem;
+      padding: 0.6rem 0.65rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.6rem;
+      background: #101010;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+    #bookingModal .kgc-svc-row:hover { border-color: rgba(212, 175, 55, 0.4); background: #131313; }
+    #bookingModal .kgc-svc-row.is-checked {
+      border-color: rgba(250, 204, 21, 0.8);
+      background: rgba(250, 204, 21, 0.07);
+    }
+    #bookingModal .kgc-svc-row input[type="checkbox"] {
+      margin-top: 0.15rem;
+      width: 1rem;
+      height: 1rem;
+      flex-shrink: 0;
+      accent-color: #FACC15;
+    }
+    #bookingModal .kgc-svc-meta { display: flex; flex-direction: column; gap: 0.28rem; min-width: 0; flex: 1 1 auto; }
+    #bookingModal .kgc-svc-name { font-size: 0.78rem; font-weight: 600; color: #e5e5e5; line-height: 1.3; }
+    #bookingModal .kgc-svc-price {
+      display: inline-flex;
+      align-self: flex-start;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.16rem 0.45rem;
+      border-radius: 0.4rem;
+      background: rgba(212, 175, 55, 0.13);
+      color: #e8cf8a;
+      font-size: 0.65rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    #bookingModal .kgc-svc-price b { color: #FACC15; font-weight: 800; }
+
+    #bookingModal .kgc-needs-label {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #7d7d7d;
+      margin-bottom: 0.3rem;
+    }
+    #bookingModal .kgc-needs-input {
+      width: 100%;
+      padding: 0.55rem 0.65rem;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 0.55rem;
+      background: #0d0d0d;
+      color: #f0f0f0;
+      font-size: 0.76rem;
+      line-height: 1.4;
+      resize: vertical;
+      min-height: 3.6rem;
+    }
+    #bookingModal .kgc-needs-input::placeholder { color: #5c5c5c; }
+    #bookingModal .kgc-needs-input:focus { outline: none; border-color: rgba(212, 175, 55, 0.6); }
+
+    /* ── Step 2: scheduling ─────────────────────────────────────────────── */
+    #bookingModal .kgc-sched-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+      gap: 1.15rem;
+      align-items: start;
+    }
+    #bookingModal .kgc-panel-card {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.85rem;
+      background: #141414;
+      padding: 1rem;
+    }
+    #bookingModal .kgc-cal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+    #bookingModal .kgc-cal-title { font-size: 0.92rem; font-weight: 700; color: #fff; }
+    #bookingModal .kgc-cal-nav {
+      display: flex;
+      width: 1.85rem;
+      height: 1.85rem;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 0.5rem;
+      background: rgba(255, 255, 255, 0.03);
+      color: #cfcfcf;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+    #bookingModal .kgc-cal-nav:hover:not(:disabled) { border-color: rgba(212, 175, 55, 0.6); color: #FACC15; }
+    #bookingModal .kgc-cal-nav:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    #bookingModal .kgc-cal-weekdays,
+    #bookingModal .kgc-cal-days {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 0.28rem;
+    }
+    #bookingModal .kgc-cal-weekdays span {
+      padding: 0.3rem 0;
+      text-align: center;
+      font-size: 0.63rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #6f6f6f;
+    }
+    #bookingModal .kgc-cal-day {
+      position: relative;
+      display: flex;
+      aspect-ratio: 1 / 1;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid transparent;
+      border-radius: 0.55rem;
+      background: rgba(255, 255, 255, 0.03);
+      color: #dcdcdc;
+      font-size: 0.79rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    #bookingModal .kgc-cal-day:hover:not(:disabled) { border-color: rgba(212, 175, 55, 0.5); color: #FACC15; }
+    #bookingModal .kgc-cal-day.is-empty { background: transparent; cursor: default; }
+    #bookingModal .kgc-cal-day:disabled { color: #4a4a4a; background: transparent; cursor: not-allowed; }
+    #bookingModal .kgc-cal-day.is-today { border-color: rgba(255, 255, 255, 0.22); }
+    #bookingModal .kgc-cal-day.is-selected {
+      background: #FACC15;
+      border-color: #FACC15;
+      color: #121212;
+      font-weight: 800;
+      box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.18);
+    }
+    #bookingModal .kgc-cal-day .kgc-cal-dot {
+      position: absolute;
+      bottom: 0.28rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0.24rem;
+      height: 0.24rem;
+      border-radius: 999px;
+      background: rgba(212, 175, 55, 0.75);
+    }
+    #bookingModal .kgc-cal-day.is-selected .kgc-cal-dot { background: rgba(18, 18, 18, 0.7); }
+
+    #bookingModal .kgc-slot-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.45rem;
+    }
+    #bookingModal .kgc-slot-pill {
+      padding: 0.55rem 0.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.6rem;
+      background: #101010;
+      color: #d6d6d6;
+      font-size: 0.79rem;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+    #bookingModal .kgc-slot-pill:hover:not(:disabled) { border-color: rgba(212, 175, 55, 0.5); color: #FACC15; }
+    #bookingModal .kgc-slot-pill:disabled { opacity: 0.35; cursor: not-allowed; }
+    #bookingModal .kgc-slot-pill.is-active {
+      border-color: #FACC15;
+      background: #FACC15;
+      color: #121212;
+      font-weight: 800;
+      box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.16);
+    }
+
+    #bookingModal .kgc-format-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.55rem; }
+    #bookingModal .kgc-format-btn {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      padding: 0.7rem 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.65rem;
+      background: #101010;
+      color: #d6d6d6;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+    #bookingModal .kgc-format-btn:hover { border-color: rgba(212, 175, 55, 0.5); }
+    #bookingModal .kgc-format-btn .kgc-format-name { font-size: 0.8rem; font-weight: 700; color: #fff; }
+    #bookingModal .kgc-format-btn .kgc-format-sub { font-size: 0.66rem; color: #8f8f8f; }
+    #bookingModal .kgc-format-btn.is-active {
+      border-color: #FACC15;
+      background: rgba(250, 204, 21, 0.1);
+      box-shadow: 0 0 0 1px rgba(250, 204, 21, 0.3);
+    }
+    #bookingModal .kgc-format-btn.is-active .kgc-format-name { color: #FACC15; }
+
+    #bookingModal .kgc-field-label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #8d8d8d;
+      margin-bottom: 0.42rem;
+    }
+    #bookingModal .kgc-input,
+    #bookingModal .kgc-select {
+      width: 100%;
+      padding: 0.72rem 0.85rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.6rem;
+      background: #101010;
+      color: #f2f2f2;
+      font-size: 0.84rem;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease;
+    }
+    #bookingModal .kgc-input::placeholder { color: #5f5f5f; }
+    #bookingModal .kgc-input:focus,
+    #bookingModal .kgc-select:focus {
+      outline: none;
+      border-color: rgba(212, 175, 55, 0.7);
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
+    }
+    #bookingModal .kgc-textarea {
+      width: 100%;
+      min-height: 5.5rem;
+      padding: 0.75rem 0.85rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.6rem;
+      background: #101010;
+      color: #f2f2f2;
+      font-size: 0.84rem;
+      line-height: 1.45;
+      resize: vertical;
+    }
+    #bookingModal .kgc-textarea::placeholder { color: #5f5f5f; }
+    #bookingModal .kgc-textarea:focus { outline: none; border-color: rgba(212, 175, 55, 0.7); box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12); }
+
+    /* ── Step 4: review ─────────────────────────────────────────────────── */
+    #bookingModal .kgc-review-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 0.85rem;
+    }
+    #bookingModal .kgc-review-card {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.85rem;
+      background: #141414;
+      padding: 1rem;
+    }
+    #bookingModal .kgc-review-card-head {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.7rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    #bookingModal .kgc-review-card-head svg { width: 1rem; height: 1rem; color: #FACC15; flex-shrink: 0; }
+    #bookingModal .kgc-review-card-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #FACC15;
+    }
+    #bookingModal .kgc-review-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.32rem 0;
+      font-size: 0.79rem;
+    }
+    #bookingModal .kgc-review-line .kgc-rl-key { color: #909090; flex-shrink: 0; }
+    #bookingModal .kgc-review-line .kgc-rl-val { color: #eaeaea; font-weight: 600; text-align: right; }
+    #bookingModal .kgc-review-svc-group { margin-bottom: 0.6rem; }
+    #bookingModal .kgc-review-svc-group:last-child { margin-bottom: 0; }
+    #bookingModal .kgc-review-svc-company { font-size: 0.79rem; font-weight: 700; color: #fff; margin-bottom: 0.25rem; }
+    #bookingModal .kgc-review-svc-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.6rem;
+      font-size: 0.75rem;
+      color: #b8b8b8;
+      padding: 0.16rem 0;
+    }
+    #bookingModal .kgc-review-svc-item span:last-child { color: #d9c37a; white-space: nowrap; font-weight: 600; }
+    #bookingModal .kgc-review-total {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-top: 0.7rem;
+      padding-top: 0.7rem;
+      border-top: 1px dashed rgba(212, 175, 55, 0.35);
+    }
+    #bookingModal .kgc-review-total .kgc-rt-label { font-size: 0.78rem; color: #b9b9b9; font-weight: 600; }
+    #bookingModal .kgc-review-total .kgc-rt-value { font-size: 1.05rem; font-weight: 800; color: #FACC15; }
+    #bookingModal .kgc-review-note {
+      margin-top: 0.55rem;
+      padding: 0.5rem 0.65rem;
+      border-radius: 0.55rem;
+      background: rgba(255, 255, 255, 0.04);
+      color: #a8a8a8;
+      font-size: 0.72rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    #bookingModal .kgc-review-empty { font-size: 0.76rem; color: #7a7a7a; font-style: italic; }
+
+    /* ── Persistent sticky footer ───────────────────────────────────────── */
+    #bookingModal .kgc-wizard-footer {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.85rem 1.5rem;
+      border-top: 1px solid rgba(212, 175, 55, 0.18);
+      background: #151515;
+      box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.35);
+    }
+    #bookingModal .kgc-footer-summary { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; flex: 1 1 auto; }
+    #bookingModal .kgc-footer-summary .kgc-fs-label {
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: #6f6f6f;
+    }
+    #bookingModal .kgc-footer-summary .kgc-fs-value {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #E6D9A8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #bookingModal .kgc-footer-actions { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
+    #bookingModal .kgc-btn-ghost {
+      padding: 0.6rem 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 0.6rem;
+      background: transparent;
+      color: #cfcfcf;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+    #bookingModal .kgc-btn-ghost:hover:not(:disabled) { border-color: rgba(212, 175, 55, 0.5); color: #fff; }
+    #bookingModal .kgc-btn-ghost:disabled { opacity: 0.35; cursor: not-allowed; }
+    #bookingModal .kgc-btn-link {
+      padding: 0.6rem 0.4rem;
+      background: none;
+      border: 0;
+      color: #8f8f8f;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+      transition: color 0.16s ease;
+    }
+    #bookingModal .kgc-btn-link:hover { color: #FACC15; }
+    #bookingModal .kgc-btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.68rem 1.35rem;
+      border: 0;
+      border-radius: 0.6rem;
+      background: linear-gradient(135deg, #FACC15, #D4AF37);
+      color: #121212;
+      font-size: 0.82rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(212, 175, 55, 0.22);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    }
+    #bookingModal .kgc-btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 14px 30px rgba(212, 175, 55, 0.3); }
+    #bookingModal .kgc-btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    @media (max-width: 820px) {
+      #bookingModal .kgc-step1-grid,
+      #bookingModal .kgc-sched-grid { grid-template-columns: minmax(0, 1fr); }
+      #bookingModal .kgc-cat-list { flex-direction: row; flex-wrap: wrap; }
+      #bookingModal .kgc-cat-label { display: none; }
+      #bookingModal .kgc-cat-pill { width: auto; flex: 0 0 auto; }
+      #bookingModal .kgc-wizard-shell { height: 94vh; max-height: 94vh; }
+      #bookingModal .kgc-step-tab .kgc-step-title { display: none; }
+      #bookingModal .kgc-step-tab { flex-direction: column; align-items: flex-start; gap: 0.35rem; min-width: 0; }
+      #bookingModal .kgc-wizard-footer { flex-wrap: wrap; }
+      #bookingModal .kgc-footer-actions { width: 100%; justify-content: flex-end; }
+    }
+    @media (max-width: 560px) {
+      #bookingModal .kgc-wizard-header,
+      #bookingModal .kgc-wizard-body,
+      #bookingModal .kgc-wizard-footer { padding-left: 0.9rem; padding-right: 0.9rem; }
+      #bookingModal .kgc-slot-grid,
+      #bookingModal .kgc-format-grid { grid-template-columns: minmax(0, 1fr); }
+    }
+
     .payment-method-option {
       position: relative;
       display: block;
@@ -1834,10 +2523,10 @@
 
     <!-- BOOKING MODAL -->
     <div id="bookingModal" class="modal-overlay">
-      <div
-        class="bg-[#1E1E1E] rounded-2xl w-full max-w-2xl border border-gold/20 shadow-2xl max-h-[90vh] overflow-y-auto">
-        <div
-          class="sticky top-0 bg-[#1E1E1E] flex justify-between items-center px-6 py-4 border-b border-gray-700 z-10">
+      <div class="kgc-wizard-shell">
+
+        <!-- Header -->
+        <div class="kgc-wizard-header">
           <div>
             <h2 class="text-xl font-bold text-gold">Book KGC Services</h2>
             <p class="text-gray-400 text-sm" id="bookingSubtitle">Select the subsidiaries you need</p>
@@ -1849,254 +2538,175 @@
           </button>
         </div>
 
-        <form onsubmit="window.submitBooking(event)" class="p-6">
+        <!-- Stepper tab bar -->
+        <nav class="kgc-stepper" id="bookingStepper" aria-label="Booking progress">
+          <button type="button" class="kgc-step-tab is-active" data-step-tab="1" aria-current="step">
+            <span class="kgc-step-dot"><span class="kgc-step-num">1</span><svg class="kgc-step-check w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span class="kgc-step-label"><span class="kgc-step-kicker">Step 1</span><span class="kgc-step-title">Service Selection</span></span>
+          </button>
+          <button type="button" class="kgc-step-tab" data-step-tab="2">
+            <span class="kgc-step-dot"><span class="kgc-step-num">2</span><svg class="kgc-step-check w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span class="kgc-step-label"><span class="kgc-step-kicker">Step 2</span><span class="kgc-step-title">Scheduling</span></span>
+          </button>
+          <button type="button" class="kgc-step-tab" data-step-tab="3">
+            <span class="kgc-step-dot"><span class="kgc-step-num">3</span><svg class="kgc-step-check w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span class="kgc-step-label"><span class="kgc-step-kicker">Step 3</span><span class="kgc-step-title">Your Details</span></span>
+          </button>
+          <button type="button" class="kgc-step-tab" data-step-tab="4">
+            <span class="kgc-step-dot"><span class="kgc-step-num">4</span><svg class="kgc-step-check w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span class="kgc-step-label"><span class="kgc-step-kicker">Step 4</span><span class="kgc-step-title">Review &amp; Confirm</span></span>
+          </button>
+        </nav>
 
-          <!-- Step 1: Subsidiary Selection -->
-          <div id="bookingStep1">
-            <p class="text-gray-400 text-sm mb-4">Select one or more KGC subsidiaries and their service needs:</p>
-            <div class="space-y-3 mb-6">
-              <div class="subsidiary-entry">
-                <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
-                  <input type="checkbox" name="subsidiary" value="Brains Infinite Innovations Inc." data-company="Brains Infinite Innovations Inc." class="subsidiary-checkbox w-4 h-4 flex-shrink-0">
-                  <span class="text-white text-sm">Brains Infinite Innovations Inc.</span>
-                </label>
-                <div class="subsidiary-services hidden mt-2 ml-8 space-y-2" data-subsidiary="Brains Infinite Innovations Inc.">
-                  <p class="text-xs text-gray-400">Select services:</p>
-                  <div class="grid gap-2">
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Brains Infinite Innovations Inc." value="Custom Software & App Development" class="w-4 h-4">Custom Software & App Development</label>
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Brains Infinite Innovations Inc." value="AI & IT Solutions Consulting" class="w-4 h-4">AI & IT Solutions Consulting</label>
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Brains Infinite Innovations Inc." value="Cybersecurity & System Audit" class="w-4 h-4">Cybersecurity & System Audit</label>
-                  </div>
-                </div>
+        <form id="bookingForm" onsubmit="window.submitBooking(event)" class="kgc-wizard-body">
+          <!-- Hidden legacy inputs kept for the local/server persistence layer -->
+          <input type="hidden" name="serviceDate" id="bookingServiceDate">
+          <input type="radio" name="paymentMethod" value="Corporate Invoice / COD" class="sr-only" checked hidden>
+
+          <!-- ═══ Step 1: Service Selection ═══ -->
+          <div id="bookingStep1" class="kgc-panel" data-step-panel="1">
+            <p class="kgc-section-title">Select Services</p>
+            <p class="kgc-section-sub mb-4">Pick a category, choose the subsidiaries you need, then tick the specific services.</p>
+            <div class="kgc-step1-grid">
+              <div>
+                <p class="kgc-cat-label">Categories</p>
+                <div class="kgc-cat-list" id="bookingCategoryList"></div>
               </div>
-
-              <div class="subsidiary-entry">
-                <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
-                  <input type="checkbox" name="subsidiary" value="Klassic Solutions Inc." data-company="Klassic Solutions Inc." class="subsidiary-checkbox w-4 h-4 flex-shrink-0">
-                  <span class="text-white text-sm">Klassic Solutions Inc.</span>
-                </label>
-                <div class="subsidiary-services hidden mt-2 ml-8 space-y-2" data-subsidiary="Klassic Solutions Inc.">
-                  <p class="text-xs text-gray-400">Select services:</p>
-                  <div class="grid gap-2">
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Klassic Solutions Inc." value="Executive & Staff Manpower Outsourcing" class="w-4 h-4">Executive & Staff Manpower Outsourcing</label>
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Klassic Solutions Inc." value="Technical Support & Helpdesk Staffing" class="w-4 h-4">Technical Support & Helpdesk Staffing</label>
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Klassic Solutions Inc." value="Corporate HR & Payroll Management" class="w-4 h-4">Corporate HR & Payroll Management</label>
-                  </div>
-                </div>
+              <div>
+                <div class="kgc-subs-grid" id="bookingSubsidiaryGrid"></div>
+                <p class="kgc-review-empty mt-3" id="bookingCatEmpty" hidden>No subsidiaries in this category yet.</p>
               </div>
+            </div>
+          </div>
 
-              <div class="subsidiary-entry">
-                <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
-                  <input type="checkbox" name="subsidiary" value="Klassic Marketing Inc." data-company="Klassic Marketing Inc." class="subsidiary-checkbox w-4 h-4 flex-shrink-0">
-                  <span class="text-white text-sm">Klassic Marketing Inc.</span>
-                </label>
-                <div class="subsidiary-services hidden mt-2 ml-8 space-y-2" data-subsidiary="Klassic Marketing Inc.">
-                  <p class="text-xs text-gray-400">Select services:</p>
-                  <div class="grid gap-2">
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Klassic Marketing Inc." value="Importation & Customs Clearance" class="w-4 h-4">Importation & Customs Clearance</label>
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Klassic Marketing Inc." value="Global Product Distribution & Logistics" class="w-4 h-4">Global Product Distribution & Logistics</label>
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Klassic Marketing Inc." value="Digital Marketing & Brand Strategy" class="w-4 h-4">Digital Marketing & Brand Strategy</label>
-                  </div>
+          <!-- ═══ Step 2: Scheduling ═══ -->
+          <div id="bookingStep2" class="kgc-panel" data-step-panel="2" hidden>
+            <p class="kgc-section-title">Pick a Date &amp; Time</p>
+            <p class="kgc-section-sub mb-4">Choose a preferred consultation slot and how you'd like to meet.</p>
+            <div class="kgc-sched-grid">
+              <div class="kgc-panel-card">
+                <div class="kgc-cal-head">
+                  <button type="button" class="kgc-cal-nav" id="bookingCalPrev" aria-label="Previous month">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                  </button>
+                  <span class="kgc-cal-title" id="bookingCalTitle">Month</span>
+                  <button type="button" class="kgc-cal-nav" id="bookingCalNext" aria-label="Next month">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                  </button>
                 </div>
-              </div>
-
-              <div class="subsidiary-entry">
-                <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
-                  <input type="checkbox" name="subsidiary" value="Westwood Development Corp." data-company="Westwood Development Corp." class="subsidiary-checkbox w-4 h-4 flex-shrink-0">
-                  <span class="text-white text-sm">Westwood Development Corp.</span>
-                </label>
-                <div class="subsidiary-services hidden mt-2 ml-8 space-y-2" data-subsidiary="Westwood Development Corp.">
-                  <p class="text-xs text-gray-400">Select services:</p>
-                  <div class="grid gap-2">
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Westwood Development Corp." value="Commercial Construction & Renovation" class="w-4 h-4">Commercial Construction & Renovation</label>
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Westwood Development Corp." value="Architectural Planning & Engineering Design" class="w-4 h-4">Architectural Planning & Engineering Design</label>
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Westwood Development Corp." value="Project Management & Site Supervision" class="w-4 h-4">Project Management & Site Supervision</label>
-                  </div>
+                <div class="kgc-cal-weekdays">
+                  <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
                 </div>
+                <div class="kgc-cal-days mt-1" id="bookingCalDays"></div>
               </div>
-
-              <div class="subsidiary-entry">
-                <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
-                  <input type="checkbox" name="subsidiary" value="Westwood Law" data-company="Westwood Law" class="subsidiary-checkbox w-4 h-4 flex-shrink-0">
-                  <span class="text-white text-sm">Westwood Law</span>
-                </label>
-                <div class="subsidiary-services hidden mt-2 ml-8 space-y-2" data-subsidiary="Westwood Law">
-                  <p class="text-xs text-gray-400">Select services:</p>
-                  <div class="grid gap-2">
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Westwood Law" value="Corporate Legal Advisory & Compliance" class="w-4 h-4">Corporate Legal Advisory & Compliance</label>
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Westwood Law" value="Contract Drafting & Legal Review" class="w-4 h-4">Contract Drafting & Legal Review</label>
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Westwood Law" value="Dispute Resolution & Litigation Support" class="w-4 h-4">Dispute Resolution & Litigation Support</label>
-                  </div>
-                </div>
-              </div>
-
-              <div class="subsidiary-entry">
-                <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
-                  <input type="checkbox" name="subsidiary" value="Connector" data-company="Connector" class="subsidiary-checkbox w-4 h-4 flex-shrink-0">
-                  <span class="text-white text-sm">Connector</span>
-                </label>
-                <div class="subsidiary-services hidden mt-2 ml-8 space-y-2" data-subsidiary="Connector">
-                  <p class="text-xs text-gray-400">Select services:</p>
-                  <div class="grid gap-2">
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Connector" value="Enterprise ERP & CRM Implementation" class="w-4 h-4">Enterprise ERP & CRM Implementation</label>
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Connector" value="Modular Software Integration & API Management" class="w-4 h-4">Modular Software Integration & API Management</label>
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Connector" value="Automated Workflow & Business Intelligence Tools" class="w-4 h-4">Automated Workflow & Business Intelligence Tools</label>
-                  </div>
-                </div>
-              </div>
-
-              <div class="subsidiary-entry">
-                <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
-                  <input type="checkbox" name="subsidiary" value="The Green Oasis" data-company="The Green Oasis" class="subsidiary-checkbox w-4 h-4 flex-shrink-0">
-                  <span class="text-white text-sm">The Green Oasis</span>
-                </label>
-                <div class="subsidiary-services hidden mt-2 ml-8 space-y-2" data-subsidiary="The Green Oasis">
-                  <p class="text-xs text-gray-400">Select services:</p>
-                  <div class="grid gap-2">
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="The Green Oasis" value="Commercial & Residential Landscape Design" class="w-4 h-4">Commercial & Residential Landscape Design</label>
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="The Green Oasis" value="Garden Installation & Plant Selection" class="w-4 h-4">Garden Installation & Plant Selection</label>
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="The Green Oasis" value="Grounds Maintenance & Hardscaping" class="w-4 h-4">Grounds Maintenance & Hardscaping</label>
-                  </div>
-                </div>
-              </div>
-
-              <div class="subsidiary-entry">
-                <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
-                  <input type="checkbox" name="subsidiary" value="Luxurious Cleaning Co." data-company="Luxurious Cleaning Co." class="subsidiary-checkbox w-4 h-4 flex-shrink-0">
-                  <span class="text-white text-sm">Luxurious Cleaning Co.</span>
-                </label>
-                <div class="subsidiary-services hidden mt-2 ml-8 space-y-2" data-subsidiary="Luxurious Cleaning Co.">
-                  <p class="text-xs text-gray-400">Select services:</p>
-                  <div class="grid gap-2">
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Luxurious Cleaning Co." value="Commercial Office & Facility Deep Cleaning" class="w-4 h-4">Commercial Office & Facility Deep Cleaning</label>
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Luxurious Cleaning Co." value="Post-Construction Site Cleaning" class="w-4 h-4">Post-Construction Site Cleaning</label>
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="Luxurious Cleaning Co." value="High-Rise Window & Exterior Pressure Washing" class="w-4 h-4">High-Rise Window & Exterior Pressure Washing</label>
-                  </div>
-                </div>
-              </div>
-
-              <div class="subsidiary-entry">
-                <label class="flex items-center gap-3 p-3 bg-[#121212] rounded-lg cursor-pointer hover:bg-gray-800 transition-all">
-                  <input type="checkbox" name="subsidiary" value="HYT Foundation Inc." data-company="HYT Foundation Inc." class="subsidiary-checkbox w-4 h-4 flex-shrink-0">
-                  <span class="text-white text-sm">HYT Foundation Inc.</span>
-                </label>
-                <div class="subsidiary-services hidden mt-2 ml-8 space-y-2" data-subsidiary="HYT Foundation Inc.">
-                  <p class="text-xs text-gray-400">Select services:</p>
-                  <div class="grid gap-2">
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="HYT Foundation Inc." value="Corporate Social Responsibility (CSR) Partnership" class="w-4 h-4">Corporate Social Responsibility (CSR) Partnership</label>
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="HYT Foundation Inc." value="Youth Leadership & Scholarship Program Support" class="w-4 h-4">Youth Leadership & Scholarship Program Support</label>
-                    <label class="flex items-center gap-2 text-sm text-gray-200"><input type="checkbox" name="companyService" data-company="HYT Foundation Inc." value="Community Grant & Social Project Sponsorship" class="w-4 h-4">Community Grant & Social Project Sponsorship</label>
-                  </div>
+              <div class="kgc-panel-card">
+                <p class="kgc-field-label">Time slots</p>
+                <div class="kgc-slot-grid mb-4" id="bookingTimeSlots"></div>
+                <p class="kgc-field-label">Meeting format</p>
+                <div class="kgc-format-grid" id="bookingFormatOptions">
+                  <button type="button" class="kgc-format-btn is-active" data-format="Online Video Call">
+                    <span class="kgc-format-name">Online Video Call</span>
+                    <span class="kgc-format-sub">Google Meet / Zoom</span>
+                  </button>
+                  <button type="button" class="kgc-format-btn" data-format="In-Person">
+                    <span class="kgc-format-name">In-Person</span>
+                    <span class="kgc-format-sub">KGC Head Office</span>
+                  </button>
                 </div>
               </div>
             </div>
-            <button type="button" onclick="window.nextBookingStep()"
-              class="w-full py-3 bg-gold text-[#121212] font-bold rounded-lg hover:opacity-90 transition-all">
-              Next: Your Details →
+          </div>
+
+          <!-- ═══ Step 3: Your Details ═══ -->
+          <div id="bookingStep3" class="kgc-panel" data-step-panel="3" hidden>
+            <p class="kgc-section-title">Your Details</p>
+            <p class="kgc-section-sub mb-4">Tell us who we should prepare the consultation for.</p>
+            <div class="space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="kgc-field-label" for="bookingFirstName">First Name *</label>
+                  <input type="text" class="kgc-input" name="firstName" id="bookingFirstName" placeholder="Juan" autocomplete="given-name" required>
+                </div>
+                <div>
+                  <label class="kgc-field-label" for="bookingLastName">Last Name *</label>
+                  <input type="text" class="kgc-input" name="lastName" id="bookingLastName" placeholder="Dela Cruz" autocomplete="family-name" required>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="kgc-field-label" for="bookingEmail">Email Address *</label>
+                  <input type="email" class="kgc-input" name="email" id="bookingEmail" placeholder="you@company.com" autocomplete="email" required>
+                </div>
+                <div>
+                  <label class="kgc-field-label" for="bookingPhone">Phone Number *</label>
+                  <input type="tel" class="kgc-input" name="phone" id="bookingPhone" placeholder="+63 9XX XXX XXXX" autocomplete="tel" required>
+                </div>
+              </div>
+              <div>
+                <label class="kgc-field-label" for="bookingCompany">Company Name <span class="normal-case text-gray-600">(optional)</span></label>
+                <input type="text" class="kgc-input" name="company" id="bookingCompany" placeholder="Your company or organization" autocomplete="organization">
+              </div>
+              <div>
+                <label class="kgc-field-label" for="bookingProjectDetails">Project Details / Special Requests</label>
+                <textarea class="kgc-textarea" name="projectDetails" id="bookingProjectDetails" rows="4" placeholder="Describe your project, timeline, budget range, or any special requests..."></textarea>
+              </div>
+              <p class="text-xs text-gray-500">A KGC specialist will reach out to confirm scope and final pricing before any work begins.</p>
+            </div>
+          </div>
+
+          <!-- ═══ Step 4: Review & Confirm ═══ -->
+          <div id="bookingStep4" class="kgc-panel" data-step-panel="4" hidden>
+            <p class="kgc-section-title">Review &amp; Confirm</p>
+            <p class="kgc-section-sub mb-4">Double-check everything below before submitting your request.</p>
+            <div class="kgc-review-grid">
+              <div class="kgc-review-card">
+                <div class="kgc-review-card-head">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h10"/></svg>
+                  <span class="kgc-review-card-title">Service Summary</span>
+                </div>
+                <div id="bookingReviewServices"></div>
+              </div>
+              <div class="kgc-review-card">
+                <div class="kgc-review-card-head">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  <span class="kgc-review-card-title">Appointment Details</span>
+                </div>
+                <div id="bookingReviewAppointment"></div>
+              </div>
+              <div class="kgc-review-card">
+                <div class="kgc-review-card-head">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 10v2m0-2c-1.11 0-2.08-.402-2.599-1"/></svg>
+                  <span class="kgc-review-card-title">Estimated Total</span>
+                </div>
+                <div id="bookingReviewTotal"></div>
+              </div>
+              <div class="kgc-review-card">
+                <div class="kgc-review-card-head">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                  <span class="kgc-review-card-title">Your Details</span>
+                </div>
+                <div id="bookingReviewContact"></div>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <!-- Persistent sticky footer -->
+        <div class="kgc-wizard-footer">
+          <div class="kgc-footer-summary">
+            <span class="kgc-fs-label" id="bookingFooterLabel">Selected services</span>
+            <span class="kgc-fs-value" id="bookingFooterValue">No services selected yet</span>
+          </div>
+          <div class="kgc-footer-actions">
+            <button type="button" class="kgc-btn-ghost" id="bookingPrevBtn" onclick="window.prevBookingStep()" disabled>Previous</button>
+            <button type="button" class="kgc-btn-link" id="bookingSkipBtn" onclick="window.skipBookingStep()">Skip for now</button>
+            <button type="button" class="kgc-btn-primary" id="bookingNextBtn" onclick="window.nextBookingStep()">
+              <span id="bookingNextLabel">Schedule a Consultation</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
             </button>
           </div>
+        </div>
 
-          <!-- Step 2: Client Details (pre-filled from session) -->
-          <div id="bookingStep2" class="hidden">
-            <p class="text-gray-400 text-sm mb-5">Confirm your details and project information:</p>
-            <div class="space-y-4 mb-6">
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-semibold text-gray-300 mb-2">Full Name *</label>
-                  <input type="text" name="fullName" id="bookingFullName" required
-                    class="w-full px-4 py-3 bg-[#121212] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-gold">
-                </div>
-                <div>
-                  <label class="block text-sm font-semibold text-gray-300 mb-2">Email Address *</label>
-                  <input type="email" name="email" id="bookingEmail" required
-                    class="w-full px-4 py-3 bg-[#121212] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-gold">
-                </div>
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-300 mb-2">Phone Number *</label>
-                <input type="tel" name="phone" required placeholder="+63 9XX XXX XXXX"
-                  class="w-full px-4 py-3 bg-[#121212] border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-gold">
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-300 mb-2">Preferred Service Date *</label>
-                <input type="date" name="serviceDate" required
-                  class="w-full px-4 py-3 bg-[#121212] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-gold">
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-300 mb-2">Project Summary / Notes</label>
-                <textarea name="notes" rows="3" placeholder="Describe your project or requirements..."
-                  class="w-full px-4 py-3 bg-[#121212] border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-gold resize-none"></textarea>
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-300 mb-3">Payment Method *</label>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <label class="payment-method-option">
-                    <input type="radio" name="paymentMethod" value="GCash / Maya" class="sr-only">
-                    <span class="payment-method-card">
-                      <span class="payment-method-icon payment-method-gcash">
-                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4.5 7.5A2.5 2.5 0 0 1 7 5h10a2.5 2.5 0 0 1 2.5 2.5v9A2.5 2.5 0 0 1 17 19H7a2.5 2.5 0 0 1-2.5-2.5v-9Z"/><path d="M8 9.5h8M8 12.5h5"/><path d="M8 15.5h3.5"/></svg>
-                      </span>
-                      <span class="payment-method-copy">
-                        <span class="payment-method-name">GCash / Maya</span>
-                        <span class="payment-method-subtext">E-Wallet</span>
-                      </span>
-                    </span>
-                  </label>
-
-                  <label class="payment-method-option">
-                    <input type="radio" name="paymentMethod" value="Credit / Debit Card" class="sr-only">
-                    <span class="payment-method-card">
-                      <span class="payment-method-icon payment-method-card-icon">
-                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="5.5" width="17" height="13" rx="2.2"/><path d="M3.5 9.5h17"/><path d="M7 15.5h3.5"/><path d="M15.5 15.5h2.5"/></svg>
-                      </span>
-                      <span class="payment-method-copy">
-                        <span class="payment-method-name">Credit / Debit Card</span>
-                        <span class="payment-method-subtext">Visa / Mastercard</span>
-                      </span>
-                    </span>
-                  </label>
-
-                  <label class="payment-method-option">
-                    <input type="radio" name="paymentMethod" value="Bank Transfer / Direct Deposit" class="sr-only">
-                    <span class="payment-method-card">
-                      <span class="payment-method-icon payment-method-bank-icon">
-                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3.5 9.5 12 4l8.5 5.5"/><path d="M5.5 10.5v7h13v-7"/><path d="M8.5 17.5v-5h7v5"/></svg>
-                      </span>
-                      <span class="payment-method-copy">
-                        <span class="payment-method-name">Bank Transfer</span>
-                        <span class="payment-method-subtext">BDO / BPI / Direct Deposit</span>
-                      </span>
-                    </span>
-                  </label>
-
-                  <label class="payment-method-option">
-                    <input type="radio" name="paymentMethod" value="Cash on Delivery / Corporate Invoice" class="sr-only">
-                    <span class="payment-method-card">
-                      <span class="payment-method-icon payment-method-invoice-icon">
-                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 4.5h8l3 3v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2Z"/><path d="M15 4.5v3h3"/><path d="M8 12h8M8 15.5h6"/></svg>
-                      </span>
-                      <span class="payment-method-copy">
-                        <span class="payment-method-name">Cash / Invoice</span>
-                        <span class="payment-method-subtext">COD / Corporate Billing</span>
-                      </span>
-                    </span>
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div class="flex gap-3">
-              <button type="button" onclick="window.prevBookingStep()"
-                class="flex-1 py-3 bg-gray-800 hover:bg-gray-700 text-white font-bold rounded-lg transition-all">
-                ← Back
-              </button>
-              <button type="submit"
-                class="flex-2 px-8 py-3 bg-gold text-[#121212] font-bold rounded-lg hover:opacity-90 transition-all">
-                Confirm &amp; Submit Request
-              </button>
-            </div>
-          </div>
-
-        </form>
       </div>
     </div>
 
@@ -3425,19 +4035,751 @@
       }
     };
 
+    // ══════════════════════════════════════════════════════════════════════
+    //  BOOKING WIZARD — 4-step flow (Service → Scheduling → Details → Review)
+    // ══════════════════════════════════════════════════════════════════════
+
+    // Static catalog: categories → subsidiaries → services (+ pricing + duration)
+    var BOOKING_CATALOG = {
+      categories: [
+        { id: 'it', label: 'IT', blurb: 'Software, AI & cybersecurity' },
+        { id: 'marketing', label: 'Marketing', blurb: 'Brand, trade & distribution' },
+        { id: 'real-estate', label: 'Real Estate', blurb: 'Construction & development' },
+        { id: 'legal', label: 'Legal', blurb: 'Corporate & dispute counsel' }
+      ],
+      subsidiaries: [
+        {
+          id: 'brains', name: 'Brains Infinite Innovations Inc.', category: 'it',
+          tagline: 'Innovation & Technology', initials: 'BI',
+          services: [
+            { name: 'Custom Software & App Development', price: 85, unit: '/hr', duration: 2 },
+            { name: 'AI & IT Solutions Consulting', price: 95, unit: '/hr', duration: 1.5 },
+            { name: 'Cybersecurity & System Audit', price: 120, unit: '/hr', duration: 2 }
+          ]
+        },
+        {
+          id: 'connector', name: 'Connector', category: 'it',
+          tagline: 'Business Integration', initials: 'CO',
+          services: [
+            { name: 'Enterprise ERP & CRM Implementation', price: 110, unit: '/hr', duration: 2 },
+            { name: 'Modular Software Integration & API Management', price: 95, unit: '/hr', duration: 1.5 },
+            { name: 'Automated Workflow & Business Intelligence Tools', price: 90, unit: '/hr', duration: 1.5 }
+          ]
+        },
+        {
+          id: 'klassic-marketing', name: 'Klassic Marketing Inc.', category: 'marketing',
+          tagline: 'Global Trade & Distribution', initials: 'KM',
+          services: [
+            { name: 'Importation & Customs Clearance', price: 140, unit: '/hr', duration: 1.5 },
+            { name: 'Global Product Distribution & Logistics', price: 130, unit: '/hr', duration: 2 },
+            { name: 'Digital Marketing & Brand Strategy', price: 75, unit: '/hr', duration: 1.5 }
+          ]
+        },
+        {
+          id: 'the-finest-fit', name: 'The Finest Fit', category: 'marketing',
+          tagline: 'Custom Uniform Solutions', initials: 'FF',
+          services: [
+            { name: 'Corporate Uniform Design & Production', price: 65, unit: '/hr', duration: 1 },
+            { name: 'Branded Merchandise & Apparel', price: 60, unit: '/hr', duration: 1 },
+            { name: 'Bulk Order Fulfillment & Delivery', price: 55, unit: '/hr', duration: 1 }
+          ]
+        },
+        {
+          id: 'green-oasis', name: 'The Green Oasis', category: 'real-estate',
+          tagline: 'Landscape Design', initials: 'GO',
+          services: [
+            { name: 'Commercial & Residential Landscape Design', price: 70, unit: '/hr', duration: 1.5 },
+            { name: 'Garden Installation & Plant Selection', price: 60, unit: '/hr', duration: 1.5 },
+            { name: 'Grounds Maintenance & Hardscaping', price: 55, unit: '/hr', duration: 1 }
+          ]
+        },
+        {
+          id: 'luxurious-cleaning', name: 'Luxurious Cleaning Co.', category: 'real-estate',
+          tagline: 'Professional Cleaning', initials: 'LC',
+          services: [
+            { name: 'Commercial Office & Facility Deep Cleaning', price: 50, unit: '/hr', duration: 1.5 },
+            { name: 'Post-Construction Site Cleaning', price: 65, unit: '/hr', duration: 2 },
+            { name: 'High-Rise Window & Exterior Pressure Washing', price: 80, unit: '/hr', duration: 2 }
+          ]
+        },
+        {
+          id: 'westwood-dev', name: 'Westwood Development Corp.', category: 'real-estate',
+          tagline: 'Construction & Development', initials: 'WD',
+          services: [
+            { name: 'Commercial Construction & Renovation', price: 150, unit: '/hr', duration: 2 },
+            { name: 'Architectural Planning & Engineering Design', price: 130, unit: '/hr', duration: 2 },
+            { name: 'Project Management & Site Supervision', price: 110, unit: '/hr', duration: 1.5 }
+          ]
+        },
+        {
+          id: 'westwood-law', name: 'Westwood Law', category: 'legal',
+          tagline: 'Legal Services', initials: 'WL',
+          services: [
+            { name: 'Corporate Legal Advisory & Compliance', price: 160, unit: '/hr', duration: 1.5 },
+            { name: 'Contract Drafting & Legal Review', price: 140, unit: '/hr', duration: 1.5 },
+            { name: 'Dispute Resolution & Litigation Support', price: 180, unit: '/hr', duration: 2 }
+          ]
+        },
+        {
+          id: 'hyt-foundation', name: 'HYT Foundation Inc.', category: 'legal',
+          tagline: 'Youth Development & CSR', initials: 'HY',
+          services: [
+            { name: 'Corporate Social Responsibility (CSR) Partnership', price: 90, unit: '/hr', duration: 1.5 },
+            { name: 'Youth Leadership & Scholarship Program Support', price: 85, unit: '/hr', duration: 1.5 },
+            { name: 'Community Grant & Social Project Sponsorship', price: 95, unit: '/hr', duration: 1.5 }
+          ]
+        }
+      ]
+    };
+
+    // Time slots (some flagged unavailable to mirror the "selectable pills" design)
+    var BOOKING_TIME_SLOTS = [
+      { label: '09:00 AM', value: '09:00 AM', disabled: false },
+      { label: '10:30 AM', value: '10:30 AM', disabled: false },
+      { label: '02:00 PM', value: '02:00 PM', disabled: false, active: true },
+      { label: '03:30 PM', value: '03:30 PM', disabled: false },
+      { label: '05:00 PM', value: '05:00 PM', disabled: false },
+      { label: '06:30 PM', value: '06:30 PM', disabled: true }
+    ];
+
+    var MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'];
+
+    // Wizard state
+    var bookingState = {
+      step: 1,
+      maxStepReached: 1,
+      category: 'it',
+      selectedSubs: {},        // companyName -> true
+      selectedServices: {},    // companyName -> [serviceName, ...]
+      projectNotes: {},        // companyName -> note text
+      calendarMonth: null,     // Date at day 1 of the visible month
+      selectedDate: null,      // 'YYYY-MM-DD'
+      selectedTime: '02:00 PM',
+      meetingFormat: 'Online Video Call'
+    };
+
+    function dateToKey(d) {
+      var m = d.getMonth() + 1, day = d.getDate();
+      return d.getFullYear() + '-' + (m < 10 ? '0' + m : m) + '-' + (day < 10 ? '0' + day : day);
+    }
+
+    function startOfDay(d) {
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+
+    function formatDisplayDate(key) {
+      if (!key) return '—';
+      var parts = key.split('-');
+      var d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      return days[d.getDay()] + ', ' + MONTH_NAMES[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+    }
+
+    function money(n) { return '$' + Number(n).toLocaleString('en-US'); }
+
+    function catalogSub(name) {
+      for (var i = 0; i < BOOKING_CATALOG.subsidiaries.length; i++) {
+        if (BOOKING_CATALOG.subsidiaries[i].name === name) return BOOKING_CATALOG.subsidiaries[i];
+      }
+      return null;
+    }
+
+    function selectedSubsidiaryNames() {
+      var names = [];
+      BOOKING_CATALOG.subsidiaries.forEach(function (s) {
+        if (bookingState.selectedSubs[s.name]) names.push(s.name);
+      });
+      return names;
+    }
+
+    function extractLastName(fullName) {
+      var parts = String(fullName || '').trim().split(/\s+/);
+      if (parts.length < 2) return '';
+      return parts[parts.length - 1];
+    }
+
+    function extractFirstName(fullName) {
+      var parts = String(fullName || '').trim().split(/\s+/);
+      if (!parts.length) return '';
+      if (parts.length === 1) return parts[0];
+      return parts.slice(0, parts.length - 1).join(' ');
+    }
+
+    // ── Render: category sidebar ─────────────────────────────────────────
+    function renderBookingCategories() {
+      var wrap = document.getElementById('bookingCategoryList');
+      if (!wrap) return;
+      wrap.innerHTML = BOOKING_CATALOG.categories.map(function (cat) {
+        var count = BOOKING_CATALOG.subsidiaries.filter(function (s) { return s.category === cat.id; }).length;
+        var active = bookingState.category === cat.id ? ' is-active' : '';
+        return '<button type="button" class="kgc-cat-pill' + active + '" data-cat="' + cat.id + '"' +
+          (active ? ' aria-current="true"' : '') + '>' +
+          '<span>' + escHtml(cat.label) + '</span>' +
+          '<span class="kgc-cat-count">' + count + '</span>' +
+          '</button>';
+      }).join('');
+    }
+
+    // ── Render: subsidiary cards for the active category ─────────────────
+    function renderBookingSubsidiaries() {
+      var grid = document.getElementById('bookingSubsidiaryGrid');
+      if (!grid) return;
+      var list = BOOKING_CATALOG.subsidiaries.filter(function (s) { return s.category === bookingState.category; });
+
+      var emptyEl = document.getElementById('bookingCatEmpty');
+      if (emptyEl) emptyEl.hidden = list.length > 0;
+
+      grid.innerHTML = list.map(function (s) {
+        var isActive = !!bookingState.selectedSubs[s.name];
+        var services = bookingState.selectedServices[s.name] || [];
+        var initials = s.initials || s.name.substring(0, 2).toUpperCase();
+
+        var body = '';
+        if (isActive) {
+          var rows = s.services.map(function (svc) {
+            var checked = services.indexOf(svc.name) !== -1;
+            return '<label class="kgc-svc-row' + (checked ? ' is-checked' : '') + '">' +
+              '<input type="checkbox" data-svc="' + escHtml(svc.name) + '" data-company="' + escHtml(s.name) + '" value="' + escHtml(svc.name) + '"' + (checked ? ' checked' : '') + '>' +
+              '<span class="kgc-svc-meta">' +
+              '<span class="kgc-svc-name">' + escHtml(svc.name) + '</span>' +
+              '<span class="kgc-svc-price">Starting price: <b>' + money(svc.price) + svc.unit + '</b></span>' +
+              '</span>' +
+              '</label>';
+          }).join('');
+
+          body = '<div class="kgc-subs-body">' +
+            '<div class="kgc-svc-list">' + rows + '</div>' +
+            '<label class="kgc-needs-label">Project needs (optional)</label>' +
+            '<textarea class="kgc-needs-input" data-needs="' + escHtml(s.name) + '" rows="3" ' +
+            'placeholder="Anything specific for ' + escHtml(s.name) + '?">' + escHtml(bookingState.projectNotes[s.name] || '') + '</textarea>' +
+            '</div>';
+        } else {
+          body = '<div class="kgc-subs-body">' +
+            '<button type="button" class="kgc-subs-viewbtn" data-view="' + escHtml(s.name) + '">' +
+            'View Services' +
+            '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>' +
+            '</button>' +
+            '</div>';
+        }
+
+        return '<div class="kgc-subs-card' + (isActive ? ' is-active' : '') + '" data-company="' + escHtml(s.name) + '">' +
+          '<div class="kgc-subs-card-head" data-toggle="' + escHtml(s.name) + '">' +
+          '<span class="kgc-subs-logo">' + escHtml(initials) + '</span>' +
+          '<span class="kgc-subs-headtext">' +
+          '<span class="kgc-subs-name">' + escHtml(s.name) + '</span>' +
+          '<span class="kgc-subs-tagline">' + escHtml(s.tagline) + '</span>' +
+          '</span>' +
+          '<span class="kgc-subs-check"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>' +
+          '</div>' +
+          body +
+          '</div>';
+      }).join('');
+    }
+
+    // ── Render: calendar ────────────────────────────────────────────────
+    function renderBookingCalendar() {
+      var titleEl = document.getElementById('bookingCalTitle');
+      var daysEl = document.getElementById('bookingCalDays');
+      if (!titleEl || !daysEl) return;
+
+      var view = bookingState.calendarMonth;
+      if (!view) {
+        var now = new Date();
+        bookingState.calendarMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        view = bookingState.calendarMonth;
+      }
+      var year = view.getFullYear(), month = view.getMonth();
+      titleEl.textContent = MONTH_NAMES[month] + ' ' + year;
+
+      var firstDay = new Date(year, month, 1).getDay();
+      var daysInMonth = new Date(year, month + 1, 0).getDate();
+      var today = startOfDay(new Date());
+      var todayKey = dateToKey(today);
+      var html = '';
+
+      for (var i = 0; i < firstDay; i++) html += '<span class="kgc-cal-day is-empty"></span>';
+
+      for (var day = 1; day <= daysInMonth; day++) {
+        var d = new Date(year, month, day);
+        var key = dateToKey(d);
+        var isPast = d < today;
+        var classes = 'kgc-cal-day';
+        if (key === todayKey) classes += ' is-today';
+        if (key === bookingState.selectedDate) classes += ' is-selected';
+        var dot = (!isPast && key !== bookingState.selectedDate && (day % 7 === 3))
+          ? '<span class="kgc-cal-dot"></span>' : '';
+        html += '<button type="button" class="' + classes + '" data-day="' + key + '"' +
+          (isPast ? ' disabled' : '') + '>' + day + dot + '</button>';
+      }
+      daysEl.innerHTML = html;
+
+      var prevBtn = document.getElementById('bookingCalPrev');
+      if (prevBtn) {
+        var currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        prevBtn.disabled = startOfDay(view) <= currentMonthStart;
+      }
+    }
+
+    // ── Render: time slots ──────────────────────────────────────────────
+    function renderBookingTimeSlots() {
+      var wrap = document.getElementById('bookingTimeSlots');
+      if (!wrap) return;
+      wrap.innerHTML = BOOKING_TIME_SLOTS.map(function (slot) {
+        var isActive = bookingState.selectedTime === slot.value;
+        return '<button type="button" class="kgc-slot-pill' + (isActive ? ' is-active' : '') + '"' +
+          ' data-time="' + escHtml(slot.value) + '"' + (slot.disabled ? ' disabled' : '') + '>' +
+          escHtml(slot.label) + '</button>';
+      }).join('');
+    }
+
+    // ── Render: review panels ───────────────────────────────────────────
+    function renderBookingReview() {
+      renderReviewServices();
+      renderReviewAppointment();
+      renderReviewTotal();
+      renderReviewContact();
+    }
+
+    function totalDuration() {
+      var dur = 0;
+      Object.keys(bookingState.selectedServices).forEach(function (company) {
+        var names = bookingState.selectedServices[company] || [];
+        var sub = catalogSub(company);
+        if (!sub) return;
+        names.forEach(function (name) {
+          var svc = sub.services.filter(function (s) { return s.name === name; })[0];
+          if (svc) dur += svc.duration;
+        });
+      });
+      return dur || 1.5;
+    }
+
+    function renderReviewServices() {
+      var el = document.getElementById('bookingReviewServices');
+      if (!el) return;
+      var names = selectedSubsidiaryNames();
+      if (!names.length) { el.innerHTML = '<p class="kgc-review-empty">No services selected.</p>'; return; }
+
+      el.innerHTML = names.map(function (company) {
+        var services = bookingState.selectedServices[company] || [];
+        var sub = catalogSub(company);
+        var items = services.map(function (name) {
+          var svc = sub ? sub.services.filter(function (s) { return s.name === name; })[0] : null;
+          return '<div class="kgc-review-svc-item"><span>' + escHtml(name) + '</span>' +
+            '<span>' + (svc ? money(svc.price) + svc.unit : 'Quote') + '</span></div>';
+        }).join('');
+        if (!items) items = '<div class="kgc-review-svc-item"><span>Services to be quoted</span><span>—</span></div>';
+        var note = bookingState.projectNotes[company]
+          ? '<div class="kgc-review-note">' + escHtml(bookingState.projectNotes[company]) + '</div>' : '';
+        return '<div class="kgc-review-svc-group">' +
+          '<div class="kgc-review-svc-company">' + escHtml(company) + '</div>' + items + note + '</div>';
+      }).join('');
+    }
+
+    function renderReviewAppointment() {
+      var el = document.getElementById('bookingReviewAppointment');
+      if (!el) return;
+      var dur = totalDuration();
+      el.innerHTML =
+        reviewLine('Date', formatDisplayDate(bookingState.selectedDate)) +
+        reviewLine('Time', bookingState.selectedTime || '—') +
+        reviewLine('Format', bookingState.meetingFormat) +
+        reviewLine('Duration', '~' + dur + (dur === 1 ? ' hour' : ' hours'));
+    }
+
+    function renderReviewTotal() {
+      var el = document.getElementById('bookingReviewTotal');
+      if (!el) return;
+      var names = selectedSubsidiaryNames();
+      if (!names.length) { el.innerHTML = '<p class="kgc-review-empty">Select services to see an estimate.</p>'; return; }
+
+      var lines = '', lo = 0, hi = 0;
+      names.forEach(function (company) {
+        var services = bookingState.selectedServices[company] || [];
+        var sub = catalogSub(company);
+        services.forEach(function (name) {
+          var svc = sub ? sub.services.filter(function (s) { return s.name === name; })[0] : null;
+          if (!svc) return;
+          lo += svc.price; hi += svc.price * 1.35;
+          lines += '<div class="kgc-review-svc-item"><span>' + escHtml(name) + '</span>' +
+            '<span>' + money(svc.price) + svc.unit + '</span></div>';
+        });
+      });
+
+      el.innerHTML = lines +
+        '<div class="kgc-review-total">' +
+        '<span class="kgc-rt-label">Estimated total range</span>' +
+        '<span class="kgc-rt-value">' + money(Math.round(lo)) + ' – ' + money(Math.round(hi)) + '</span>' +
+        '</div>' +
+        '<p class="text-xs text-gray-500 mt-2">Final pricing is confirmed after your consultation. No payment is taken now.</p>';
+    }
+
+    function renderReviewContact() {
+      var el = document.getElementById('bookingReviewContact');
+      if (!el) return;
+      var fn = (document.getElementById('bookingFirstName') || {}).value || '';
+      var ln = (document.getElementById('bookingLastName') || {}).value || '';
+      var email = (document.getElementById('bookingEmail') || {}).value || '';
+      var phone = (document.getElementById('bookingPhone') || {}).value || '';
+      var company = (document.getElementById('bookingCompany') || {}).value || '';
+      var details = (document.getElementById('bookingProjectDetails') || {}).value || '';
+
+      el.innerHTML =
+        reviewLine('Name', (fn + ' ' + ln).trim() || '—') +
+        reviewLine('Email', email || '—') +
+        reviewLine('Phone', phone || '—') +
+        reviewLine('Company', company || '—') +
+        (details ? '<div class="kgc-review-note">' + escHtml(details) + '</div>' : '');
+    }
+
+    function reviewLine(key, val) {
+      return '<div class="kgc-review-line"><span class="kgc-rl-key">' + escHtml(key) + '</span>' +
+        '<span class="kgc-rl-val">' + escHtml(val) + '</span></div>';
+    }
+
+    // ── Render: stepper + footer summary ────────────────────────────────
+    function renderBookingStepper() {
+      document.querySelectorAll('#bookingStepper .kgc-step-tab').forEach(function (tab) {
+        var n = parseInt(tab.getAttribute('data-step-tab'), 10);
+        tab.classList.toggle('is-active', n === bookingState.step);
+        tab.classList.toggle('is-complete', n < bookingState.step);
+        if (n === bookingState.step) tab.setAttribute('aria-current', 'step');
+        else tab.removeAttribute('aria-current');
+        var dot = tab.querySelector('.kgc-step-dot');
+        if (dot) {
+          dot.setAttribute('aria-label', n < bookingState.step ? 'Step ' + n + ' completed' : 'Step ' + n);
+        }
+      });
+    }
+
+    function renderBookingFooter() {
+      var labelEl = document.getElementById('bookingFooterLabel');
+      var valueEl = document.getElementById('bookingFooterValue');
+      var prevBtn = document.getElementById('bookingPrevBtn');
+      var skipBtn = document.getElementById('bookingSkipBtn');
+      var nextBtn = document.getElementById('bookingNextBtn');
+      var nextLabel = document.getElementById('bookingNextLabel');
+      var subtitle = document.getElementById('bookingSubtitle');
+      if (!valueEl || !nextLabel) return;
+
+      var subtitles = {
+        1: 'Select the subsidiaries you need',
+        2: 'Choose a date, time and meeting format',
+        3: 'Tell us who we should prepare for',
+        4: 'Review and confirm your booking'
+      };
+      if (subtitle) subtitle.textContent = subtitles[bookingState.step] || '';
+
+      if (prevBtn) prevBtn.disabled = bookingState.step === 1;
+      if (skipBtn) {
+        skipBtn.style.display = bookingState.step === 4 ? 'none' : '';
+        skipBtn.textContent = bookingState.step === 1 ? 'Skip for now' : 'Skip for now';
+      }
+
+      if (bookingState.step === 1) {
+        if (labelEl) labelEl.textContent = 'Selected services';
+        var count = 0;
+        selectedSubsidiaryNames().forEach(function (c) { count += (bookingState.selectedServices[c] || []).length; });
+        var subs = selectedSubsidiaryNames().length;
+        valueEl.textContent = count
+          ? count + ' service' + (count === 1 ? '' : 's') + ' across ' + subs + ' ' + (subs === 1 ? 'company' : 'companies')
+          : 'No services selected yet';
+        nextLabel.textContent = 'Schedule a Consultation';
+      } else if (bookingState.step === 2) {
+        if (labelEl) labelEl.textContent = 'Selected time';
+        valueEl.textContent = bookingState.selectedTime
+          ? formatDisplayDate(bookingState.selectedDate) + ' · ' + bookingState.selectedTime + ' · ' + bookingState.meetingFormat
+          : 'No time selected yet';
+        nextLabel.textContent = 'Next: Your Details';
+      } else if (bookingState.step === 3) {
+        if (labelEl) labelEl.textContent = 'Appointment';
+        valueEl.textContent = bookingState.selectedTime
+          ? formatDisplayDate(bookingState.selectedDate) + ' · ' + bookingState.selectedTime
+          : 'No time selected yet';
+        nextLabel.textContent = 'Next: Review & Confirm';
+      } else {
+        if (labelEl) labelEl.textContent = 'Estimated total';
+        var lo = 0;
+        selectedSubsidiaryNames().forEach(function (company) {
+          var sub = catalogSub(company);
+          (bookingState.selectedServices[company] || []).forEach(function (name) {
+            var svc = sub ? sub.services.filter(function (s) { return s.name === name; })[0] : null;
+            if (svc) lo += svc.price;
+          });
+        });
+        valueEl.textContent = lo ? money(Math.round(lo)) + ' – ' + money(Math.round(lo * 1.35)) + ' estimated' : 'Estimate pending';
+        nextLabel.textContent = 'Confirm & Submit Booking';
+      }
+      if (nextBtn) nextBtn.setAttribute('aria-label', nextLabel.textContent);
+    }
+
+    // ── Step navigation ─────────────────────────────────────────────────
+    function showBookingStep(step) {
+      bookingState.step = step;
+      bookingState.maxStepReached = Math.max(bookingState.maxStepReached, step);
+      document.querySelectorAll('#bookingForm .kgc-panel').forEach(function (panel) {
+        panel.hidden = parseInt(panel.getAttribute('data-step-panel'), 10) !== step;
+      });
+      if (step === 4) renderBookingReview();
+      renderBookingStepper();
+      renderBookingFooter();
+
+      // Skip native validation on steps that are not the final submit step.
+      var form = document.getElementById('bookingForm');
+      if (form) form.setAttribute('novalidate', 'novalidate');
+
+      var body = document.querySelector('#bookingModal .kgc-wizard-body');
+      if (body) body.scrollTop = 0;
+    }
+
+    window.goBookingStep = function (n) {
+      if (n < 1 || n > 4) return;
+      syncBookingStateFromDom();
+      // Allow moving back freely; forward moves must be step-by-step.
+      if (n > bookingState.step && n !== bookingState.step + 1) return;
+      showBookingStep(n);
+    };
+
+    window.skipBookingStep = function () {
+      if (bookingState.step === 1) {
+        window.showToast('You can pick services later — a specialist will help scope your project.', 'success');
+        showBookingStep(2);
+      } else if (bookingState.step === 2) {
+        window.showToast('No slot chosen — we will contact you to arrange a time.', 'success');
+        showBookingStep(3);
+      } else {
+        showBookingStep(bookingState.step + 1);
+      }
+    };
+
+    window.nextBookingStep = function () {
+      var step = bookingState.step;
+
+      if (step === 1) {
+        if (!selectedSubsidiaryNames().length) {
+          window.showToast('\u26a0\ufe0f Please select at least one subsidiary.', 'error');
+          return;
+        }
+        var missing = [];
+        selectedSubsidiaryNames().forEach(function (company) {
+          if (!(bookingState.selectedServices[company] || []).length) missing.push(company);
+        });
+        if (missing.length) {
+          window.showToast('\u26a0\ufe0f Please choose at least one service for: ' + missing[0] + '.', 'error');
+          return;
+        }
+        showBookingStep(2);
+        return;
+      }
+
+      if (step === 2) {
+        if (!bookingState.selectedDate) {
+          window.showToast('\u26a0\ufe0f Please pick a date for your consultation.', 'error');
+          return;
+        }
+        if (!bookingState.selectedTime) {
+          window.showToast('\u26a0\ufe0f Please choose a time slot.', 'error');
+          return;
+        }
+        showBookingStep(3);
+        return;
+      }
+
+      if (step === 3) {
+        var fn = (document.getElementById('bookingFirstName') || {}).value || '';
+        var ln = (document.getElementById('bookingLastName') || {}).value || '';
+        var email = (document.getElementById('bookingEmail') || {}).value || '';
+        var phone = (document.getElementById('bookingPhone') || {}).value || '';
+        if (!fn.trim() || !ln.trim()) {
+          window.showToast('\u26a0\ufe0f Please enter your first and last name.', 'error');
+          return;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+          window.showToast('\u26a0\ufe0f Please enter a valid email address.', 'error');
+          return;
+        }
+        if (!phone.trim()) {
+          window.showToast('\u26a0\ufe0f Please enter your phone number.', 'error');
+          return;
+        }
+        showBookingStep(4);
+        return;
+      }
+    };
+
+    window.prevBookingStep = function () {
+      if (bookingState.step > 1) showBookingStep(bookingState.step - 1);
+    };
+
+    // ── Event delegation inside the wizard ──────────────────────────────
+    function syncBookingStateFromDom() {
+      // Preserve any in-progress textareas before re-rendering step 1.
+      document.querySelectorAll('#bookingSubsidiaryGrid [data-needs]').forEach(function (ta) {
+        var company = ta.getAttribute('data-needs');
+        bookingState.projectNotes[company] = ta.value;
+      });
+    }
+
+    function handleWizardClick(event) {
+      var target = event.target;
+
+      var catBtn = target.closest && target.closest('#bookingCategoryList [data-cat]');
+      if (catBtn) {
+        syncBookingStateFromDom();
+        bookingState.category = catBtn.getAttribute('data-cat');
+        renderBookingCategories();
+        renderBookingSubsidiaries();
+        return;
+      }
+
+      var viewBtn = target.closest && target.closest('[data-view]');
+      if (viewBtn) {
+        var vName = viewBtn.getAttribute('data-view');
+        toggleSubsidiary(vName);
+        return;
+      }
+
+      var head = target.closest && target.closest('[data-toggle]');
+      if (head) {
+        var hName = head.getAttribute('data-toggle');
+        toggleSubsidiary(hName);
+        return;
+      }
+
+      var dayBtn = target.closest && target.closest('#bookingCalDays [data-day]');
+      if (dayBtn && !dayBtn.disabled) {
+        bookingState.selectedDate = dayBtn.getAttribute('data-day');
+        renderBookingCalendar();
+        renderBookingFooter();
+        return;
+      }
+
+      var slotBtn = target.closest && target.closest('#bookingTimeSlots [data-time]');
+      if (slotBtn && !slotBtn.disabled) {
+        bookingState.selectedTime = slotBtn.getAttribute('data-time');
+        renderBookingTimeSlots();
+        renderBookingFooter();
+        return;
+      }
+
+      var fmtBtn = target.closest && target.closest('#bookingFormatOptions [data-format]');
+      if (fmtBtn) {
+        bookingState.meetingFormat = fmtBtn.getAttribute('data-format');
+        document.querySelectorAll('#bookingFormatOptions .kgc-format-btn').forEach(function (b) {
+          b.classList.toggle('is-active', b === fmtBtn);
+        });
+        renderBookingFooter();
+        return;
+      }
+
+      var stepTab = target.closest && target.closest('#bookingStepper [data-step-tab]');
+      if (stepTab) {
+        var n = parseInt(stepTab.getAttribute('data-step-tab'), 10);
+        if (n <= bookingState.maxStepReached || n === bookingState.step + 1) {
+          syncBookingStateFromDom();
+          showBookingStep(n);
+        }
+        return;
+      }
+
+      var calNav = target.closest && target.closest('.kgc-cal-nav');
+      if (calNav) {
+        var view = bookingState.calendarMonth || new Date();
+        var delta = calNav.id === 'bookingCalPrev' ? -1 : 1;
+        bookingState.calendarMonth = new Date(view.getFullYear(), view.getMonth() + delta, 1);
+        renderBookingCalendar();
+        return;
+      }
+    }
+
+    function toggleSubsidiary(name) {
+      syncBookingStateFromDom();
+      if (bookingState.selectedSubs[name]) {
+        delete bookingState.selectedSubs[name];
+        delete bookingState.selectedServices[name];
+        delete bookingState.projectNotes[name];
+      } else {
+        bookingState.selectedSubs[name] = true;
+        if (!bookingState.selectedServices[name]) bookingState.selectedServices[name] = [];
+      }
+      renderBookingSubsidiaries();
+      renderBookingFooter();
+    }
+
+    function handleWizardChange(event) {
+      var target = event.target;
+      if (!target) return;
+
+      if (target.matches && target.matches('#bookingSubsidiaryGrid [data-svc]')) {
+        var company = target.getAttribute('data-company');
+        var svc = target.getAttribute('data-svc');
+        if (!bookingState.selectedServices[company]) bookingState.selectedServices[company] = [];
+        var arr = bookingState.selectedServices[company];
+        if (target.checked) {
+          if (arr.indexOf(svc) === -1) arr.push(svc);
+        } else {
+          var idx = arr.indexOf(svc);
+          if (idx !== -1) arr.splice(idx, 1);
+        }
+        var row = target.closest('.kgc-svc-row');
+        if (row) row.classList.toggle('is-checked', !!target.checked);
+        renderBookingFooter();
+        return;
+      }
+
+      if (target.matches && target.matches('#bookingSubsidiaryGrid [data-needs]')) {
+        bookingState.projectNotes[target.getAttribute('data-needs')] = target.value;
+        return;
+      }
+
+      if (target.id === 'bookingFirstName' || target.id === 'bookingLastName' ||
+          target.id === 'bookingEmail' || target.id === 'bookingPhone') {
+        if (bookingState.step === 4) renderReviewContact();
+      }
+    }
+
+    document.addEventListener('click', handleWizardClick);
+    document.addEventListener('change', handleWizardChange);
+
+    function initBookingWizard(isReset) {
+      var now = new Date();
+      bookingState.calendarMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      bookingState.step = 1;
+      bookingState.maxStepReached = 1;
+      bookingState.category = 'it';
+      if (isReset !== false) {
+        bookingState.selectedSubs = {};
+        bookingState.selectedServices = {};
+        bookingState.projectNotes = {};
+        bookingState.selectedTime = '02:00 PM';
+        bookingState.meetingFormat = 'Online Video Call';
+      }
+      bookingState.selectedDate = dateToKey(new Date(now.getFullYear(), now.getMonth(), Math.max(1, now.getDate() + 1)));
+
+      renderBookingCategories();
+      renderBookingSubsidiaries();
+      renderBookingCalendar();
+      renderBookingTimeSlots();
+      document.querySelectorAll('#bookingFormatOptions .kgc-format-btn').forEach(function (b) {
+        b.classList.toggle('is-active', b.getAttribute('data-format') === bookingState.meetingFormat);
+      });
+      showBookingStep(1);
+    }
+
     // ── Open booking modal (pre-filled with session data) ────────────────
     window.openBookingDirect = function (companyName) {
       var nameEl  = document.getElementById('bookingFullName');
+      var firstEl = document.getElementById('bookingFirstName');
+      var lastEl  = document.getElementById('bookingLastName');
       var emailEl = document.getElementById('bookingEmail');
+
       if (nameEl)  nameEl.value  = portalState.userName  || '';
-      if (emailEl) emailEl.value = portalState.userEmail || '';
-      var s1 = document.getElementById('bookingStep1');
-      var s2 = document.getElementById('bookingStep2');
-      if (s1) s1.classList.remove('hidden');
-      if (s2) s2.classList.add('hidden');
-      document.querySelectorAll('input[name="subsidiary"]').forEach(function (cb) { cb.checked = false; });
-      document.querySelectorAll('input[name="companyService"]').forEach(function (cb) { cb.checked = false; });
-      document.querySelectorAll('.subsidiary-services').forEach(function (panel) { panel.classList.add('hidden'); });
+      if (firstEl && !firstEl.value) firstEl.value = extractFirstName(portalState.userName);
+      if (lastEl && !lastEl.value) lastEl.value = extractLastName(portalState.userName);
+      if (emailEl && !emailEl.value) emailEl.value = portalState.userEmail || '';
+
+      initBookingWizard(true);
 
       if (companyName && typeof window.preselectCompanyInBooking === 'function') {
         window.preselectCompanyInBooking(companyName);
@@ -3449,6 +4791,15 @@
 
     window.getSelectedServicesByCompany = function () {
       var result = {};
+      var names = selectedSubsidiaryNames();
+      if (names.length) {
+        names.forEach(function (company) {
+          var items = bookingState.selectedServices[company] || [];
+          if (items.length) result[company] = items.slice();
+        });
+        if (Object.keys(result).length) return result;
+      }
+      // Fallback for any DOM checkboxes (safety net)
       document.querySelectorAll('input[name="companyService"]:checked').forEach(function (checkbox) {
         var company = checkbox.getAttribute('data-company');
         if (!company) return;
@@ -3463,9 +4814,6 @@
         var selection = localStorage.getItem('kgc_pending_booking_company');
         if (!selection) return false;
         localStorage.removeItem('kgc_pending_booking_company');
-        if (typeof window.preselectCompanyInBooking === 'function') {
-          window.preselectCompanyInBooking(selection);
-        }
         window.openBookingDirect(selection);
         return true;
       } catch (err) {
@@ -3475,27 +4823,29 @@
 
     window.preselectCompanyInBooking = function (companyName) {
       if (!companyName) return false;
-      var normalized = String(companyName).trim();
-      var matches = Array.from(document.querySelectorAll('input[name="subsidiary"]')).filter(function (input) {
-        return String(input.value || '').trim().toLowerCase() === normalized.toLowerCase() ||
-          String(input.getAttribute('data-company') || '').trim().toLowerCase() === normalized.toLowerCase() ||
-          String(input.getAttribute('data-company') || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-') === normalized.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      var normalized = String(companyName).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      var match = null;
+      BOOKING_CATALOG.subsidiaries.forEach(function (s) {
+        var nameSlug = s.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        var shortSlug = nameSlug.replace(/-inc\.?$/, '').replace(/-corp\.?$/, '').replace(/-co\.?$/, '');
+        if (nameSlug === normalized || shortSlug === normalized ||
+            s.name.toLowerCase() === String(companyName).trim().toLowerCase() ||
+            s.id === normalized) {
+          match = s;
+        }
       });
-      if (!matches.length) return false;
-      var target = matches[0];
-      target.checked = true;
-      var entry = target.closest('.subsidiary-entry');
-      if (entry) {
-        var panel = entry.querySelector('.subsidiary-services');
-        if (panel) panel.classList.remove('hidden');
-        var boxes = entry.querySelectorAll('input[name="companyService"]');
-        boxes.forEach(function (box) { box.checked = false; });
-      }
+      if (!match) return false;
+      bookingState.category = match.category;
+      bookingState.selectedSubs[match.name] = true;
+      if (!bookingState.selectedServices[match.name]) bookingState.selectedServices[match.name] = [];
+      renderBookingCategories();
+      renderBookingSubsidiaries();
+      renderBookingFooter();
       return true;
     };
 
     window.formatServicesSummary = function (services) {
-      if (!services || typeof services !== 'object' || !Object.keys(services).length) return '—';
+      if (!services || typeof services !== 'object' || !Object.keys(services).length) return '\u2014';
       return Object.keys(services).map(function (company) {
         var items = Array.isArray(services[company]) ? services[company] : [];
         if (!items.length) return null;
@@ -3503,108 +4853,99 @@
       }).filter(Boolean).join(' | ');
     };
 
-    window.toggleSubsidiaryServicePanels = function () {
-      document.querySelectorAll('.subsidiary-entry').forEach(function (entry) {
-        var input = entry.querySelector('input[name="subsidiary"]');
-        var panel = entry.querySelector('.subsidiary-services');
-        if (!input || !panel) return;
-        panel.classList.toggle('hidden', !input.checked);
-      });
-    };
-
+    window.toggleSubsidiaryServicePanels = function () { /* retained for backward compatibility */ };
     window.validateSelectedServiceGroups = function () {
       var missing = [];
-      document.querySelectorAll('.subsidiary-entry').forEach(function (entry) {
-        var checkbox = entry.querySelector('input[name="subsidiary"]');
-        var panel = entry.querySelector('.subsidiary-services');
-        var selectedCompanyServices = entry.querySelectorAll('input[name="companyService"]:checked');
-        if (!checkbox || !panel) return;
-        if (checkbox.checked && selectedCompanyServices.length === 0) {
-          missing.push({
-            company: checkbox.value,
-            panel: panel
-          });
-        }
+      selectedSubsidiaryNames().forEach(function (company) {
+        if (!(bookingState.selectedServices[company] || []).length) missing.push(company);
       });
-
-      if (missing.length) {
-        var first = missing[0];
-        if (first && first.panel) {
-          first.panel.classList.remove('hidden');
-          first.panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          first.panel.style.border = '1px solid rgba(248, 113, 113, 0.9)';
-          first.panel.style.boxShadow = '0 0 0 1px rgba(248, 113, 113, 0.5)';
-          setTimeout(function () {
-            if (first && first.panel) {
-              first.panel.style.border = '';
-              first.panel.style.boxShadow = '';
-            }
-          }, 2200);
-        }
-        return false;
-      }
-
-      return true;
-    };
-
-    document.addEventListener('change', function (event) {
-      if (event.target && event.target.name === 'subsidiary') {
-        window.toggleSubsidiaryServicePanels();
-      }
-    });
-
-    // ── Booking wizard steps ────────────────────────────────────────────
-    window.nextBookingStep = function () {
-      var checked = document.querySelectorAll('input[name="subsidiary"]:checked');
-      if (checked.length === 0) { window.showToast('\u26a0\ufe0f Please select at least one subsidiary.', 'error'); return; }
-      var valid = window.validateSelectedServiceGroups();
-      if (!valid) {
-        window.showToast('\u26a0\ufe0f Please select at least one specific service for each chosen company before submitting.', 'error');
-        return;
-      }
-      document.getElementById('bookingStep1').classList.add('hidden');
-      document.getElementById('bookingStep2').classList.remove('hidden');
-    };
-    window.prevBookingStep = function () {
-      document.getElementById('bookingStep2').classList.add('hidden');
-      document.getElementById('bookingStep1').classList.remove('hidden');
+      return missing.length === 0;
     };
 
     // ── Submit booking → POST to /api/bookings ───────────────────────────
     window.submitBooking = async function (e) {
       e.preventDefault();
       var form = e.target;
-      var subs = Array.from(document.querySelectorAll('input[name="subsidiary"]:checked')).map(function (c) { return c.value; });
-      if (!subs.length) { window.showToast('\u26a0\ufe0f Please select at least one subsidiary.', 'error'); return; }
 
-      var selectedPaymentMethod = Array.from(document.querySelectorAll('input[name="paymentMethod"]:checked')).map(function (c) { return c.value; })[0] || '';
-      if (!selectedPaymentMethod) {
-        e.preventDefault();
-        window.showToast('\u26a0\ufe0f Please select a payment method to proceed.', 'error');
+      if (bookingState.step !== 4) { window.nextBookingStep(); return; }
+
+      var subs = selectedSubsidiaryNames();
+      if (!subs.length) {
+        window.showToast('\u26a0\ufe0f Please select at least one subsidiary.', 'error');
+        showBookingStep(1);
+        return;
+      }
+      if (!window.validateSelectedServiceGroups()) {
+        window.showToast('\u26a0\ufe0f Please select at least one specific service for each chosen company.', 'error');
+        showBookingStep(1);
         return;
       }
 
-      var isValidGroupSelection = window.validateSelectedServiceGroups();
-      if (!isValidGroupSelection) {
-        e.preventDefault();
-        window.showToast('\u26a0\ufe0f Please select at least one specific service for each chosen company before submitting.', 'error');
+      var firstEl = document.getElementById('bookingFirstName');
+      var lastEl  = document.getElementById('bookingLastName');
+      var emailEl = document.getElementById('bookingEmail');
+      var phoneEl = document.getElementById('bookingPhone');
+      var companyEl = document.getElementById('bookingCompany');
+      var detailsEl = document.getElementById('bookingProjectDetails');
+
+      var fullName = ((firstEl && firstEl.value.trim()) || '') + ' ' + ((lastEl && lastEl.value.trim()) || '');
+      fullName = fullName.trim();
+      var email = (emailEl && emailEl.value.trim().toLowerCase()) || '';
+
+      if (!fullName || !email) {
+        window.showToast('\u26a0\ufe0f Please complete your name and email.', 'error');
+        showBookingStep(3);
         return;
       }
+
+      var paymentMethod = 'Corporate Invoice / COD';
+      var checkedPayment = Array.from(document.querySelectorAll('input[name="paymentMethod"]:checked')).map(function (c) { return c.value; })[0];
+      if (checkedPayment) paymentMethod = checkedPayment;
 
       var selectedServices = window.getSelectedServicesByCompany();
+      var notesParts = [];
+
+      // The API/Supabase stores `date` as a real date column, so send ISO YYYY-MM-DD.
+      // The human-readable schedule detail rides along inside notes instead.
+      var timeLabel = bookingState.selectedTime || '';
+      var formatLabel = bookingState.meetingFormat || '';
+      var isoDate = bookingState.selectedDate || '';
+      var companyLabel = (companyEl && companyEl.value.trim()) || '';
+
+      notesParts.push('Preferred schedule: ' + formatDisplayDate(bookingState.selectedDate) +
+        (timeLabel ? ' at ' + timeLabel : '') +
+        (formatLabel ? ' · ' + formatLabel : '') +
+        (companyLabel ? ' · ' + companyLabel : ''));
+
+      var generalDetails = (detailsEl && detailsEl.value.trim()) || '';
+      if (generalDetails) notesParts.push('Project details: ' + generalDetails);
+
+      Object.keys(bookingState.projectNotes).forEach(function (company) {
+        var note = (bookingState.projectNotes[company] || '').trim();
+        if (note) notesParts.push(company + ': ' + note);
+      });
+      var combinedNotes = notesParts.join('\n');
+
       var payload = {
-        name:        form.fullName.value.trim(),
-        email:       form.email.value.trim().toLowerCase(),
-        phone:       form.phone.value.trim(),
-        date:        form.serviceDate.value,
+        name:        fullName,
+        email:       email,
+        phone:       (phoneEl && phoneEl.value.trim()) || '',
+        date:        isoDate,
         subsidiaries: subs,
         services:    selectedServices,
-        notes:       form.notes.value.trim(),
-        paymentMethod: selectedPaymentMethod
+        notes:       combinedNotes,
+        paymentMethod: paymentMethod,
+        meetingFormat: formatLabel,
+        timeSlot:    timeLabel,
+        duration:    totalDuration()
       };
 
-      var submitBtn = form.querySelector('button[type="submit"]');
-      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting...'; }
+      var serviceDateEl = document.getElementById('bookingServiceDate');
+      if (serviceDateEl) serviceDateEl.value = isoDate;
+
+      var submitBtn = document.getElementById('bookingNextBtn');
+      var originalLabel = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) { submitBtn.disabled = true; }
 
       try {
         var response = await fetch('/api/bookings', {
@@ -3649,7 +4990,7 @@
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(window.formatServicesSummary(booking.services || {}) || (booking.subsidiaries || []).join(', ')) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml((booking.subsidiaries || []).join(', ')) + '</td>' +
             '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(bookingTimeDisplay) + '</td>' +
-            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(booking.paymentMethod || '—') + '</td>' +
+            '<td class="py-3 px-4 text-gray-300 text-sm">' + escHtml(booking.paymentMethod || '\u2014') + '</td>' +
             '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-bold badge-pending">' + escHtml(booking.status || 'Pending') + '</span></td>' +
             '<td class="py-3 px-4 text-gray-400 text-xs font-mono">' + escHtml(booking.id) + '</td>' +
             '<td class="py-3 px-4">' + renderBookingActions(booking) + '</td>' +
@@ -3669,9 +5010,10 @@
         console.error('Booking submission error:', err);
         window.showToast('\u274c Failed to submit booking: ' + err.message, 'error');
       } finally {
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Confirm & Submit Request'; }
+        if (submitBtn) { submitBtn.disabled = false; if (originalLabel) submitBtn.innerHTML = originalLabel; }
       }
     };
+
 
     // ── Auth role toggle ────────────────────────────────────────────────
     window.syncAuthSignupVisibility = function () {
