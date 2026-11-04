@@ -110,5 +110,25 @@
     "hytDonation": false,
     "status": "Pending",
     "timestamp": "2026-09-23T02:58:52.427Z"
+  },
+  {
+    "id": "BK1793762869332",
+    "name": "Generie LImcoooooooooooooooooo",
+    "email": "client@kgc.ph",
+    "phone": "096241750040",
+    "date": "2026-11-05",
+    "subsidiaries": [
+      "Brains Infinite Innovations Inc."
+    ],
+    "services": {
+      "Brains Infinite Innovations Inc.": [
+        "Custom Software & App Development"
+      ]
+    },
+    "notes": "Preferred schedule: Thu, November 5, 2026 at 02:00 PM · Online Video Call · jabi",
+    "paymentMethod": "Corporate Invoice / COD",
+    "status": "Pending",
+    "createdAt": "2026-11-04T03:27:49.332Z",
+    "timestamp": "2026-11-04T03:27:49.332Z"
   }
 ]

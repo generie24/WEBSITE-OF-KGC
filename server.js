@@ -154,14 +154,26 @@ async function getUsersStore() {
 }
 
 async function persistBooking(booking) {
-  if (supabaseStore.enabled) return supabaseStore.insertBooking(booking);
+  if (supabaseStore.enabled) {
+    try {
+      return await supabaseStore.insertBooking(booking);
+    } catch (error) {
+      console.warn('Supabase booking write failed; using JSON fallback:', error.message);
+    }
+  }
   bookingsStore.push(booking);
   saveBookingsToDisk();
   return booking;
 }
 
 async function persistBookingUpdate(id, changes) {
-  if (supabaseStore.enabled) return supabaseStore.updateBooking(id, changes);
+  if (supabaseStore.enabled) {
+    try {
+      return await supabaseStore.updateBooking(id, changes);
+    } catch (error) {
+      console.warn('Supabase booking update failed; using JSON fallback:', error.message);
+    }
+  }
   const booking = bookingsStore.find((entry) => entry.id === id);
   if (booking) {
     Object.assign(booking, changes);
@@ -171,14 +183,26 @@ async function persistBookingUpdate(id, changes) {
 }
 
 async function persistUser(user) {
-  if (supabaseStore.enabled) return supabaseStore.insertUser(user);
+  if (supabaseStore.enabled) {
+    try {
+      return await supabaseStore.insertUser(user);
+    } catch (error) {
+      console.warn('Supabase user write failed; using JSON fallback:', error.message);
+    }
+  }
   usersStore.push(user);
   saveUsersToDisk();
   return user;
 }
 
 async function persistUserUpdate(id, changes) {
-  if (supabaseStore.enabled) return supabaseStore.updateUser(id, changes);
+  if (supabaseStore.enabled) {
+    try {
+      return await supabaseStore.updateUser(id, changes);
+    } catch (error) {
+      console.warn('Supabase user update failed; using JSON fallback:', error.message);
+    }
+  }
   const user = usersStore.find((entry) => entry.id === id);
   if (user) {
     Object.assign(user, changes);
