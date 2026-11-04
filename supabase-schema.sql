@@ -175,6 +175,18 @@ create index if not exists bookings_payment_method_id_idx on public.bookings (pa
 create index if not exists bookings_status_idx on public.bookings (status);
 create index if not exists users_role_status_idx on public.users (role, status);
 
+-- One account per email, regardless of letter case.
+-- The column-level UNIQUE above is case-SENSITIVE, so "User@x.com" and
+-- "user@x.com" could both exist; the app then compared them case-insensitively
+-- and reported a duplicate for what looked like a brand-new address.
+-- Collapse any such pairs first (keeping one row per email), then enforce it.
+delete from public.users a
+using public.users b
+where lower(a.email) = lower(b.email)
+  and a.ctid > b.ctid;
+
+create unique index if not exists users_email_lower_uidx on public.users (lower(email));
+
 alter table public.users enable row level security;
 alter table public.payment_methods enable row level security;
 alter table public.bookings enable row level security;

@@ -32,5 +32,41 @@
     "isApproved": false,
     "status": "Pending Approval",
     "createdAt": "2026-09-23T05:18:22.682Z"
+  },
+  {
+    "id": "USR1793768148841",
+    "role": "client",
+    "name": "gen licmo",
+    "company": "mcdo",
+    "email": "limco.generie.palang@gmail.com",
+    "phone": "639624175040",
+    "password": "password",
+    "isApproved": true,
+    "status": "Approved",
+    "createdAt": "2026-11-04T04:55:48.842Z"
+  },
+  {
+    "id": "USR1793768148841",
+    "role": "client",
+    "name": "gen licmo",
+    "company": "mcdo",
+    "email": "limco.generie.palang@gmail.com",
+    "phone": "639624175040",
+    "password": "password",
+    "isApproved": true,
+    "status": "Approved",
+    "createdAt": "2026-11-04T04:55:48.842Z"
+  },
+  {
+    "id": "USR1793770601388",
+    "role": "client",
+    "name": "generie",
+    "company": "generie",
+    "email": "genlimco@gmail.com",
+    "phone": "639624175040",
+    "password": "password",
+    "isApproved": true,
+    "status": "Approved",
+    "createdAt": "2026-11-04T05:36:41.388Z"
   }
 ]

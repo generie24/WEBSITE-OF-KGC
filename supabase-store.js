@@ -50,6 +50,15 @@ function createSupabaseStore() {
   return {
     enabled: true,
 
+    async findUsersByEmail(email) {
+      const emailPattern = String(email || '').trim().toLowerCase().replace(/[\\%_]/g, '\\$&');
+      const { data, error } = await client.from('users')
+        .select('id, role, name, company, email, phone, password, is_approved, status, created_at')
+        .ilike('email', emailPattern);
+      if (error) throw error;
+      return (data || []).map(mapUser);
+    },
+
     async listUsers() {
       const { data, error } = await client.from('users').select('*').order('created_at', { ascending: true });
       if (error) throw error;
@@ -84,15 +93,21 @@ function createSupabaseStore() {
 
     // Upsert a client row by email after Supabase Auth signup.
     async upsertClient(user) {
-      const existing = await client.from('users').select('id').eq('email', user.email).maybeSingle();
+      // Postgres `=` is case-SENSITIVE, so "User@x.com" would miss an existing
+      // "user@x.com" row, then the insert would fail the unique constraint.
+      const email = String(user.email || '').trim().toLowerCase();
+      const emailPattern = email.replace(/[\\%_]/g, '\\$&');
+      const existing = await client.from('users').select('id').ilike('email', emailPattern).limit(1);
       if (existing.error) throw existing.error;
+      const existingRow = (existing.data || [])[0] || null;
 
+      // Never include the primary key in an UPDATE: changing users.id would break
+      // the bookings.user_id foreign key that points at it.
       const payload = {
-        id: user.id,
         role: 'client',
         name: user.name,
         company: user.company || '',
-        email: user.email,
+        email: email,
         phone: user.phone || '',
         password: '',
         is_approved: true,
@@ -100,15 +115,19 @@ function createSupabaseStore() {
         created_at: user.createdAt
       };
 
-      if (existing.data) {
-        const { data, error } = await client.from('users').update(payload).eq('id', existing.data.id).select().single();
+      if (existingRow) {
+        const { data, error } = await client.from('users').update(payload).eq('id', existingRow.id).select().single();
         if (error) throw error;
-        return mapUser(data);
+        // created:false tells the caller this was an update, not a new account —
+        // without it the "welcome" email fired again on every profile sync.
+        return { user: mapUser(data), created: false };
       }
 
-      const { data, error } = await client.from('users').insert(payload).select().single();
+      const { data, error } = await client.from('users')
+        .insert(Object.assign({ id: user.id || ('USR' + Date.now()) }, payload))
+        .select().single();
       if (error) throw error;
-      return mapUser(data);
+      return { user: mapUser(data), created: true };
     },
 
     async updateUser(id, changes) {

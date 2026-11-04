@@ -5425,6 +5425,32 @@
       }
     };
 
+    var runLoginHandler = window.handleLogin;
+    window.handleLogin = async function (e) {
+      var form = e.target;
+      var submitButton = form.querySelector('button[type="submit"]');
+      if (submitButton && submitButton.disabled) return;
+
+      var originalLabel = submitButton ? submitButton.innerHTML : '';
+      var originalBusy = submitButton ? submitButton.getAttribute('aria-busy') : null;
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.setAttribute('aria-busy', 'true');
+        submitButton.textContent = 'Signing in...';
+      }
+
+      try {
+        await runLoginHandler(e);
+      } finally {
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.innerHTML = originalLabel;
+          if (originalBusy === null) submitButton.removeAttribute('aria-busy');
+          else submitButton.setAttribute('aria-busy', originalBusy);
+        }
+      }
+    };
+
     // ── Register handler ──────────────────────────────────────────────
     window.handleRegister = async function (e) {
       e.preventDefault();
@@ -5511,6 +5537,13 @@
               window.showToast('\u274c ' + localSignup.error, 'error');
               return;
             }
+          }
+
+          // Supabase Auth reports a duplicate with its own wording; show the same
+          // message the rest of the app uses so the cause is never ambiguous.
+          if (/already registered|already exists|user already/i.test(String(error.message || ''))) {
+            window.showToast('\u274c An account with this email already exists. Try signing in instead.', 'error');
+            return;
           }
 
           window.showToast(error.message || 'Unable to create your account.', 'error');

@@ -2,6 +2,10 @@ import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import fs from 'fs';
 import { config } from 'dotenv';
+const mailer = require('./mailer') as {
+  sendWelcomeEmail: (user: any) => Promise<unknown>;
+  sendBookingConfirmation: (booking: any) => Promise<unknown>;
+};
 
 // Load environment variables
 config();
@@ -9,6 +13,15 @@ config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || 'localhost';
+
+function queueEmail(label: string, send: () => Promise<unknown>) {
+  setImmediate(() => {
+    Promise.resolve()
+      .then(send)
+      .then(() => console.log(`✉️  ${label} email sent`))
+      .catch((error: Error) => console.warn(`Email delivery failed (${label}):`, error.message));
+  });
+}
 
 const BOOKINGS_FILE = path.join(__dirname, 'bookings.json');
 const USERS_FILE = path.join(__dirname, 'users.json');
@@ -237,6 +250,8 @@ app.post('/api/bookings', (req: Request, res: Response) => {
   bookingsStore.push(booking);
   saveBookingsToDisk();
 
+  queueEmail(`booking confirmation to ${booking.email}`, () => mailer.sendBookingConfirmation(booking));
+
   console.log(`✅ New booking saved: ${booking.id} by ${booking.name} (${booking.email})`);
   return res.status(201).json({ success: true, data: booking });
 });
@@ -298,6 +313,8 @@ app.post('/api/auth/register', (req: Request, res: Response) => {
 
   usersStore.push(newUser);
   saveUsersToDisk();
+
+  queueEmail(`welcome to ${newUser.email}`, () => mailer.sendWelcomeEmail(newUser));
 
   console.log(`✅ New user registered: ${newUser.email} (${newUser.role})`);
   return res.status(201).json({

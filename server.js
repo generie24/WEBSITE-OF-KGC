@@ -14,6 +14,8 @@ try {
   console.log('dotenv not found, using default values');
 }
 
+const mailer = require('./mailer');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || 'localhost';
@@ -75,8 +77,13 @@ function loadUsersFromDisk() {
     const sourceFile = fs.existsSync(USERS_FILE) ? USERS_FILE : LEGACY_USERS_FILE;
     if (fs.existsSync(sourceFile)) {
       const raw = fs.readFileSync(sourceFile, 'utf8');
-      usersStore = JSON.parse(raw) || [];
-      if (sourceFile === LEGACY_USERS_FILE && !fs.existsSync(USERS_FILE)) {
+      const parsed = JSON.parse(raw) || [];
+      usersStore = dedupeUsers(parsed);
+      if (usersStore.length !== parsed.length) {
+        console.warn(`⚠️  Removed ${parsed.length - usersStore.length} duplicate account row(s) from ${path.basename(sourceFile)}`);
+      }
+      if ((sourceFile === LEGACY_USERS_FILE && !fs.existsSync(USERS_FILE)) ||
+          usersStore.length !== parsed.length) {
         saveUsersToDisk();
       }
       console.log(`👤 Loaded ${usersStore.length} registered user(s) from ${path.basename(sourceFile)}`);
@@ -106,12 +113,60 @@ function getApprovalStatus(user) {
   return user.isApproved === true || user.status === 'Approved' || user.status === 'Active';
 }
 
-function findUserByCredentials(email, password, role = 'client') {
+// ── Email identity helpers ───────────────────────────────────────────────────
+// Every email comparison must go through normalizeEmail() so that
+// "User@Email.com ", "user@email.com" and "USER@EMAIL.COM" are one identity.
+function normalizeEmail(value) {
+  return String(value == null ? '' : value).trim().toLowerCase();
+}
+
+// Rows that must NOT block a new registration: blank/garbage emails left behind
+// by older imports, plus accounts that were explicitly rejected, deleted or
+// archived. These are the "phantom records" that produced false duplicates.
+function isBlockingAccount(user) {
+  if (!user) return false;
+  if (normalizeEmail(user.email) === '') return false;   // a blank email can never collide
+  const status = String(user.status || '').trim().toLowerCase();
+  if (status === 'rejected' || status === 'deleted' || status === 'archived') return false;
+  return true;
+}
+
+// Returns the existing live account for an email, or null. Case-insensitive.
+function findAccountByEmail(email, users) {
+  const target = normalizeEmail(email);
+  if (!target) return null;
+  const list = Array.isArray(users) ? users : [];
+  return list.find((user) => isBlockingAccount(user) && normalizeEmail(user.email) === target) || null;
+}
+
+// Collapse rows that share an email (case-insensitive). Older versions pushed the
+// same object twice per registration, which is how duplicates got into the file.
+function dedupeUsers(list) {
+  const seen = new Map();
+  (Array.isArray(list) ? list : []).forEach((user) => {
+    if (!user) return;
+    const key = normalizeEmail(user.email) || ('id:' + String(user.id || ''));
+    const current = seen.get(key);
+    if (!current) { seen.set(key, user); return; }
+    // Keep the live/approved row when two copies disagree.
+    if (!getApprovalStatus(current) && getApprovalStatus(user)) seen.set(key, user);
+  });
+  return Array.from(seen.values());
+}
+
+function isUniqueViolation(error) {
+  if (!error) return false;
+  const code = String(error.code || error.status || '');
+  const message = String(error.message || '');
+  return code === '23505' || /duplicate key value|unique constraint|already exists/i.test(message);
+}
+
+function findUserByCredentials(email, password, role = 'client', users = usersStore) {
   const normalizedEmail = String(email || '').trim().toLowerCase();
   const normalizedPassword = String(password || '');
   const normalizedRole = normalizeRole(role);
 
-  const registeredUser = usersStore.find((u) => {
+  const registeredUser = users.find((u) => {
     return String(u.email || '').trim().toLowerCase() === normalizedEmail &&
       String(u.password || '') === normalizedPassword &&
       normalizeRole(u.role || 'client') === normalizedRole;
@@ -126,10 +181,34 @@ function findUserByCredentials(email, password, role = 'client') {
   }) || null;
 }
 
+async function getUsersByEmail(email) {
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  if (supabaseStore.enabled) {
+    try {
+      return await supabaseStore.findUsersByEmail(normalizedEmail);
+    } catch (error) {
+      console.warn('Supabase user lookup failed; using JSON fallback:', error.message);
+    }
+  }
+  return usersStore.filter((user) =>
+    String(user.email || '').trim().toLowerCase() === normalizedEmail
+  );
+}
+
 loadBookingsFromDisk();
 loadUsersFromDisk();
 
 const supabaseStore = createSupabaseStore();
+
+function queueEmail(label, send) {
+  // Keep SMTP/network work off the HTTP response path and handle every failure.
+  setImmediate(() => {
+    Promise.resolve()
+      .then(send)
+      .then(() => console.log(`✉️  ${label} email sent`))
+      .catch((error) => console.warn(`Email delivery failed (${label}):`, error.message));
+  });
+}
 
 async function getBookingsStore() {
   if (supabaseStore.enabled) {
@@ -153,15 +232,27 @@ async function getUsersStore() {
   return usersStore;
 }
 
+// Insert or replace a booking in the in-memory store, keyed by id, so one
+// submission can never become two rows (and therefore two admin table entries).
+function upsertBookingInMemory(booking) {
+  if (!booking) return null;
+  const idx = bookingsStore.findIndex((entry) => entry && entry.id === booking.id);
+  if (idx >= 0) bookingsStore[idx] = Object.assign({}, bookingsStore[idx], booking);
+  else bookingsStore.push(booking);
+  return booking;
+}
+
 async function persistBooking(booking) {
   if (supabaseStore.enabled) {
     try {
-      return await supabaseStore.insertBooking(booking);
+      const saved = await supabaseStore.insertBooking(booking);
+      upsertBookingInMemory(saved);
+      return saved;
     } catch (error) {
       console.warn('Supabase booking write failed; using JSON fallback:', error.message);
     }
   }
-  bookingsStore.push(booking);
+  upsertBookingInMemory(booking);
   saveBookingsToDisk();
   return booking;
 }
@@ -182,15 +273,30 @@ async function persistBookingUpdate(id, changes) {
   return booking;
 }
 
+// Insert or replace a user in the in-memory store, keyed by id, so a single
+// registration can never end up as two rows.
+function upsertUserInMemory(user) {
+  if (!user) return null;
+  const idx = usersStore.findIndex((entry) => entry && entry.id === user.id);
+  if (idx >= 0) usersStore[idx] = Object.assign({}, usersStore[idx], user);
+  else usersStore.push(user);
+  return user;
+}
+
 async function persistUser(user) {
   if (supabaseStore.enabled) {
     try {
-      return await supabaseStore.insertUser(user);
+      const saved = await supabaseStore.insertUser(user);
+      upsertUserInMemory(saved);
+      return saved;
     } catch (error) {
+      // A genuine duplicate must reach the caller as a 409. Falling through to the
+      // JSON store here would silently "succeed" and create a second account.
+      if (isUniqueViolation(error)) throw error;
       console.warn('Supabase user write failed; using JSON fallback:', error.message);
     }
   }
-  usersStore.push(user);
+  upsertUserInMemory(user);
   saveUsersToDisk();
   return user;
 }
@@ -441,13 +547,25 @@ app.post('/api/bookings', async (req, res) => {
       services,
       notes: String(body.notes || '').trim(),
       paymentMethod,
+      // Kept for the confirmation email. Not persisted as columns (the Supabase
+      // insert whitelists its columns), so they are merged back in below.
+      timeSlot: String(body.timeSlot || '').trim(),
+      meetingFormat: String(body.meetingFormat || '').trim(),
+      duration: String(body.duration || '').trim(),
       status: 'Pending',
       createdAt: bookingTime,
       timestamp: new Date().toISOString()
     };
 
+    // persistBooking() already keeps bookingsStore in sync — pushing again here
+    // was writing every submission twice.
     const savedBooking = await persistBooking(booking);
-    bookingsStore.push(savedBooking);
+
+    // savedBooking carries the canonical id/status; booking carries the schedule
+    // fields the confirmation email needs.
+    queueEmail(`booking confirmation to ${savedBooking.email}`, () =>
+      mailer.sendBookingConfirmation(Object.assign({}, booking, savedBooking))
+    );
 
     console.log(`✅ New booking saved: ${booking.id} by ${booking.name} (${booking.email})`);
     return res.status(200).json({
@@ -525,7 +643,7 @@ app.post('/api/users/sync', async (req, res) => {
 
   try {
     if (supabaseStore.enabled) {
-      const result = await supabaseStore.upsertClient({
+      const { user: result, created } = await supabaseStore.upsertClient({
         id: body.id || null,
         email: email,
         name: String(body.name || '').trim(),
@@ -537,11 +655,18 @@ app.post('/api/users/sync', async (req, res) => {
         status: 'Approved',
         createdAt: new Date().toISOString()
       });
+      // Only welcome a genuinely new account. This endpoint doubles as a profile
+      // sync, so an unconditional send re-welcomed the client on every login.
+      if (created) {
+        queueEmail(`welcome to ${result.email}`, () => mailer.sendWelcomeEmail(result));
+      }
       return res.json({ success: true, data: result });
     }
 
     // JSON fallback
-    const existingIdx = usersStore.findIndex((u) => String(u.email || '').toLowerCase() === email);
+    // Compare through normalizeEmail() so a stored "user@x.com " (stray space)
+    // cannot create a second row for the same address.
+    const existingIdx = usersStore.findIndex((u) => normalizeEmail(u.email) === email);
     const userRow = {
       id: body.id || 'USR' + Date.now(),
       role: 'client',
@@ -554,12 +679,16 @@ app.post('/api/users/sync', async (req, res) => {
       status: 'Approved',
       createdAt: new Date().toISOString()
     };
-    if (existingIdx >= 0) {
-      Object.assign(usersStore[existingIdx], userRow, { id: usersStore[existingIdx].id });
-    } else {
+    const isNewAccount = existingIdx < 0;
+    if (isNewAccount) {
       usersStore.push(userRow);
+    } else {
+      Object.assign(usersStore[existingIdx], userRow, { id: usersStore[existingIdx].id });
     }
     saveUsersToDisk();
+    if (isNewAccount) {
+      queueEmail(`welcome to ${userRow.email}`, () => mailer.sendWelcomeEmail(userRow));
+    }
     res.json({ success: true, data: userRow });
   } catch (error) {
     console.error('User sync failed:', error);
@@ -619,65 +748,70 @@ app.patch('/api/auth/admin-requests/:id', async (req, res) => {
 app.post('/api/auth/register', async (req, res) => {
   const { name, company, email, phone, password, role = 'client' } = req.body || {};
 
-  if (!name || !email || !password) {
+  // Normalise ONCE and use only this value from here on.
+  const normalizedEmail = normalizeEmail(email);
+  const trimmedName = String(name || '').trim();
+
+  if (!trimmedName || !normalizedEmail || !password) {
     return res.status(400).json({
       success: false,
       error: 'Name, email, and password are required.'
     });
   }
 
-  const normalizedRole = normalizeRole(role);
-  const normalizedEmail = String(email).trim().toLowerCase();
-  const currentUsers = await getUsersStore();
-  const userExists = currentUsers.some((u) => String(u.email || '').trim().toLowerCase() === normalizedEmail);
-  if (userExists) {
-    return res.status(409).json({
+  // A malformed address would otherwise be stored and later match nothing, or
+  // collide with another blank row. Reject it up front.
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    return res.status(400).json({
       success: false,
-      error: 'An account with this email already exists.'
+      error: 'Please enter a valid email address.'
     });
   }
 
-  const isAdminRequest = normalizedRole === 'admin';
-  const newUser = {
-    id: 'USR' + Date.now(),
-    role: normalizedRole,
-    name: String(name).trim(),
-    company: String(company || '').trim(),
-    email: normalizedEmail,
-    phone: String(phone || '').trim(),
-    password: String(password),
-    isApproved: !isAdminRequest,
-    status: isAdminRequest ? 'Pending Approval' : 'Approved',
-    createdAt: new Date().toISOString()
-  };
+  const normalizedRole = normalizeRole(role);
 
-  const savedUser = await persistUser(newUser);
-  usersStore.push(savedUser);
+  try {
+    // Compare against a de-duplicated snapshot so duplicate rows written by older
+    // versions cannot influence the result.
+    const currentUsers = dedupeUsers(await getUsersStore());
+    const existing = findAccountByEmail(normalizedEmail, currentUsers);
 
-  console.log(`✅ New user registered: ${newUser.email} (${newUser.role}) -> ${newUser.status}`);
+    if (existing) {
+      // Log exactly which row matched: this is what makes a phantom record obvious.
+      console.warn(
+        `⛔ Duplicate email blocked: ${normalizedEmail} matched id=${existing.id} ` +
+        `role=${existing.role} status=${existing.status || 'n/a'}`
+      );
+      return res.status(409).json({
+        success: false,
+        error: 'An account with this email already exists.'
+      });
+    }
 
-  if (isAdminRequest) {
-    return res.status(201).json({
-      success: true,
-      requiresApproval: true,
-      message: 'Admin account request submitted! Your account requires authorization from an existing Admin before you can log in.',
-      data: {
-        id: savedUser.id,
-        role: savedUser.role,
-        name: savedUser.name,
-        company: savedUser.company,
-        email: savedUser.email,
-        phone: savedUser.phone,
-        isApproved: savedUser.isApproved,
-        status: savedUser.status
-      }
-    });
-  }
+    const isAdminRequest = normalizedRole === 'admin';
+    const newUser = {
+      // Random suffix so two sign-ups in the same millisecond cannot collide.
+      id: 'USR' + Date.now() + Math.random().toString(36).slice(2, 7).toUpperCase(),
+      role: normalizedRole,
+      name: trimmedName,
+      company: String(company || '').trim(),
+      email: normalizedEmail,
+      phone: String(phone || '').trim(),
+      password: String(password),
+      isApproved: !isAdminRequest,
+      status: isAdminRequest ? 'Pending Approval' : 'Approved',
+      createdAt: new Date().toISOString()
+    };
 
-  res.status(201).json({
-    success: true,
-    requiresApproval: false,
-    data: {
+    // persistUser() already keeps usersStore in sync — pushing again here is what
+    // wrote every registration to disk twice.
+    const savedUser = await persistUser(newUser);
+
+    queueEmail(`welcome to ${savedUser.email}`, () => mailer.sendWelcomeEmail(savedUser));
+
+    console.log(`✅ New user registered: ${newUser.email} (${newUser.role}) -> ${newUser.status}`);
+
+    const publicUser = {
       id: savedUser.id,
       role: savedUser.role,
       name: savedUser.name,
@@ -686,8 +820,38 @@ app.post('/api/auth/register', async (req, res) => {
       phone: savedUser.phone,
       isApproved: savedUser.isApproved,
       status: savedUser.status
+    };
+
+    if (isAdminRequest) {
+      return res.status(201).json({
+        success: true,
+        requiresApproval: true,
+        message: 'Admin account request submitted! Your account requires authorization from an existing Admin before you can log in.',
+        data: publicUser
+      });
     }
-  });
+
+    return res.status(201).json({
+      success: true,
+      requiresApproval: false,
+      data: publicUser
+    });
+  } catch (error) {
+    // The database's unique constraint is the final arbiter when two requests race
+    // past the check above. Postgres reports that as 23505.
+    if (isUniqueViolation(error)) {
+      console.warn(`⛔ Duplicate email rejected by the database: ${normalizedEmail}`);
+      return res.status(409).json({
+        success: false,
+        error: 'An account with this email already exists.'
+      });
+    }
+    console.error('Registration failed:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Could not create your account. Please try again.'
+    });
+  }
 });
 
 app.post('/api/auth/login', async (req, res) => {
@@ -701,11 +865,12 @@ app.post('/api/auth/login', async (req, res) => {
   }
 
   const normalizedRole = normalizeRole(role);
-  await getUsersStore();
-  const user = findUserByCredentials(email, password, normalizedRole);
+  // Avoid downloading every user row on the login critical path.
+  const matchingUsers = await getUsersByEmail(email);
+  const user = findUserByCredentials(email, password, normalizedRole, matchingUsers);
 
   if (!user) {
-    const pendingAdmin = usersStore.find((entry) => {
+    const pendingAdmin = matchingUsers.find((entry) => {
       const matchesEmail = String(entry.email || '').trim().toLowerCase() === String(email || '').trim().toLowerCase();
       const matchesPassword = String(entry.password || '') === String(password || '');
       return matchesEmail && matchesPassword && normalizeRole(entry.role || 'client') === 'admin' && !getApprovalStatus(entry);
@@ -774,7 +939,19 @@ if (require.main === module) {
     console.log(`📊 Health check: http://${HOST}:${PORT}/health`);
     console.log(`🔌 Subsidiaries API: http://${HOST}:${PORT}/api/subsidiaries`);
     console.log(`📅 Bookings API:     http://${HOST}:${PORT}/api/bookings`);
+    console.log(`✉️  Email: ${mailer.isConfigured()
+      ? 'SMTP configured (welcome + booking confirmations enabled)'
+      : 'NOT configured — set SMTP_HOST / SMTP_PORT / SMTP_FROM in .env to enable emails'}`);
     console.log('=====================================\n');
+
+    // Probe the SMTP host once, off the request path. Never fatal.
+    if (mailer.isConfigured()) {
+      mailer.verifyConnection().then((result) => {
+        console.log(result.ok
+          ? '✉️  SMTP connection verified.'
+          : `⚠️  SMTP connection failed: ${result.reason}`);
+      });
+    }
   });
 
   // ── Graceful shutdown ────────────────────────────────────────────────────────
