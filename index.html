@@ -127,11 +127,9 @@
     }
 
     .logo-container img {
-      /* The new lockup stacks a globe over the wordmark, so it needs more height
-         than the old flat SVG to stay legible inside the 80px header. */
-      height: 60px;
+      height: 52px;
       width: auto;
-      max-width: 100%;
+      max-width: 240px;
       object-fit: contain;
       display: block;
       transition: transform 0.3s ease;
@@ -1789,8 +1787,8 @@
       <!-- Logo -->
       <div class="logo-container">
         <a href="#hero">
-          <!-- Brand lockup. Falls back to the old SVG if the raster file is missing. -->
-          <img src="./images/klassic-logo.jpg" alt="Klassic Group of Companies"
+          <!-- Use the horizontal PNG lockup, with the SVG as a fallback. -->
+          <img src="./images/klassic-logo-header.png" alt="Klassic Group of Companies"
             onerror="this.onerror=null;this.src='./images/klassic-logo.svg';" />
         </a>
       </div>
