@@ -130,13 +130,16 @@ create table if not exists public.payment_methods (
 
 insert into public.payment_methods (code, name, description)
 values
-  ('ewallet', 'GCash / Maya', 'E-Wallet'),
-  ('card', 'Credit / Debit Card', 'Visa / Mastercard'),
-  ('bank_transfer', 'Bank Transfer / Direct Deposit', 'BDO / BPI / Direct Deposit'),
-  ('invoice', 'Cash on Delivery / Corporate Invoice', 'COD / Corporate Billing')
+  ('atm_card', 'ATM Card', 'Pay by card'),
+  ('gcash', 'GCash', 'Pay with GCash'),
+  ('cash', 'Cash', 'Pay in person')
 on conflict (code) do update set
   name = excluded.name,
   description = excluded.description;
+
+update public.payment_methods
+set is_active = false
+where code in ('ewallet', 'card', 'bank_transfer', 'invoice');
 
 create table if not exists public.bookings (
   id text primary key,
@@ -158,6 +161,46 @@ create table if not exists public.bookings (
 
 alter table public.bookings add column if not exists user_id text references public.users(id) on update cascade on delete set null;
 alter table public.bookings add column if not exists payment_method_id bigint references public.payment_methods(id) on update cascade on delete restrict;
+
+create table if not exists public.booking_messages (
+  id uuid primary key default gen_random_uuid(),
+  booking_id text not null references public.bookings(id) on delete cascade,
+  sender_id text not null,
+  sender_role text not null check (sender_role in ('client', 'admin')),
+  sender_name text not null default '',
+  body text not null check (char_length(body) between 1 and 4000),
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.notifications (
+  id uuid primary key default gen_random_uuid(),
+  event_key text not null unique,
+  recipient_role text not null check (recipient_role in ('client', 'admin')),
+  recipient_id text,
+  recipient_email text not null default '',
+  type text not null,
+  title text not null,
+  body text not null,
+  booking_id text references public.bookings(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  read_at timestamptz
+);
+
+create index if not exists booking_messages_booking_created_idx
+  on public.booking_messages (booking_id, created_at);
+
+create index if not exists notifications_recipient_created_idx
+  on public.notifications (recipient_role, recipient_id, created_at desc);
+create index if not exists notifications_recipient_email_idx
+  on public.notifications (recipient_role, lower(recipient_email), created_at desc);
+
+alter table public.booking_messages enable row level security;
+revoke all on public.booking_messages from anon, authenticated;
+grant all on public.booking_messages to service_role;
+
+alter table public.notifications enable row level security;
+revoke all on public.notifications from anon, authenticated;
+grant all on public.notifications to service_role;
 
 update public.bookings as b
 set user_id = u.id

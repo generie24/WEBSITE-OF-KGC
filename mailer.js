@@ -1,16 +1,7 @@
 const nodemailer = require('nodemailer');
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Klassic Group of Companies — transactional email
-//
-// Ground rules:
-//  1. Nothing here may throw at require() time. A missing SMTP configuration
-//     must degrade to a logged warning, never crash the server on boot.
-//  2. sendMail() is the only function that touches the network. Callers fire it
-//     through queueEmail() in server.js, so a slow or unreachable SMTP host can
-//     never delay or fail an HTTP response.
-//  3. Every send is retried once on a transient failure, but never on an auth
-//     rejection (retrying a bad password just gets the account rate-limited).
+// Klassic Group of Companies — transactional email via Nodemailer SMTP.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const BRAND_NAME = String(process.env.APP_NAME || 'Klassic Group of Companies').trim();
@@ -20,82 +11,42 @@ const MUTED = '#6b7280';
 const HAIRLINE = '#e5e7eb';
 
 let transporter = null;
-let cachedConfig;          // undefined = not read yet, null = not configured
-let configWarningShown = false;
-
-function readConfig() {
-  if (cachedConfig !== undefined) return cachedConfig;
-
-  const host = String(process.env.SMTP_HOST || '').trim();
-  const port = Number(process.env.SMTP_PORT || 587);
-  const user = String(process.env.SMTP_USER || '').trim();
-  const pass = String(process.env.SMTP_PASS || '');
-  const from = String(process.env.SMTP_FROM || user || '').trim();
-  const replyTo = String(process.env.SMTP_REPLY_TO || '').trim();
-
-  const validPort = Number.isInteger(port) && port > 0 && port < 65536;
-  const authIncomplete = (user && !pass) || (!user && pass);
-
-  if (!host || !from || !validPort || authIncomplete) {
-    cachedConfig = null;
-    return cachedConfig;
-  }
-
-  cachedConfig = {
-    host,
-    port,
-    user,
-    pass,
-    from,
-    replyTo,
-    secure: process.env.SMTP_SECURE === undefined
-      ? port === 465
-      : String(process.env.SMTP_SECURE).toLowerCase() === 'true'
-  };
-  return cachedConfig;
-}
 
 function isConfigured() {
-  return readConfig() !== null;
+  return Boolean(
+    String(process.env.EMAIL_USER || '').trim() &&
+    String(process.env.EMAIL_PASS || '').trim()
+  );
 }
 
 function getTransporter() {
-  if (transporter) return transporter;
+  const user = String(process.env.EMAIL_USER || '').trim();
+  const pass = String(process.env.EMAIL_PASS || '').trim();
 
-  const config = readConfig();
-  if (!config) {
+  if (!user || !pass) {
     const error = new Error(
-      'Email is not configured. Set SMTP_HOST, SMTP_PORT and SMTP_FROM (or SMTP_USER) in .env.'
+      'Email is not configured. Set EMAIL_USER and EMAIL_PASS in .env.'
     );
     error.code = 'EMAIL_NOT_CONFIGURED';
     throw error;
   }
 
-  transporter = nodemailer.createTransport({
-    host: config.host,
-    port: config.port,
-    secure: config.secure,
-    ...(config.user ? { auth: { user: config.user, pass: config.pass } } : {}),
-    // Pooling keeps campaign sends from opening a new connection per message.
-    pool: true,
-    maxConnections: 3,
-    maxMessages: 50,
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 20000
-  });
-
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user, pass }
+    });
+  }
   return transporter;
 }
 
-// Non-fatal connectivity probe. Useful once at startup or from an admin screen.
 async function verifyConnection() {
-  if (!isConfigured()) return { ok: false, reason: 'Email is not configured.' };
   try {
-    await getTransporter().verify();
+    const t = getTransporter();
+    await t.verify();
     return { ok: true };
-  } catch (error) {
-    return { ok: false, reason: error.message };
+  } catch (err) {
+    return { ok: false, reason: err.message || 'SMTP connection failed.' };
   }
 }
 
@@ -108,8 +59,6 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
-// "2026-10-14" → "October 14, 2026". Parsed from the leading Y-M-D parts so a
-// UTC timestamp can never shift the day in a negative-offset timezone.
 function formatBookingDate(value) {
   if (!value) return 'Not specified';
   const text = String(value).trim();
@@ -127,53 +76,22 @@ function formatBookingDate(value) {
   return text;
 }
 
-function isRetryable(error) {
-  const code = String((error && error.code) || '');
-  const responseCode = String((error && error.responseCode) || '');
-  if (code === 'EMAIL_NOT_CONFIGURED' || code === 'EAUTH') return false;
-  if (responseCode === '534' || responseCode === '535') return false;   // auth rejected
-  return true;
-}
+async function sendMail(message) {
+  const t = getTransporter();
+  const senderEmail = process.env.EMAIL_USER;
+  const mailOptions = {
+    ...message,
+    from: `"${BRAND_NAME}" <${senderEmail}>`
+  };
 
-/**
- * Sends one message, retrying once on a transient failure.
- * Throws on permanent failure so the caller can log it — callers in server.js
- * run inside queueEmail() and therefore never block the HTTP response.
- */
-async function sendMail(message, options = {}) {
-  const attempts = Math.max(1, Number(options.attempts) || 2);
-  const config = readConfig();
-  if (!config) {
-    const error = new Error(
-      'Email is not configured. Set SMTP_HOST, SMTP_PORT and SMTP_FROM (or SMTP_USER) in .env.'
-    );
-    error.code = 'EMAIL_NOT_CONFIGURED';
-    throw error;
-  }
-  let lastError;
+  const replyTo = String(process.env.EMAIL_REPLY_TO || '').trim();
+  if (replyTo && !mailOptions.replyTo) mailOptions.replyTo = replyTo;
 
-  for (let attempt = 1; attempt <= attempts; attempt += 1) {
-    try {
-      const mail = getTransporter();
-      const info = await mail.sendMail({
-        from: config.from,
-        ...(config.replyTo ? { replyTo: config.replyTo } : {}),
-        ...message
-      });
-      return { messageId: info.messageId, accepted: info.accepted, attempts: attempt };
-    } catch (error) {
-      lastError = error;
-      if (attempt >= attempts || !isRetryable(error)) break;
-      await new Promise((resolve) => setTimeout(resolve, 400 * attempt));
-    }
-  }
-
-  throw lastError;
+  const info = await t.sendMail(mailOptions);
+  return { messageId: info.messageId };
 }
 
 // ── Shared layout ────────────────────────────────────────────────────────────
-// Table-based with inline styles only: email clients strip <style> blocks and
-// ignore modern layout, so this is deliberately old-fashioned.
 function renderLayout({ heading, intro, rows, footnote }) {
   const list = Array.isArray(rows) ? rows : [];
   const body = list.length
@@ -288,7 +206,6 @@ function sendBookingConfirmation(booking) {
   const grouped = describeServices(booking && booking.services);
   const subsidiaries = Array.isArray(booking && booking.subsidiaries) ? booking.subsidiaries : [];
 
-  // Prefer the explicit service list; fall back to the subsidiary names.
   const serviceRows = grouped.length
     ? grouped.map((group) => ({
       label: group.subsidiary,
@@ -310,11 +227,11 @@ function sendBookingConfirmation(booking) {
   if (booking && booking.meetingFormat) rows.push({ label: 'Meeting format', value: booking.meetingFormat });
   if (booking && booking.notes) rows.push({ label: 'Your notes', value: booking.notes });
 
-  const intro = `We received your service booking, ${name}. A specialist will review the details and confirm your appointment. Keep the reference number below for any follow-up.`;
+  const intro = `We received your service booking, ${name}. Its current status is ${status}. A specialist will review the details and confirm your appointment. Keep the reference number below for any follow-up.`;
 
   return sendMail({
     to: booking && booking.email,
-    subject: `Booking confirmed — ${reference}`,
+    subject: `Booking received — ${reference}`,
     text: [
       `Hello ${name},`,
       '',
@@ -333,10 +250,92 @@ function sendBookingConfirmation(booking) {
       BRAND_NAME
     ].join('\n'),
     html: renderLayout({
-      heading: 'Your booking is confirmed',
+      heading: 'Your booking request was received',
       intro,
       rows,
       footnote: 'If any of these details look wrong, reply to this message and we will update the booking for you.'
+    })
+  });
+}
+
+function sendCampaignEmail(recipient, subject, message) {
+  const name = String((recipient && recipient.name) || '').trim() || 'Client';
+  const bodyText = String(message || '').trim();
+  const bodyHtml = escapeHtml(bodyText).replace(/\r\n|\r|\n/g, '<br>');
+  const intro = `Hello ${name},`;
+
+  return sendMail({
+    to: recipient && recipient.email,
+    subject: String(subject || '').trim(),
+    text: `${intro}\n\n${bodyText}\n\nThank you,\n${BRAND_NAME}`,
+    html: renderLayout({
+      heading: String(subject || '').trim(),
+      intro,
+      rows: [{ label: 'Message', html: `<div style="line-height:1.7;">${bodyHtml}</div>` }],
+      footnote: 'You are receiving this message because you have a KGC client account.'
+    })
+  });
+}
+
+function sendBookingStatusUpdate(booking) {
+  const name = (booking && booking.name) || 'there';
+  const reference = (booking && booking.id) || 'Not available';
+  const status = (booking && booking.status) || 'Pending';
+  const approved = String(status).toLowerCase() === 'approved';
+  const grouped = describeServices(booking && booking.services);
+  const subsidiaries = Array.isArray(booking && booking.subsidiaries) ? booking.subsidiaries : [];
+  const serviceRows = grouped.length
+    ? grouped.map((group) => ({ label: group.subsidiary, value: group.services.join(', ') }))
+    : (subsidiaries.length
+      ? [{ label: 'Subsidiary', value: subsidiaries.join(', ') }]
+      : [{ label: 'Service', value: 'Not specified' }]);
+  const intro = approved
+    ? `Hello ${name}, your booking has been approved. Please keep the reference number below for your records.`
+    : `Hello ${name}, your booking request was declined. Contact our team if you would like to discuss other options.`;
+
+  return sendMail({
+    to: booking && booking.email,
+    subject: `Booking ${approved ? 'approved' : 'declined'} — ${reference}`,
+    text: [
+      intro,
+      '',
+      `Reference number: ${reference}`,
+      `Status: ${status}`,
+      ...serviceRows.map((row) => `${row.label}: ${row.value}`),
+      '',
+      BRAND_NAME
+    ].join('\n'),
+    html: renderLayout({
+      heading: approved ? 'Your booking has been approved' : 'Booking status update',
+      intro,
+      rows: [
+        { label: 'Reference number', html: `<strong style="font-family:monospace;">${escapeHtml(reference)}</strong>` },
+        { label: 'Status', html: `<strong>${escapeHtml(status)}</strong>` },
+        ...serviceRows
+      ],
+      footnote: 'You can view the latest status and message our team in your KGC client portal.'
+    })
+  });
+}
+
+function sendRegistrationVerificationCode(email, name, code) {
+  const greeting = String(name || '').trim() || 'there';
+  return sendMail({
+    to: email,
+    subject: `Verify your email — ${BRAND_NAME}`,
+    text: [
+      `Hello ${greeting},`,
+      '',
+      `Your KGC email verification code is ${code}.`,
+      'The code expires in 10 minutes. If you did not request this, you can ignore this email.',
+      '',
+      BRAND_NAME
+    ].join('\n'),
+    html: renderLayout({
+      heading: 'Verify your email address',
+      intro: `Hello ${greeting}. Use the verification code below to finish creating your KGC account.`,
+      rows: [{ label: 'Verification code', html: `<strong style="font-family:monospace;font-size:24px;letter-spacing:5px;">${escapeHtml(code)}</strong>` }],
+      footnote: 'This code expires in 10 minutes. If you did not request this, you can ignore this email.'
     })
   });
 }
@@ -347,5 +346,8 @@ module.exports = {
   sendMail,
   sendWelcomeEmail,
   sendBookingConfirmation,
+  sendBookingStatusUpdate,
+  sendCampaignEmail,
+  sendRegistrationVerificationCode,
   formatBookingDate
 };
