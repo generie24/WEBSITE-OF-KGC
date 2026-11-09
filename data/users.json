@@ -46,18 +46,6 @@
     "createdAt": "2026-11-04T04:55:48.842Z"
   },
   {
-    "id": "USR1793768148841",
-    "role": "client",
-    "name": "gen licmo",
-    "company": "mcdo",
-    "email": "limco.generie.palang@gmail.com",
-    "phone": "639624175040",
-    "password": "password",
-    "isApproved": true,
-    "status": "Approved",
-    "createdAt": "2026-11-04T04:55:48.842Z"
-  },
-  {
     "id": "USR1793770601388",
     "role": "client",
     "name": "generie",
@@ -68,5 +56,29 @@
     "isApproved": true,
     "status": "Approved",
     "createdAt": "2026-11-04T05:36:41.388Z"
+  },
+  {
+    "id": "USR17942109499177MDK4",
+    "role": "client",
+    "name": "generie limco",
+    "company": "hytech",
+    "email": "limcogen@gmail.com",
+    "phone": "639624175040",
+    "password": "1234567789",
+    "isApproved": true,
+    "status": "Approved",
+    "createdAt": "2026-11-09T07:55:49.917Z"
+  },
+  {
+    "id": "USR1794212896552E4RR3",
+    "role": "client",
+    "name": "rievha llaneta",
+    "company": "Jabi",
+    "email": "rievhallaneta@gmail.com",
+    "phone": "0999999999",
+    "password": "scrypt$54f6f7503fcf02b8aa4889d256bd147f$9ffa6d85fa6ca490e59b82872cd9f143cf8b45e02559e9f546c87dcd5d2faa6c387ae7baaab5133e9e41ab9f5d54e0b07eb06f03bb18c60339117423485638ff",
+    "isApproved": true,
+    "status": "Approved",
+    "createdAt": "2026-11-09T08:28:16.648Z"
   }
 ]

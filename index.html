@@ -4295,6 +4295,19 @@
             <p class="text-gold font-semibold mb-1">Account Access</p>
             <p>Sign in using the email and password registered to your account.</p>
           </div>
+          <div id="demoLoginActions" class="hidden mb-5" aria-label="Demo accounts">
+            <p class="mb-2 text-xs font-medium text-gray-400">Local development demos</p>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" data-demo-role="admin" onclick="window.useDemoLogin('admin')"
+                class="rounded-full border border-[#C9A227]/60 bg-[#C9A227]/10 px-4 py-2 text-xs font-semibold text-[#D4AF37] transition hover:bg-[#C9A227]/20 hover:text-[#F3D76B] focus:outline-none focus:ring-2 focus:ring-[#C9A227]">
+                Demo Admin
+              </button>
+              <button type="button" data-demo-role="client" onclick="window.useDemoLogin('client')"
+                class="rounded-full border border-[#C9A227]/60 bg-[#C9A227]/10 px-4 py-2 text-xs font-semibold text-[#D4AF37] transition hover:bg-[#C9A227]/20 hover:text-[#F3D76B] focus:outline-none focus:ring-2 focus:ring-[#C9A227]">
+                Demo Client
+              </button>
+            </div>
+          </div>
           <form onsubmit="window.handleLogin(event)" id="loginForm">
             <input type="hidden" name="loginRole" id="loginRoleInput" value="client">
             <div class="mb-4">
@@ -5682,6 +5695,48 @@
         });
       return supabaseClientPromise;
     }
+
+    window.useDemoLogin = function (role) {
+      var selectedRole = role === 'admin' ? 'admin' : role === 'client' ? 'client' : '';
+      var credentials = demoLoginCredentials[selectedRole];
+      if (!credentials) {
+        window.showToast('Demo sign-in is unavailable in this environment.', 'error');
+        return;
+      }
+      var form = document.getElementById('loginForm');
+      var emailInput = document.getElementById('loginEmail');
+      var passwordInput = form && form.querySelector('[name="loginPassword"]');
+      if (!form || !emailInput || !passwordInput) {
+        window.showToast('The sign-in form is unavailable. Refresh and try again.', 'error');
+        return;
+      }
+      window.switchAuthRole(selectedRole);
+      emailInput.value = credentials.email;
+      passwordInput.value = credentials.password;
+      if (typeof form.requestSubmit === 'function') form.requestSubmit();
+      else form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    };
+
+    var demoLoginCredentials = {};
+    fetch('/api/demo-accounts', { cache: 'no-store', credentials: 'same-origin' })
+      .then(async function (response) {
+        var result = await readJsonResponse(response);
+        if (!response.ok || !result || result.enabled !== true || !Array.isArray(result.accounts)) return;
+        result.accounts.forEach(function (account) {
+          if ((account.role === 'admin' || account.role === 'client') && account.email && account.password) {
+            demoLoginCredentials[account.role] = {
+              email: account.email,
+              password: account.password
+            };
+          }
+        });
+        if (demoLoginCredentials.admin && demoLoginCredentials.client) {
+          document.getElementById('demoLoginActions').classList.remove('hidden');
+        }
+      })
+      .catch(function (error) {
+        console.warn('Demo login options could not be loaded:', error);
+      });
 
     async function bookingApiFetch(url, options) {
       var requestOptions = Object.assign({ credentials: 'same-origin' }, options || {});

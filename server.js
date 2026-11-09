@@ -769,6 +769,19 @@ app.get('/api/client-config', (req, res) => {
   res.json({ url, anonKey });
 });
 
+app.get('/api/demo-accounts', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const enabled = !IS_DEPLOYED_ENVIRONMENT && process.env.DEMO_LOGIN_ENABLED !== 'false';
+  res.json({
+    enabled,
+    accounts: enabled ? DEMO_USERS.map((user) => ({
+      role: user.role,
+      email: user.email,
+      password: user.password
+    })) : []
+  });
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({

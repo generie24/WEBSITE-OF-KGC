@@ -250,5 +250,127 @@
     "status": "Pending",
     "createdAt": "2026-11-04T05:52:45.098Z",
     "timestamp": "2026-11-04T05:52:45.098Z"
+  },
+  {
+    "id": "BK1794126560160",
+    "name": "Client User",
+    "email": "client@kgc.ph",
+    "phone": "09204049036",
+    "date": "2026-11-09",
+    "subsidiaries": [
+      "HYT Foundation Inc."
+    ],
+    "services": {
+      "HYT Foundation Inc.": [
+        "Corporate Social Responsibility (CSR) Partnership"
+      ]
+    },
+    "notes": "Preferred schedule: Mon, November 9, 2026 at 03:30 PM · Online Video Call · habii",
+    "paymentMethod": "Corporate Invoice / COD",
+    "timeSlot": "03:30 PM",
+    "meetingFormat": "Online Video Call",
+    "duration": "1.5",
+    "status": "Approved",
+    "createdAt": "2026-11-08T08:29:20.160Z",
+    "timestamp": "2026-11-08T08:29:20.161Z",
+    "updatedAt": "2026-11-08T10:17:07.981Z"
+  },
+  {
+    "id": "BK1794210986124",
+    "name": "generie limco",
+    "email": "limcogen@gmail.com",
+    "phone": "639624175040",
+    "date": "2026-11-10",
+    "subsidiaries": [
+      "Brains Infinite Innovations Inc."
+    ],
+    "services": {
+      "Brains Infinite Innovations Inc.": [
+        "Custom Software & App Development"
+      ]
+    },
+    "notes": "Preferred schedule: Tue, November 10, 2026 at 02:00 PM · Online Video Call · edada\nProject details: 2312w12",
+    "paymentMethod": "Corporate Invoice / COD",
+    "timeSlot": "02:00 PM",
+    "meetingFormat": "Online Video Call",
+    "duration": "2",
+    "status": "Pending",
+    "createdAt": "2026-11-09T07:56:26.124Z",
+    "timestamp": "2026-11-09T07:56:26.124Z"
+  },
+  {
+    "id": "BK1794212982592",
+    "userId": "USR1794212896552E4RR3",
+    "name": "rievha llaneta",
+    "email": "rievhallaneta@gmail.com",
+    "phone": "6392049036",
+    "date": "2026-11-10",
+    "subsidiaries": [
+      "Brains Infinite Innovations Inc."
+    ],
+    "services": {
+      "Brains Infinite Innovations Inc.": [
+        "Custom Software & App Development"
+      ]
+    },
+    "notes": "Preferred schedule: Tue, November 10, 2026 at 03:30 PM · In-Person · jabi\nProject details: aweweaweasd",
+    "paymentMethod": "ATM Card",
+    "timeSlot": "03:30 PM",
+    "meetingFormat": "In-Person",
+    "duration": "2",
+    "status": "Approved",
+    "createdAt": "2026-11-09T08:29:42.592Z",
+    "timestamp": "2026-11-09T08:29:42.592Z",
+    "updatedAt": "2026-11-09T08:33:15.904Z"
+  },
+  {
+    "id": "BK1794214216788",
+    "userId": "USR1794212896552E4RR3",
+    "name": "rievha llaneta",
+    "email": "rievhallaneta@gmail.com",
+    "phone": "63920523232",
+    "date": "2026-11-12",
+    "subsidiaries": [
+      "The Green Oasis"
+    ],
+    "services": {
+      "The Green Oasis": [
+        "Commercial & Residential Landscape Design"
+      ]
+    },
+    "notes": "Preferred schedule: Thu, November 12, 2026 at 02:00 PM · Online Video Call",
+    "paymentMethod": "Cash",
+    "timeSlot": "02:00 PM",
+    "meetingFormat": "Online Video Call",
+    "duration": "1.5",
+    "status": "Approved",
+    "createdAt": "2026-11-09T08:50:16.788Z",
+    "timestamp": "2026-11-09T08:50:16.788Z",
+    "updatedAt": "2026-11-09T08:51:57.473Z"
+  },
+  {
+    "id": "BK1794215544156",
+    "userId": "USR1794212896552E4RR3",
+    "name": "rievha llaneta",
+    "email": "rievhallaneta@gmail.com",
+    "phone": "999",
+    "date": "2026-11-10",
+    "subsidiaries": [
+      "Connector"
+    ],
+    "services": {
+      "Connector": [
+        "Enterprise ERP & CRM Implementation"
+      ]
+    },
+    "notes": "Preferred schedule: Tue, November 10, 2026 at 02:00 PM · Online Video Call · ada\nProject details: xc xvlsd,co",
+    "paymentMethod": "Cash",
+    "timeSlot": "02:00 PM",
+    "meetingFormat": "Online Video Call",
+    "duration": "2",
+    "status": "Approved",
+    "createdAt": "2026-11-09T09:12:24.156Z",
+    "timestamp": "2026-11-09T09:12:24.156Z",
+    "updatedAt": "2026-11-09T09:45:20.593Z"
   }
 ]

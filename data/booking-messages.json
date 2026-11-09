@@ -1,0 +1,92 @@
+[
+  {
+    "id": "680e55df-589b-48f7-bf71-54a752cf90f0",
+    "bookingId": "BK1794212982592",
+    "senderId": "demo-admin",
+    "senderRole": "admin",
+    "senderName": "Admin User",
+    "body": "hello welcome",
+    "createdAt": "2026-11-09T08:31:31.109Z"
+  },
+  {
+    "id": "75d99133-b1e2-442d-9b1f-6f095c91f1f6",
+    "bookingId": "BK1794214216788",
+    "senderId": "demo-admin",
+    "senderRole": "admin",
+    "senderName": "Admin User",
+    "body": "hello rievha",
+    "createdAt": "2026-11-09T08:52:27.521Z"
+  },
+  {
+    "id": "e67cc904-1987-4859-946b-52a1fa36d497",
+    "bookingId": "BK1794214216788",
+    "senderId": "demo-admin",
+    "senderRole": "admin",
+    "senderName": "Admin User",
+    "body": "hi",
+    "createdAt": "2026-11-09T08:52:55.775Z"
+  },
+  {
+    "id": "86dfc003-df8c-4248-85ce-6e39d0c0605b",
+    "bookingId": "BK1794214216788",
+    "senderId": "demo-admin",
+    "senderRole": "admin",
+    "senderName": "Admin User",
+    "body": "HI",
+    "createdAt": "2026-11-09T09:09:18.599Z"
+  },
+  {
+    "id": "ca1ca7a8-0b82-46dd-8b7a-898cd4eb7553",
+    "bookingId": "BK1794214216788",
+    "senderId": "demo-admin",
+    "senderRole": "admin",
+    "senderName": "Admin User",
+    "body": "hi",
+    "createdAt": "2026-11-09T09:10:02.128Z"
+  },
+  {
+    "id": "8196d693-e700-47d0-ad72-832b6f7734e9",
+    "bookingId": "BK1794214216788",
+    "senderId": "demo-admin",
+    "senderRole": "admin",
+    "senderName": "Admin User",
+    "body": "hi",
+    "createdAt": "2026-11-09T09:10:45.238Z"
+  },
+  {
+    "id": "aea6926c-610e-4b1c-9450-b5947f3dd9f5",
+    "bookingId": "BK1794214216788",
+    "senderId": "demo-admin",
+    "senderRole": "admin",
+    "senderName": "Admin User",
+    "body": "hello",
+    "createdAt": "2026-11-09T09:10:54.401Z"
+  },
+  {
+    "id": "86d902ad-76a4-4de4-8f77-d73a07b20877",
+    "bookingId": "BK1794215544156",
+    "senderId": "USR1794212896552E4RR3",
+    "senderRole": "client",
+    "senderName": "rievha llaneta",
+    "body": "pls approoved",
+    "createdAt": "2026-11-09T09:12:37.370Z"
+  },
+  {
+    "id": "eb64a61d-336f-47f7-92c1-5fbb26c1f283",
+    "bookingId": "BK1794215544156",
+    "senderId": "demo-admin",
+    "senderRole": "admin",
+    "senderName": "Admin User",
+    "body": "hello",
+    "createdAt": "2026-11-09T09:13:32.131Z"
+  },
+  {
+    "id": "6d59269f-05f0-49e7-af41-8e105324b963",
+    "bookingId": "BK1794215544156",
+    "senderId": "USR1794212896552E4RR3",
+    "senderRole": "client",
+    "senderName": "rievha llaneta",
+    "body": "hi",
+    "createdAt": "2026-11-09T09:33:58.278Z"
+  }
+]
