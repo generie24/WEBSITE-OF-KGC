@@ -1,7 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 
 function createSupabaseStore() {
-  const url = String(process.env.SUPABASE_URL || '').trim();
+  const url = String(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
   const serviceRoleKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
 
   if (!url || !serviceRoleKey) {

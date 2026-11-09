@@ -216,12 +216,24 @@ async function getUsersByEmail(email) {
     try {
       return await supabaseStore.findUsersByEmail(normalizedEmail);
     } catch (error) {
+      if (IS_DEPLOYED_ENVIRONMENT) {
+        console.error('Supabase user lookup failed:', error);
+        throw error;
+      }
       console.warn('Supabase user lookup failed; using JSON fallback:', error.message);
     }
   }
   return usersStore.filter((user) =>
     String(user.email || '').trim().toLowerCase() === normalizedEmail
   );
+}
+
+function isSupabaseCredentialRejection(error) {
+  const code = String(error && error.code || '').toLowerCase();
+  const status = Number(error && error.status);
+  const message = String(error && error.message || '');
+  return code === 'invalid_credentials' ||
+    (status === 400 && /invalid login credentials/i.test(message));
 }
 
 loadBookingsFromDisk();
@@ -2004,98 +2016,122 @@ app.post('/api/auth/login', async (req, res) => {
     });
   }
 
-  const normalizedRole = normalizeRole(role);
-  // Avoid downloading every user row on the login critical path.
-  const matchingUsers = await getUsersByEmail(email);
-  let user = await findUserByCredentials(email, password, normalizedRole, matchingUsers);
-
-  if (!user && normalizedRole === 'admin' && supabaseStore.enabled &&
-      typeof supabaseStore.authenticateWithPassword === 'function') {
-    try {
-      const identity = await supabaseStore.authenticateWithPassword(email, password);
-      if (identity) {
-        user = matchingUsers.find((entry) =>
-          String(entry.id) === String(identity.id) &&
-          normalizeRole(entry.role) === 'admin'
-        ) || null;
-      }
-    } catch (error) {
-      console.warn('Supabase admin credential verification failed:', error.message);
-    }
-  }
-
-  if (!user) {
-    let pendingAdmin = null;
-    for (const entry of matchingUsers) {
-      const matchesEmail = normalizeEmail(entry.email) === normalizeEmail(email);
-      if (matchesEmail && normalizeRole(entry.role || 'client') === 'admin' &&
-          !getApprovalStatus(entry) && await verifyPassword(password, entry.password)) {
-        pendingAdmin = entry;
-        break;
-      }
+  try {
+    const normalizedRole = normalizeRole(role);
+    if (normalizedRole === 'admin' && IS_DEPLOYED_ENVIRONMENT && !supabaseStore.enabled) {
+      return res.status(503).json({
+        success: false,
+        error: 'Admin sign-in is not configured. Set the Supabase URL and service-role key.'
+      });
     }
 
-    if (pendingAdmin) {
+    // Avoid downloading every user row on the login critical path.
+    const matchingUsers = await getUsersByEmail(email);
+    let user = await findUserByCredentials(email, password, normalizedRole, matchingUsers);
+    let authenticatedIdentity = null;
+
+    if (!user && normalizedRole === 'admin' && supabaseStore.enabled &&
+        typeof supabaseStore.authenticateWithPassword === 'function') {
+      try {
+        authenticatedIdentity = await supabaseStore.authenticateWithPassword(email, password);
+        if (authenticatedIdentity) {
+          user = matchingUsers.find((entry) =>
+            String(entry.id) === String(authenticatedIdentity.id) &&
+            normalizeRole(entry.role) === 'admin'
+          ) || null;
+        }
+      } catch (error) {
+        if (!isSupabaseCredentialRejection(error)) throw error;
+        console.warn('Supabase rejected the admin credentials.');
+      }
+    }
+
+    if (!user) {
+      let pendingAdmin = null;
+      for (const entry of matchingUsers) {
+        const matchesEmail = normalizeEmail(entry.email) === normalizeEmail(email);
+        if (matchesEmail && normalizeRole(entry.role || 'client') === 'admin' &&
+            !getApprovalStatus(entry) && await verifyPassword(password, entry.password)) {
+          pendingAdmin = entry;
+          break;
+        }
+      }
+
+      if (pendingAdmin) {
+        return res.status(403).json({
+          success: false,
+          error: 'Your Admin account is pending approval from an authorized Admin.'
+        });
+      }
+
+      if (authenticatedIdentity) {
+        return res.status(403).json({
+          success: false,
+          error: 'This Supabase account is not linked to an admin profile in public.users.'
+        });
+      }
+
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid credentials.'
+      });
+    }
+
+    if (normalizedRole === 'client' && !isActiveClient(user)) {
+      return res.status(403).json({
+        success: false,
+        error: 'This client account is pending approval or suspended. Contact an administrator for assistance.'
+      });
+    }
+
+    if (normalizedRole === 'admin' && !getApprovalStatus(user)) {
       return res.status(403).json({
         success: false,
         error: 'Your Admin account is pending approval from an authorized Admin.'
       });
     }
 
-    return res.status(401).json({
-      success: false,
-      error: 'Invalid credentials.'
-    });
-  }
-
-  if (normalizedRole === 'client' && !isActiveClient(user)) {
-    return res.status(403).json({
-      success: false,
-      error: 'This client account is pending approval or suspended. Contact an administrator for assistance.'
-    });
-  }
-
-  if (normalizedRole === 'admin' && !getApprovalStatus(user)) {
-    return res.status(403).json({
-      success: false,
-      error: 'Your Admin account is pending approval from an authorized Admin.'
-    });
-  }
-
-  if (normalizedRole === 'admin') {
-    let token;
-    try {
-      token = createAdminSessionToken(user.id);
-    } catch (error) {
-      console.error('Admin session could not be created:', error);
-      return res.status(503).json({
-        success: false,
-        error: 'Admin sign-in is not configured on this deployment.'
+    if (normalizedRole === 'admin') {
+      let token;
+      try {
+        token = createAdminSessionToken(user.id);
+      } catch (error) {
+        console.error('Admin session could not be created:', error);
+        return res.status(503).json({
+          success: false,
+          error: 'Admin sign-in is not configured on this deployment.'
+        });
+      }
+      setAdminSessionCookie(res, token, Math.floor(ADMIN_SESSION_TTL_MS / 1000));
+    } else {
+      const token = crypto.randomBytes(32).toString('hex');
+      clientSessions.set(token, {
+        userId: String(user.id),
+        email: normalizeEmail(user.email),
+        name: user.name || 'Client',
+        expiresAt: Date.now() + CLIENT_SESSION_TTL_MS
       });
+      setClientSessionCookie(res, token, Math.floor(CLIENT_SESSION_TTL_MS / 1000));
     }
-    setAdminSessionCookie(res, token, Math.floor(ADMIN_SESSION_TTL_MS / 1000));
-  } else {
-    const token = crypto.randomBytes(32).toString('hex');
-    clientSessions.set(token, {
-      userId: String(user.id),
-      email: normalizeEmail(user.email),
-      name: user.name || 'Client',
-      expiresAt: Date.now() + CLIENT_SESSION_TTL_MS
-    });
-    setClientSessionCookie(res, token, Math.floor(CLIENT_SESSION_TTL_MS / 1000));
-  }
 
-  res.json({
-    success: true,
-    data: {
-      id: user.id,
-      name: user.name,
-      email: String(user.email).trim().toLowerCase(),
-      role: String(user.role || 'client').trim().toLowerCase(),
-      isApproved: user.isApproved !== false,
-      status: user.status || 'Approved'
-    }
-  });
+    res.json({
+      success: true,
+      data: {
+        id: user.id,
+        name: user.name,
+        email: String(user.email).trim().toLowerCase(),
+        role: String(user.role || 'client').trim().toLowerCase(),
+        isApproved: user.isApproved !== false,
+        status: user.status || 'Approved'
+      }
+    });
+  } catch (error) {
+    console.error('Sign-in request failed:', error);
+    return res.status(503).json({
+      success: false,
+      error: 'The sign-in service is temporarily unavailable. Please try again later.'
+    });
+  }
 });
 
 // ── 404 handler ──────────────────────────────────────────────────────────────
