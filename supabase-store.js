@@ -1,8 +1,30 @@
 const { createClient } = require('@supabase/supabase-js');
 
 function createSupabaseStore() {
-  const url = String(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
+  const serverUrl = String(process.env.SUPABASE_URL || '').trim();
+  const publicUrl = String(process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
+  const url = serverUrl || publicUrl;
   const serviceRoleKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+  const authKey = String(
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
+    process.env.SUPABASE_PUBLISHABLE_KEY ||
+    serviceRoleKey
+  ).trim();
+
+  if (serverUrl && publicUrl) {
+    let serverHost;
+    let publicHost;
+    try {
+      serverHost = new URL(serverUrl).host;
+      publicHost = new URL(publicUrl).host;
+    } catch (error) {
+      throw new Error('SUPABASE_URL and NEXT_PUBLIC_SUPABASE_URL must be valid URLs.');
+    }
+    if (serverHost !== publicHost) {
+      throw new Error('SUPABASE_URL and NEXT_PUBLIC_SUPABASE_URL must point to the same Supabase project.');
+    }
+  }
 
   if (!url || !serviceRoleKey) {
     return { enabled: false };
@@ -11,11 +33,15 @@ function createSupabaseStore() {
   const client = createClient(url, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false }
   });
+  const authClient = createClient(url, authKey, {
+    auth: { autoRefreshToken: false, persistSession: false }
+  });
 
   function mapUser(row) {
     return {
       id: row.id,
       userId: row.user_id || null,
+      authUserId: row.auth_user_id || null,
       role: row.role,
       name: row.name,
       company: row.company || '',
@@ -68,7 +94,7 @@ function createSupabaseStore() {
     enabled: true,
 
     async authenticateClient(accessToken) {
-      const { data, error } = await client.auth.getUser(accessToken);
+      const { data, error } = await authClient.auth.getUser(accessToken);
       if (error) throw error;
       if (!data.user || !data.user.email) throw new Error('Authenticated user has no email address.');
       return {
@@ -80,10 +106,35 @@ function createSupabaseStore() {
     },
 
     async authenticateWithPassword(email, password) {
-      const { data, error } = await client.auth.signInWithPassword({ email, password });
+      const { data, error } = await authClient.auth.signInWithPassword({ email, password });
       if (error) throw error;
       if (!data.user || !data.user.email) return null;
-      return { id: data.user.id, email: data.user.email };
+      const metadata = data.user.user_metadata || {};
+      return {
+        id: data.user.id,
+        email: data.user.email,
+        name: metadata.name || metadata.full_name || '',
+        company: metadata.company || '',
+        phone: metadata.phone || '',
+        createdAt: data.user.created_at || new Date().toISOString()
+      };
+    },
+
+    async findAuthUserByEmail(email) {
+      const targetEmail = String(email || '').trim().toLowerCase();
+      if (!targetEmail) return null;
+
+      const perPage = 1000;
+      for (let page = 1; ; page += 1) {
+        const { data, error } = await client.auth.admin.listUsers({ page, perPage });
+        if (error) throw error;
+        const users = data && Array.isArray(data.users) ? data.users : [];
+        const match = users.find((user) =>
+          String(user.email || '').trim().toLowerCase() === targetEmail
+        );
+        if (match) return match;
+        if (users.length < perPage) return null;
+      }
     },
 
     async createVerifiedClient(user) {
@@ -99,22 +150,51 @@ function createSupabaseStore() {
           role: 'client'
         }
       });
-      if (error) throw error;
-      if (!data.user) throw new Error('Supabase did not return the created client account.');
+      let authUser = data && data.user;
+      let createdAuthUser = Boolean(authUser);
+      if (error) {
+        const isExistingEmail = error.code === 'email_exists' ||
+          /already(?:\s+been)?\s+registered|already exists/i.test(String(error.message || ''));
+        if (!isExistingEmail) throw error;
+
+        authUser = await this.findAuthUserByEmail(user.email);
+        if (!authUser) {
+          throw new Error('Supabase reported that this email already exists, but its Auth user could not be found.');
+        }
+
+        const updated = await client.auth.admin.updateUserById(authUser.id, {
+          password: user.password,
+          email_confirm: true,
+          user_metadata: {
+            name: user.name,
+            full_name: user.name,
+            company: user.company || '',
+            phone: user.phone || ''
+          }
+        });
+        if (updated.error) throw updated.error;
+        authUser = updated.data && updated.data.user;
+        if (!authUser) {
+          throw new Error('Supabase did not return the updated existing Auth user.');
+        }
+      }
+      if (!authUser) throw new Error('Supabase did not return the created client account.');
       try {
         const result = await this.upsertClient({
-          id: data.user.id,
+          id: authUser.id,
           email: user.email,
           name: user.name,
           company: user.company || '',
           phone: user.phone || '',
-          createdAt: data.user.created_at || new Date().toISOString()
+          createdAt: authUser.created_at || new Date().toISOString()
         });
         return result.user;
       } catch (syncError) {
-        const rollback = await client.auth.admin.deleteUser(data.user.id);
-        if (rollback.error) {
-          console.error('Unable to roll back un-synced Supabase Auth user:', rollback.error);
+        if (createdAuthUser) {
+          const rollback = await client.auth.admin.deleteUser(authUser.id);
+          if (rollback.error) {
+            console.error('Unable to roll back un-synced Supabase Auth user:', rollback.error);
+          }
         }
         throw syncError;
       }
@@ -123,14 +203,90 @@ function createSupabaseStore() {
     async findUsersByEmail(email) {
       const emailPattern = String(email || '').trim().toLowerCase().replace(/[\\%_]/g, '\\$&');
       const { data, error } = await client.from('users')
-        .select('id, role, name, company, email, phone, password, is_approved, status, created_at')
+        .select('id, auth_user_id, role, name, company, email, phone, password, is_approved, status, created_at')
         .ilike('email', emailPattern);
       if (error) throw error;
       return (data || []).map(mapUser);
     },
 
+    async findUserByAuthIdentity(identity) {
+      const authUserId = String(identity && identity.id || '').trim();
+      const email = String(identity && identity.email || '').trim().toLowerCase();
+      if (!authUserId || !email) return null;
+
+      const byAuthId = await client.from('users')
+        .select('id, auth_user_id, role, name, company, email, phone, password, is_approved, status, created_at')
+        .eq('auth_user_id', authUserId)
+        .maybeSingle();
+      if (byAuthId.error) throw byAuthId.error;
+      if (byAuthId.data) {
+        if (String(byAuthId.data.email || '').trim().toLowerCase() !== email) {
+          const error = new Error('This Supabase Auth user ID is linked to a different email in public.users.');
+          error.code = 'ACCOUNT_LINK_CONFLICT';
+          throw error;
+        }
+        return mapUser(byAuthId.data);
+      }
+
+      const byEmail = await this.findUsersByEmail(email);
+      const linked = byEmail.filter((user) =>
+        !user.authUserId || user.authUserId === authUserId || String(user.id) === authUserId
+      );
+      if (linked.length > 1) {
+        const error = new Error('Multiple public.users accounts match this Supabase Auth email. Resolve the duplicate account records.');
+        error.code = 'ACCOUNT_LINK_CONFLICT';
+        throw error;
+      }
+      if (linked.length === 0 && byEmail.length > 0) {
+        const error = new Error('The matching public.users account is already linked to a different Supabase Auth user.');
+        error.code = 'ACCOUNT_LINK_CONFLICT';
+        throw error;
+      }
+      if (linked.length === 0) return null;
+      return linked[0];
+    },
+
+    async linkAuthUser(userId, authUserId) {
+      const accountId = String(userId || '').trim();
+      const authId = String(authUserId || '').trim();
+      if (!accountId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(authId)) {
+        throw new Error('A valid public account ID and Supabase Auth UUID are required.');
+      }
+
+      const existing = await client.from('users')
+        .select('id, auth_user_id')
+        .eq('id', accountId)
+        .maybeSingle();
+      if (existing.error) throw existing.error;
+      if (!existing.data) throw new Error('The public account no longer exists.');
+      if (existing.data.auth_user_id && existing.data.auth_user_id !== authId) {
+        throw new Error('The public account is already linked to a different Supabase Auth user.');
+      }
+      if (existing.data.auth_user_id === authId) return;
+
+      const { data, error } = await client.from('users')
+        .update({ auth_user_id: authId })
+        .eq('id', accountId)
+        .is('auth_user_id', null)
+        .select('id')
+        .maybeSingle();
+      if (error) throw error;
+      if (data) return;
+
+      const current = await client.from('users')
+        .select('auth_user_id')
+        .eq('id', accountId)
+        .maybeSingle();
+      if (current.error) throw current.error;
+      if (!current.data || current.data.auth_user_id !== authId) {
+        throw new Error('The public account could not be linked to this Supabase Auth user.');
+      }
+    },
+
     async listUsers() {
-      const { data, error } = await client.from('users').select('*').order('created_at', { ascending: true });
+      const { data, error } = await client.from('users')
+        .select('id, auth_user_id, role, name, company, email, phone, password, is_approved, status, created_at')
+        .order('created_at', { ascending: true });
       if (error) throw error;
       return (data || []).map(mapUser);
     },
@@ -194,13 +350,29 @@ function createSupabaseStore() {
       // "user@x.com" row, then the insert would fail the unique constraint.
       const email = String(user.email || '').trim().toLowerCase();
       const emailPattern = email.replace(/[\\%_]/g, '\\$&');
-      const existing = await client.from('users').select('id').ilike('email', emailPattern).limit(1);
+      const authUserId = String(user.id || '').trim();
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(authUserId)) {
+        throw new Error('A valid Supabase Auth user UUID is required to link the client account.');
+      }
+      const existing = await client.from('users')
+        .select('id, role, auth_user_id')
+        .ilike('email', emailPattern)
+        .limit(2);
       if (existing.error) throw existing.error;
-      const existingRow = (existing.data || [])[0] || null;
+      const rows = existing.data || [];
+      if (rows.length > 1) throw new Error('Multiple public account rows match this email address.');
+      const existingRow = rows[0] || null;
+      if (existingRow && String(existingRow.role || '').toLowerCase() !== 'client') {
+        throw new Error('A non-client public account already uses this email address.');
+      }
+      if (existingRow && existingRow.auth_user_id && existingRow.auth_user_id !== authUserId) {
+        throw new Error('This public account is already linked to a different Supabase Auth user.');
+      }
 
       // Never include the primary key in an UPDATE: changing users.id would break
       // the bookings.user_id foreign key that points at it.
       const payload = {
+        auth_user_id: authUserId,
         role: 'client',
         name: user.name,
         company: user.company || '',
@@ -213,7 +385,11 @@ function createSupabaseStore() {
       };
 
       if (existingRow) {
-        const { data, error } = await client.from('users').update(payload).eq('id', existingRow.id).select().single();
+        const { data, error } = await client.from('users')
+          .update(payload)
+          .eq('id', existingRow.id)
+          .select()
+          .single();
         if (error) throw error;
         // created:false tells the caller this was an update, not a new account —
         // without it the "welcome" email fired again on every profile sync.
@@ -221,7 +397,7 @@ function createSupabaseStore() {
       }
 
       const { data, error } = await client.from('users')
-        .insert(Object.assign({ id: user.id || ('USR' + Date.now()) }, payload))
+        .insert(Object.assign({ id: authUserId }, payload))
         .select().single();
       if (error) throw error;
       return { user: mapUser(data), created: true };

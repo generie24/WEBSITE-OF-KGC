@@ -3,13 +3,17 @@
 ## ⚡ Start the Server (Easiest Method)
 
 ```bash
-node simple-server.js
+npm run dev
 ```
 
 **Then open your browser to:**
 ```
 http://localhost:3000
 ```
+
+This starts `server.js`, which serves the site and its authentication API. Do
+not use `node simple-server.js` for sign-up: that lightweight static server does
+not implement the registration endpoints.
 
 ---
 
@@ -106,6 +110,8 @@ Once the server is running:
 | `http://localhost:3000` | Main homepage |
 | `http://localhost:3000/health` | Health check (JSON) |
 | `http://localhost:3000/api/subsidiaries` | All subsidiaries data (JSON) |
+| `POST /api/auth/register/request-code` | Request the client sign-up email verification code |
+| `POST /api/auth/register/verify` | Verify the code and create the client account |
 
 ---
 

@@ -1,5 +1,6 @@
 create table if not exists public.users (
   id text primary key,
+  auth_user_id uuid references auth.users(id) on delete set null,
   role text not null check (role in ('client', 'admin')),
   name text not null,
   company text not null default '',
@@ -10,6 +11,15 @@ create table if not exists public.users (
   status text not null default 'Approved',
   created_at timestamptz not null default now()
 );
+
+-- Keep the Auth UUID separate from the legacy text primary key, which may be
+-- referenced by bookings.user_id.
+alter table public.users
+  add column if not exists auth_user_id uuid references auth.users(id) on delete set null;
+
+create unique index if not exists users_auth_user_id_uidx
+  on public.users (auth_user_id)
+  where auth_user_id is not null;
 
 -- Supabase Auth profiles for client accounts created by auth.signUp().
 -- The profile ID is the Auth user's UUID, not the legacy public.users text ID.
@@ -231,5 +241,6 @@ where lower(a.email) = lower(b.email)
 create unique index if not exists users_email_lower_uidx on public.users (lower(email));
 
 alter table public.users enable row level security;
+grant all on public.users to service_role;
 alter table public.payment_methods enable row level security;
 alter table public.bookings enable row level security;

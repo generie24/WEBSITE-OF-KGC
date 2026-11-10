@@ -198,11 +198,11 @@ function isUniqueViolation(error) {
 
 async function findUserByCredentials(email, password, role = 'client', users = usersStore) {
   const normalizedEmail = String(email || '').trim().toLowerCase();
-  const normalizedRole = normalizeRole(role);
+  const normalizedRole = role ? normalizeRole(role) : null;
 
   const candidates = users.concat(DEMO_USERS).filter((user) =>
     String(user.email || '').trim().toLowerCase() === normalizedEmail &&
-    normalizeRole(user.role || 'client') === normalizedRole
+    (!normalizedRole || normalizeRole(user.role || 'client') === normalizedRole)
   );
   for (const candidate of candidates) {
     if (await verifyPassword(password, candidate.password)) return candidate;
@@ -1354,7 +1354,12 @@ app.get('/api/admin/accounts', requireAdminSession, async (req, res) => {
       }))
     });
   } catch (error) {
-    console.error('Admin account list failed:', error);
+    console.error('Admin account list failed:', {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint
+    });
     res.status(503).json({
       success: false,
       error: supabaseStore.enabled
@@ -1768,10 +1773,17 @@ app.post('/api/auth/register/verify', async (req, res) => {
       }
     });
   } catch (error) {
-    if (isUniqueViolation(error) || /already registered|already exists/i.test(String(error.message || ''))) {
+    if (isUniqueViolation(error) || error.code === 'email_exists' ||
+        /already(?:\s+been)?\s+registered|already exists/i.test(String(error.message || ''))) {
       return res.status(409).json({ success: false, error: 'An account with this email already exists. Please sign in instead.' });
     }
     console.error('Verified client registration failed:', error);
+    if (error.code === '42703' && /auth_user_id/i.test(String(error.message || ''))) {
+      return res.status(503).json({
+        success: false,
+        error: 'Account database setup is incomplete. Run the auth_user_id migration from supabase-schema.sql in the Supabase SQL Editor, then try again.'
+      });
+    }
     return res.status(500).json({ success: false, error: 'Could not create your account. Please try again.' });
   }
 });
@@ -2007,7 +2019,7 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 app.post('/api/auth/login', async (req, res) => {
-  const { email, password, role = 'client' } = req.body || {};
+  const { email, password } = req.body || {};
 
   if (!email || !password) {
     return res.status(400).json({
@@ -2017,32 +2029,41 @@ app.post('/api/auth/login', async (req, res) => {
   }
 
   try {
-    const normalizedRole = normalizeRole(role);
-    if (normalizedRole === 'admin' && IS_DEPLOYED_ENVIRONMENT && !supabaseStore.enabled) {
-      return res.status(503).json({
-        success: false,
-        error: 'Admin sign-in is not configured. Set the Supabase URL and service-role key.'
-      });
-    }
-
     // Avoid downloading every user row on the login critical path.
     const matchingUsers = await getUsersByEmail(email);
-    let user = await findUserByCredentials(email, password, normalizedRole, matchingUsers);
+    let user = await findUserByCredentials(email, password, null, matchingUsers);
     let authenticatedIdentity = null;
 
-    if (!user && normalizedRole === 'admin' && supabaseStore.enabled &&
+    if (!user && supabaseStore.enabled &&
         typeof supabaseStore.authenticateWithPassword === 'function') {
       try {
         authenticatedIdentity = await supabaseStore.authenticateWithPassword(email, password);
         if (authenticatedIdentity) {
-          user = matchingUsers.find((entry) =>
-            String(entry.id) === String(authenticatedIdentity.id) &&
-            normalizeRole(entry.role) === 'admin'
-          ) || null;
+          user = await supabaseStore.findUserByAuthIdentity(authenticatedIdentity);
+          if (!user) {
+            try {
+              const result = await supabaseStore.upsertClient({
+                id: authenticatedIdentity.id,
+                email: authenticatedIdentity.email,
+                name: authenticatedIdentity.name,
+                company: authenticatedIdentity.company,
+                phone: authenticatedIdentity.phone,
+                createdAt: authenticatedIdentity.createdAt
+              });
+              user = result.user;
+            } catch (provisionError) {
+              if (!isUniqueViolation(provisionError)) throw provisionError;
+              user = await supabaseStore.findUserByAuthIdentity(authenticatedIdentity);
+              if (!user) throw provisionError;
+            }
+          }
         }
       } catch (error) {
+        if (error.code === 'ACCOUNT_LINK_CONFLICT') {
+          return res.status(403).json({ success: false, error: error.message });
+        }
         if (!isSupabaseCredentialRejection(error)) throw error;
-        console.warn('Supabase rejected the admin credentials.');
+        console.warn('Supabase rejected the sign-in credentials.');
       }
     }
 
@@ -2067,7 +2088,7 @@ app.post('/api/auth/login', async (req, res) => {
       if (authenticatedIdentity) {
         return res.status(403).json({
           success: false,
-          error: 'This Supabase account is not linked to an admin profile in public.users.'
+          error: 'Supabase Auth accepted the sign-in, but no matching account exists in public.users. Add or correct the public.users row; its email must match the Auth email, and its role/status determine access.'
         });
       }
 
@@ -2077,21 +2098,41 @@ app.post('/api/auth/login', async (req, res) => {
       });
     }
 
-    if (normalizedRole === 'client' && !isActiveClient(user)) {
+    const accountRole = normalizeRole(user.role || 'client');
+    if (accountRole !== 'admin' && accountRole !== 'client') {
+      return res.status(403).json({
+        success: false,
+        error: 'This account has an unsupported role. Contact an administrator.'
+      });
+    }
+
+    if (accountRole === 'admin' && IS_DEPLOYED_ENVIRONMENT && !supabaseStore.enabled) {
+      return res.status(503).json({
+        success: false,
+        error: 'Admin sign-in is not configured. Set the Supabase URL and service-role key.'
+      });
+    }
+
+    if (accountRole === 'client' && !isActiveClient(user)) {
       return res.status(403).json({
         success: false,
         error: 'This client account is pending approval or suspended. Contact an administrator for assistance.'
       });
     }
 
-    if (normalizedRole === 'admin' && !getApprovalStatus(user)) {
+    if (accountRole === 'admin' && !getApprovalStatus(user)) {
       return res.status(403).json({
         success: false,
         error: 'Your Admin account is pending approval from an authorized Admin.'
       });
     }
 
-    if (normalizedRole === 'admin') {
+    if (authenticatedIdentity && supabaseStore.enabled) {
+      await supabaseStore.linkAuthUser(user.id, authenticatedIdentity.id);
+      user.authUserId = authenticatedIdentity.id;
+    }
+
+    if (accountRole === 'admin') {
       let token;
       try {
         token = createAdminSessionToken(user.id);
@@ -2120,13 +2161,20 @@ app.post('/api/auth/login', async (req, res) => {
         id: user.id,
         name: user.name,
         email: String(user.email).trim().toLowerCase(),
-        role: String(user.role || 'client').trim().toLowerCase(),
+        role: accountRole,
         isApproved: user.isApproved !== false,
-        status: user.status || 'Approved'
+        status: user.status || 'Approved',
+        authProvider: authenticatedIdentity ? 'supabase' : 'local'
       }
     });
   } catch (error) {
     console.error('Sign-in request failed:', error);
+    if (error.code === '42501') {
+      return res.status(503).json({
+        success: false,
+        error: 'Supabase denied the account update. Check that SUPABASE_SERVICE_ROLE_KEY is from the configured project and restart the server.'
+      });
+    }
     return res.status(503).json({
       success: false,
       error: 'The sign-in service is temporarily unavailable. Please try again later.'

@@ -5753,42 +5753,9 @@
       return fetch(url, requestOptions);
     }
 
-    // ── Local account fallback ───────────────────────────────────────────────
-    // Supabase Auth is the primary identity provider for clients, but it is an
-    // external service: if the project is paused/deleted, or the browser is
-    // offline, every call fails with a bare "Failed to fetch". These helpers let
-    // sign-in fall back to the accounts served by this app so the portal stays
-    // usable instead of dead-ending on a network error.
-
-    function isNetworkAuthError(error) {
-      var msg = String((error && error.message) || error || '');
-      return /failed to fetch|networkerror|load failed|fetch failed|network request failed|timed? ?out|err_name_not_resolved|econnrefused/i.test(msg);
-    }
-
     function isLocalClientSession() {
       return !!(portalState.supabaseAuthUser && portalState.supabaseAuthUser.__local);
     }
-
-    // Resolves to { account } on success, { error } when the server rejected the
-    // credentials, or { offline: true } when the server could not be reached at all.
-    // Never throws.
-    async function loginAgainstLocalStore(email, password, role) {
-      try {
-        var response = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email, password: password, role: role || 'client' })
-        });
-        var result = await readJsonResponse(response);
-        if (response.ok && result && result.success && result.data) return { account: result.data };
-        return { error: (result && result.error) || '' };
-      } catch (error) {
-        console.warn('Local account store sign-in failed:', error);
-        return { offline: true };
-      }
-    }
-
-    var SERVER_DOWN_MESSAGE = '\u274c The KGC server is not running. Double-click start.bat in the project folder, then reload this page.';
 
     // Signs the client in from a local account record. A synthetic user object is
     // stored so the dashboard/menu (which expect a Supabase user shape) keep working.
@@ -5819,15 +5786,6 @@
       } else {
         window.openBookingDirect();
       }
-    }
-
-    // Turns a raw auth error into something a person can act on.
-    function describeClientAuthError(error) {
-      if (isNetworkAuthError(error)) {
-        return '\u274c Cannot reach the sign-in service right now. Check your internet connection, then try again.';
-      }
-      var msg = String((error && error.message) || '').trim();
-      return '\u274c ' + (msg || 'Unable to sign in. Check your email and password, then try again.');
     }
 
     function saveState() {
@@ -7434,70 +7392,41 @@
       var form  = e.target;
       var email = form.loginEmail.value.trim();
       var pass  = form.loginPassword.value;
-      var role  = (document.getElementById('loginRoleInput') || {}).value || 'client';
-
-      if (role === 'client') {
-        var supabaseFailure = null;
-
-        try {
-          var client = await getSupabaseClient();
-          var clientLogin = await client.auth.signInWithPassword({ email: email, password: pass });
-          if (clientLogin.error) throw clientLogin.error;
-          if (!clientLogin.data.user) throw new Error('Supabase did not return a signed-in client.');
-          setSupabaseClientUser(clientLogin.data.user);
-          finishClientLogin(form);
-          return;
-        } catch (error) {
-          supabaseFailure = error;
-          console.warn('Supabase client sign-in unavailable, trying the local account store.', error);
-        }
-
-        // Fallback: this app's own account store. Keeps clients able to sign in
-        // when Supabase is paused, unreachable, or the account lives only locally.
-        var localLogin = await loginAgainstLocalStore(email, pass, 'client');
-        if (localLogin.account) {
-          setLocalClientUser(localLogin.account);
-          finishClientLogin(form);
-          window.showToast('Signed in successfully.', 'success');
-          return;
-        }
-
-        // The server itself is unreachable — that is the real problem, so say so
-        // instead of blaming the internet or the credentials.
-        if (localLogin.offline) {
-          console.error('Client sign-in failed: the local KGC server is not reachable.', supabaseFailure);
-          window.showToast(SERVER_DOWN_MESSAGE, 'error');
-          return;
-        }
-
-        if (localLogin.error) {
-          window.showToast('\u274c ' + localLogin.error, 'error');
-          return;
-        }
-
-        console.error('Client sign-in failed:', supabaseFailure);
-        window.showToast(describeClientAuthError(supabaseFailure), 'error');
-        return;
-      }
 
       try {
         var response = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email, password: pass, role: role })
+          credentials: 'same-origin',
+          body: JSON.stringify({ email: email, password: pass })
         });
         var result = await readJsonResponse(response);
 
-        if (response.ok && result && result.success) {
+        if (response.ok && result && result.success && result.data) {
+          var accountRole = String(result.data.role || 'client').trim().toLowerCase();
+          if (accountRole !== 'admin' && accountRole !== 'client') {
+            throw new Error('This account has an unsupported role. Contact an administrator.');
+          }
+
+          if (accountRole === 'client' && result.data.authProvider === 'supabase') {
+            var client = await getSupabaseClient();
+            var clientLogin = await client.auth.signInWithPassword({ email: email, password: pass });
+            if (clientLogin.error) throw clientLogin.error;
+            if (!clientLogin.data.user) throw new Error('Supabase did not return a signed-in client.');
+            setSupabaseClientUser(clientLogin.data.user);
+          } else if (accountRole === 'client') {
+            setLocalClientUser(result.data);
+          }
+
           portalState.isLoggedIn = true;
-          portalState.role       = result.data.role || role;
-          portalState.userName   = result.data.name || (role === 'client' ? 'Client User' : 'Admin User');
+          portalState.role       = accountRole;
+          portalState.userName   = result.data.name || (accountRole === 'client' ? 'Client User' : 'Admin User');
           portalState.userEmail  = result.data.email || email;
           saveState();
           updateHeaderState();
           window.closeModal('authModal');
           form.reset();
-          if (role === 'client') {
+          if (accountRole === 'client') {
             if (typeof window.handlePendingBookingSelection === 'function') {
               var pendingAfterLogin = window.handlePendingBookingSelection();
               if (!pendingAfterLogin) {
@@ -7509,6 +7438,7 @@
           } else {
             window.showAdminDashboard();
           }
+          window.showToast('Signed in successfully.', 'success');
           return;
         }
 
@@ -7517,8 +7447,8 @@
           return;
         }
       } catch (err) {
-        console.error('Server login check failed:', err);
-        window.showToast('\u274c The sign-in service is unavailable. Please try again later.', 'error');
+        console.error('Sign-in failed:', err);
+        window.showToast('\u274c ' + (err.message || 'The sign-in service is unavailable. Please try again later.'), 'error');
         return;
       }
 
