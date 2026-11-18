@@ -1649,9 +1649,99 @@ app.get('/api/auth/session', requireAdminSession, (req, res) => {
       id: String(req.adminUser.id),
       name: req.adminUser.name || 'Admin',
       email: normalizeEmail(req.adminUser.email),
+      phone: String(req.adminUser.phone || ''),
       role: 'admin'
     }
   });
+});
+
+app.patch('/api/admin/profile', requireAdminSession, async (req, res) => {
+  const name = String(req.body && req.body.name || '').trim();
+  const email = normalizeEmail(req.body && req.body.email);
+  const phone = String(req.body && req.body.phone || '').trim();
+  if (!name || name.length > 120 || !email || email.length > 254 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || phone.length > 40) {
+    return res.status(400).json({
+      success: false,
+      error: 'Enter a name (up to 120 characters), a valid email address, and a phone number up to 40 characters.'
+    });
+  }
+  if (String(req.adminUser.id).startsWith('demo-')) {
+    return res.status(403).json({ success: false, error: 'Demo accounts cannot edit profile details.' });
+  }
+
+  try {
+    const accounts = (await getUsersStore()).concat(DEMO_USERS);
+    const duplicate = findAccountByEmail(email, accounts);
+    if (duplicate && String(duplicate.id) !== String(req.adminUser.id)) {
+      return res.status(409).json({ success: false, error: 'An account with this email already exists.' });
+    }
+
+    const changes = { name, email, phone };
+    const saved = supabaseStore.enabled
+      ? await supabaseStore.updateUser(req.adminUser.id, changes)
+      : await persistUserUpdate(req.adminUser.id, changes);
+    if (!saved) return res.status(404).json({ success: false, error: 'Admin account not found.' });
+
+    return res.json({
+      success: true,
+      data: {
+        id: String(saved.id),
+        name: saved.name || name,
+        email: normalizeEmail(saved.email || email),
+        phone: String(saved.phone || phone),
+        role: 'admin'
+      }
+    });
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      return res.status(409).json({ success: false, error: 'An account with this email already exists.' });
+    }
+    console.error('Admin profile update failed:', error);
+    return res.status(503).json({
+      success: false,
+      error: supabaseStore.enabled
+        ? 'Unable to update your profile in Supabase.'
+        : 'Unable to update your profile.'
+    });
+  }
+});
+
+// Admin self-service password change. The current password is required so a
+// stolen session cookie alone cannot take over the account. Admin sign-in reads
+// the same password hash this writes (see findUserByCredentials), so the change
+// takes effect on the very next login.
+app.post('/api/admin/change-password', requireAdminSession, async (req, res) => {
+  const currentPassword = String((req.body && req.body.currentPassword) || '');
+  const newPassword = String((req.body && req.body.newPassword) || '');
+
+  if (!currentPassword || newPassword.length < 8 || newPassword.length > 128) {
+    return res.status(400).json({
+      success: false,
+      error: 'Enter your current password and a new password of 8 to 128 characters.'
+    });
+  }
+  if (String(req.adminUser.id).startsWith('demo-')) {
+    return res.status(403).json({ success: false, error: 'Demo accounts cannot change their password.' });
+  }
+
+  try {
+    const storedHash = req.adminUser.password;
+    if (!(await verifyPassword(currentPassword, storedHash))) {
+      return res.status(401).json({ success: false, error: 'Your current password is incorrect.' });
+    }
+    if (await verifyPassword(newPassword, storedHash)) {
+      return res.status(400).json({ success: false, error: 'Your new password must be different from the current one.' });
+    }
+
+    const saved = await persistUserUpdate(req.adminUser.id, { password: await hashPassword(newPassword) });
+    if (!saved) return res.status(404).json({ success: false, error: 'Admin account not found.' });
+
+    return res.json({ success: true, message: 'Your password has been updated.' });
+  } catch (error) {
+    console.error('Admin password change failed:', error);
+    return res.status(503).json({ success: false, error: 'Unable to change your password right now. Please try again.' });
+  }
 });
 
 app.post('/api/auth/register/request-code', async (req, res) => {
@@ -2161,6 +2251,7 @@ app.post('/api/auth/login', async (req, res) => {
         id: user.id,
         name: user.name,
         email: String(user.email).trim().toLowerCase(),
+        phone: String(user.phone || ''),
         role: accountRole,
         isApproved: user.isApproved !== false,
         status: user.status || 'Approved',

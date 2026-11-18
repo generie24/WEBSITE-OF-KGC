@@ -408,6 +408,12 @@ function createSupabaseStore() {
       if (Object.prototype.hasOwnProperty.call(changes, 'role')) patch.role = changes.role;
       if (Object.prototype.hasOwnProperty.call(changes, 'isApproved')) patch.is_approved = changes.isApproved;
       if (Object.prototype.hasOwnProperty.call(changes, 'status')) patch.status = changes.status;
+      if (Object.prototype.hasOwnProperty.call(changes, 'name')) patch.name = changes.name;
+      if (Object.prototype.hasOwnProperty.call(changes, 'email')) patch.email = changes.email;
+      if (Object.prototype.hasOwnProperty.call(changes, 'phone')) patch.phone = changes.phone;
+      // Password changes are stored as hashes by the API layer; allow that column
+      // through so an admin can change their password in Supabase-backed mode too.
+      if (Object.prototype.hasOwnProperty.call(changes, 'password')) patch.password = changes.password;
       if (!Object.keys(patch).length) throw new Error('No supported account changes were provided.');
       const { data, error } = await client.from('users').update(patch).eq('id', id).select().single();
       if (error) throw error;

@@ -3299,7 +3299,7 @@
             </button>
             <div id="clientProfileDropdown" class="client-profile-dropdown" role="menu" hidden>
               <button type="button" role="menuitem" id="btnEditProfile" onclick="window.openClientProfile()">
-                <span class="dropdown-emoji">⚙️</span> Edit My Profile
+                <span class="dropdown-emoji">⚙️</span> Edit Profile
               </button>
               <button type="button" role="menuitem" id="btnChangePassword" onclick="window.openChangePassword()">
                 <span class="dropdown-emoji">🔑</span> Change Password
@@ -3310,7 +3310,7 @@
             </div>
           </div>
 
-          <!-- Legacy admin indicator (kept for safety; hidden in favor of the unified dropdown). -->
+          <!-- Unified profile dropdown for signed-in clients and admins. -->
           <div id="userIndicator" class="hidden items-center gap-3" aria-hidden="true">
             <a href="#" onclick="window.goToDashboard(); return false;"
               class="text-sm text-gold font-semibold hover:underline" id="userIndicatorName">My Dashboard</a>
@@ -4385,13 +4385,13 @@
 
     <!-- Client profile settings; access is guarded by the active Supabase Auth session. -->
     <div id="clientProfileModal" class="modal-overlay" role="dialog" aria-modal="true"
-      aria-labelledby="clientProfileTitle">
+      aria-labelledby="profileSettingsModalTitle">
       <div class="client-profile-modal">
         <div class="flex items-start justify-between gap-4 border-b border-white/10 pb-4">
           <div>
             <p class="text-xs uppercase tracking-[0.2em] text-gold">Account settings</p>
-            <h2 id="clientProfileTitle" class="mt-1 text-2xl font-bold text-white">Edit My Profile</h2>
-            <p class="mt-1 text-sm text-gray-400">Update your personal and security information.</p>
+            <h2 id="profileSettingsModalTitle" class="mt-1 text-2xl font-bold text-white">Edit My Profile</h2>
+            <p id="clientProfileDescription" class="mt-1 text-sm text-gray-400">Update your personal and security information.</p>
           </div>
           <button type="button" class="modal-close-btn" onclick="window.closeModal('clientProfileModal')"
             aria-label="Close profile settings">
@@ -4420,6 +4420,11 @@
 
         <form id="clientPasswordForm" class="mt-7 space-y-4 border-t border-white/10 pt-5">
           <h3 class="text-lg font-semibold text-gold">Security Settings</h3>
+          <div id="adminCurrentPasswordField" hidden>
+            <label for="profileCurrentPassword">Current Password</label>
+            <input id="profileCurrentPassword" name="currentPassword" type="password" autocomplete="current-password"
+              maxlength="128">
+          </div>
           <div>
             <label for="profileNewPassword">New Password</label>
             <input id="profileNewPassword" name="newPassword" type="password" autocomplete="new-password"
@@ -5664,6 +5669,7 @@
       role: null,
       userName: '',
       userEmail: '',
+      userPhone: '',
       supabaseAuthUser: null,
       bookings: []   // local cache only; source of truth is the server
     };
@@ -5826,6 +5832,7 @@
       portalState.role = 'client';
       portalState.userName = metadata.name || metadata.full_name || 'Client';
       portalState.userEmail = user.email || '';
+      portalState.userPhone = metadata.phone || '';
       portalState.supabaseAuthUser = user;
       saveState();
       updateHeaderState();
@@ -5838,6 +5845,7 @@
       portalState.role = null;
       portalState.userName = '';
       portalState.userEmail = '';
+      portalState.userPhone = '';
       portalState.supabaseAuthUser = null;
       portalState.bookings = [];
       saveState();
@@ -5887,6 +5895,7 @@
       portalState.role = 'admin';
       portalState.userName = result.data.name || 'Admin';
       portalState.userEmail = result.data.email || '';
+      portalState.userPhone = result.data.phone || '';
       updateHeaderState();
       window.showAdminDashboard();
       return true;
@@ -5927,8 +5936,7 @@
         }
       }
 
-      // Keep client and admin dashboard links separate so each routes to the right view.
-      // Admins only see Log Out in the dropdown.
+      // Both admins and clients get Edit Profile + Change Password in the dropdown.
       var showClientOnly = isSupabaseClient && !isAdmin;
       if (dashboardLink) {
         dashboardLink.classList.toggle('hidden', !showClientOnly);
@@ -5939,12 +5947,8 @@
         adminDashboardLink.style.display = isAdmin ? 'block' : 'none';
         adminDashboardLink.setAttribute('aria-hidden', String(!isAdmin));
       }
-      if (btnEditProfile) {
-        btnEditProfile.style.display = showClientOnly ? '' : 'none';
-      }
-      if (btnChangePassword) {
-        btnChangePassword.style.display = showClientOnly ? '' : 'none';
-      }
+      if (btnEditProfile) btnEditProfile.style.display = showAccountNav ? '' : 'none';
+      if (btnChangePassword) btnChangePassword.style.display = showAccountNav ? '' : 'none';
 
       if (bookNowBtn) {
         bookNowBtn.style.display = isAdmin ? 'none' : '';
@@ -6040,21 +6044,48 @@
     });
 
     window.openClientProfile = async function () {
-      if (!supabaseClient || portalState.role !== 'client' || !portalState.supabaseAuthUser) {
-        window.showToast('Sign in to a client account to edit your profile.', 'error');
+      var isAdmin = portalState.isLoggedIn && portalState.role === 'admin';
+      if (!isAdmin && (!supabaseClient || portalState.role !== 'client' || !portalState.supabaseAuthUser)) {
+        window.showToast('Sign in to your account to edit your profile.', 'error');
         return;
       }
 
       try {
-        var result = await supabaseClient.auth.getUser();
-        if (result.error) throw result.error;
-        if (!result.data.user) throw new Error('Your client session has expired. Please sign in again.');
-        setSupabaseClientUser(result.data.user);
-
-        var metadata = result.data.user.user_metadata || {};
-        document.getElementById('profileName').value = metadata.name || metadata.full_name || '';
-        document.getElementById('profileEmail').value = result.data.user.email || '';
-        document.getElementById('profilePhone').value = metadata.phone || '';
+        if (isAdmin) {
+          // Fetch from the server so the form never shows stale session data.
+          var sessionResponse = await fetch('/api/auth/session', {
+            credentials: 'same-origin', cache: 'no-store'
+          });
+          var sessionResult = await readJsonResponse(sessionResponse);
+          if (!sessionResponse.ok || !sessionResult || sessionResult.success !== true || !sessionResult.data) {
+            throw new Error((sessionResult && sessionResult.error) || 'Unable to load your admin profile.');
+          }
+          var admin = sessionResult.data;
+          portalState.userName = admin.name || '';
+          portalState.userEmail = admin.email || '';
+          portalState.userPhone = admin.phone || '';
+          document.getElementById('profileName').value = admin.name || '';
+          document.getElementById('profileEmail').value = admin.email || '';
+          document.getElementById('profilePhone').value = admin.phone || '';
+          updateHeaderState();
+        } else {
+          var result = await supabaseClient.auth.getUser();
+          if (result.error) throw result.error;
+          if (!result.data.user) throw new Error('Your client session has expired. Please sign in again.');
+          setSupabaseClientUser(result.data.user);
+          var metadata = result.data.user.user_metadata || {};
+          document.getElementById('profileName').value = metadata.name || metadata.full_name || '';
+          document.getElementById('profileEmail').value = result.data.user.email || '';
+          document.getElementById('profilePhone').value = metadata.phone || '';
+        }
+        document.getElementById('profileSettingsModalTitle').textContent = isAdmin ? 'Edit Admin Profile' : 'Edit My Profile';
+        document.getElementById('clientProfileDescription').textContent = isAdmin
+          ? 'Update your name, email address, contact number, and password.'
+          : 'Update your personal and security information.';
+        // Admins get the security section too, with an extra current-password field.
+        document.getElementById('clientPasswordForm').hidden = false;
+        document.getElementById('adminCurrentPasswordField').hidden = !isAdmin;
+        document.getElementById('profileCurrentPassword').value = '';
         document.getElementById('profileNewPassword').value = '';
         document.getElementById('profileConfirmPassword').value = '';
         var dropdown = document.getElementById('clientProfileDropdown');
@@ -6069,8 +6100,9 @@
 
     document.getElementById('clientProfileForm').addEventListener('submit', async function (event) {
       event.preventDefault();
-      if (!supabaseClient || portalState.role !== 'client' || !portalState.supabaseAuthUser) {
-        window.showToast('Sign in to a client account to edit your profile.', 'error');
+      var isAdmin = portalState.isLoggedIn && portalState.role === 'admin';
+      if (!isAdmin && (!supabaseClient || portalState.role !== 'client' || !portalState.supabaseAuthUser)) {
+        window.showToast('Sign in to your account to edit your profile.', 'error');
         return;
       }
 
@@ -6087,6 +6119,27 @@
       button.disabled = true;
       button.textContent = 'Saving...';
       try {
+        if (isAdmin) {
+          var response = await fetch('/api/admin/profile', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ name: name, email: email, phone: phone })
+          });
+          var result = await readJsonResponse(response);
+          if (!response.ok || !result || result.success !== true || !result.data) {
+            throw new Error((result && result.error) || 'Unable to save your profile.');
+          }
+          portalState.userName = result.data.name;
+          portalState.userEmail = result.data.email;
+          portalState.userPhone = result.data.phone || '';
+          updateHeaderState();
+          form.reset();
+          window.closeModal('clientProfileModal');
+          window.showToast('Your admin profile has been updated.', 'success');
+          return;
+        }
+
         var current = await supabaseClient.auth.getUser();
         if (current.error) throw current.error;
         if (!current.data.user) throw new Error('Your client session has expired. Please sign in again.');
@@ -6120,23 +6173,45 @@
 
     document.getElementById('clientPasswordForm').addEventListener('submit', async function (event) {
       event.preventDefault();
-      if (!supabaseClient || portalState.role !== 'client' || !portalState.supabaseAuthUser) {
-        window.showToast('Sign in to a client account to update your password.', 'error');
+      var isAdmin = portalState.isLoggedIn && portalState.role === 'admin';
+      if (!isAdmin && (!supabaseClient || portalState.role !== 'client' || !portalState.supabaseAuthUser)) {
+        window.showToast('Sign in to your account to update your password.', 'error');
         return;
       }
 
       var newPassword = document.getElementById('profileNewPassword').value;
       var confirmPassword = document.getElementById('profileConfirmPassword').value;
+      var currentPassword = document.getElementById('profileCurrentPassword').value;
       var button = document.getElementById('updatePasswordButton');
       var form = event.currentTarget;
       if (newPassword !== confirmPassword) {
         window.showToast('The new passwords do not match.', 'error');
         return;
       }
+      if (isAdmin && !currentPassword) {
+        window.showToast('Enter your current password.', 'error');
+        return;
+      }
 
       button.disabled = true;
       button.textContent = 'Updating...';
       try {
+        if (isAdmin) {
+          var response = await fetch('/api/admin/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ currentPassword: currentPassword, newPassword: newPassword })
+          });
+          var result = await readJsonResponse(response);
+          if (!response.ok || !result || result.success !== true) {
+            throw new Error((result && result.error) || 'Unable to change your password.');
+          }
+          form.reset();
+          window.closeModal('clientProfileModal');
+          window.showToast('Your password has been updated.', 'success');
+          return;
+        }
         var current = await supabaseClient.auth.getUser();
         if (current.error) throw current.error;
         if (!current.data.user) throw new Error('Your client session has expired. Please sign in again.');
@@ -6145,7 +6220,7 @@
         form.reset();
         window.showToast('Your password has been updated.', 'success');
       } catch (error) {
-        console.error('Unable to update client password:', error);
+        console.error('Unable to update password:', error);
         window.showToast(error.message || 'Unable to update your password.', 'error');
       } finally {
         button.disabled = false;
@@ -6155,8 +6230,21 @@
 
     // ── Dedicated Change Password modal (opened from the profile dropdown) ──
     window.openChangePassword = async function () {
+      // Admins use the profile modal, which now includes a security section
+      // backed by the server-side password endpoint.
+      if (portalState.isLoggedIn && portalState.role === 'admin') {
+        await window.openClientProfile();
+        setTimeout(function () {
+          var field = document.getElementById('profileCurrentPassword');
+          if (field) {
+            field.focus();
+            field.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          }
+        }, 60);
+        return;
+      }
       if (!supabaseClient || portalState.role !== 'client' || !portalState.supabaseAuthUser) {
-        window.showToast('Sign in to a client account to change your password.', 'error');
+        window.showToast('Sign in to your account to change your password.', 'error');
         return;
       }
       try {
@@ -7423,6 +7511,7 @@
           portalState.role       = accountRole;
           portalState.userName   = result.data.name || (accountRole === 'client' ? 'Client User' : 'Admin User');
           portalState.userEmail  = result.data.email || email;
+          portalState.userPhone  = result.data.phone || '';
           saveState();
           updateHeaderState();
           window.closeModal('authModal');
